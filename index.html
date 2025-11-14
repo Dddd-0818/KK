@@ -8827,56 +8827,59 @@ async function addWalletTransaction(type, dossierId, amount, memo) {
         
         // ^^^ 函数到此结束 ^^^
 
-/**
-         * 【全新】触发AI对用户新心事的社交扫描与决策
-         * @param {object} userSecret - 用户刚刚发布并存入数据库的心事对象
+// vvv 用这个【V2 - 并行处理版】，完整替换旧的 triggerAiSecretResponseDecision 函数 vvv
+
+        /**
+         * 【V2 - 健壮版】使用 Promise.all 并行触发所有角色的AI决策
+         * @param {object} userSecret - 用户发布的心事对象
          */
-       async function triggerAiSecretResponseDecision(userSecret) {
-            console.log(`[心事引擎] 已收到新心事 #${userSecret.id}，正在为所有角色触发AI决策...`);
+        async function triggerAiSecretResponseDecision(userSecret) {
+            console.log(`[心事引擎] 已收到新心事 #${userSecret.id}，正在为所有角色【并行】触发AI决策...`);
 
-            for (const dossier of appState.dossiers) {
-                try {
-                    // 1. 调用我们【合并后】的唯一Prompt函数
-                    const responsePrompt = promptManager.createSecretResponsePrompt(dossier, userSecret);
-                    
-                    // 2. 调用API获取AI的决策和【已写好的回应】
-                    const aiResponse = await apiHelper.getChatCompletion(responsePrompt);
-                    
-                    // 3. 智能解析JSON
-                    const jsonStartIndex = aiResponse.indexOf('{');
-                    const jsonEndIndex = aiResponse.lastIndexOf('}');
-                    if (jsonStartIndex === -1 || jsonEndIndex === -1) throw new Error("AI未返回有效的JSON对象。");
-                    const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
-                    const decision = JSON.parse(jsonString);
-
-                    // 4. 如果AI决定回应，则创建待办任务
-                    if (decision.shouldRespond && decision.responseContent) {
-                        const delay = (decision.delayInMinutes || 0) * 60 * 1000;
-                        const executeAt = Date.now() + delay;
-
-                        const newAction = {
-                            dossierId: dossier.id,
-                            type: 'secret_response', // 任务类型保持不变
-                            payload: {
-                                userSecretId: userSecret.id,
-                                // 【核心变化】直接存储已经写好的回应内容
-                                responseContent: decision.responseContent 
-                            },
-                            executeAt: executeAt,
-                            status: 'pending'
-                        };
+            // 1. 创建一个数组，用来存放所有角色的“决策任务”
+            const decisionPromises = appState.dossiers.map(dossier => {
+                // 这个 return 返回的是一个 Promise，代表一个独立的、正在进行的决策流程
+                return (async () => {
+                    try {
+                        const responsePrompt = promptManager.createSecretResponsePrompt(dossier, userSecret);
+                        const aiResponse = await apiHelper.getChatCompletion(responsePrompt);
                         
-                        // 5. 将任务存入数据库
-                        await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
-                        console.log(`[心事引擎] ✅ 角色 [${dossier.character.name}] 已决定在 ${decision.delayInMinutes} 分钟后回应心事 #${userSecret.id}`);
-                    } else {
-                        console.log(`[心事引擎] 角色 [${dossier.character.name}] 决定暂不回应。`);
-                    }
+                        const jsonStartIndex = aiResponse.indexOf('{');
+                        const jsonEndIndex = aiResponse.lastIndexOf('}');
+                        if (jsonStartIndex === -1 || jsonEndIndex === -1) throw new Error("AI未返回有效的JSON对象。");
+                        const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+                        const decision = JSON.parse(jsonString);
 
-                } catch (error) {
-                    console.error(`[心事引擎] ❌ 为角色 [${dossier.character.name}] 处理心事决策时失败:`, error);
-                }
-            }
+                        if (decision.shouldRespond && decision.responseContent) {
+                            const delay = (decision.delayInMinutes || 0) * 60 * 1000;
+                            const executeAt = Date.now() + delay;
+                            const newAction = {
+                                dossierId: dossier.id,
+                                type: 'secret_response',
+                                payload: {
+                                    userSecretId: userSecret.id,
+                                    responseContent: decision.responseContent 
+                                },
+                                executeAt: executeAt,
+                                status: 'pending'
+                            };
+                            await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
+                            console.log(`[心事引擎] ✅ 角色 [${dossier.character.name}] 已决定在 ${decision.delayInMinutes} 分钟后回应。`);
+                        } else {
+                            console.log(`[心事引擎] 角色 [${dossier.character.name}] 决定暂不回应。`);
+                        }
+                    } catch (error) {
+                        // 【关键】在 Promise.all 中，单个任务的失败必须在内部捕获，
+                        // 否则会导致整个 Promise.all 立即失败。
+                        console.error(`[心事引擎] ❌ 为角色 [${dossier.character.name}] 处理决策时失败:`, error);
+                    }
+                })(); // <--- 注意这个立即执行的函数表达式 (IIFE)
+            });
+
+            // 2. 【核心】使用 Promise.all 来“同时”执行所有这些任务，并等待它们全部完成
+            await Promise.all(decisionPromises);
+
+            console.log(`[心事引擎] 所有角色的决策流程已全部完成。`);
         }
 
 /**
@@ -11008,8 +11011,9 @@ DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
     closeHoroscopeModal();
 });
 
-         // vvv 用这个【V3 - 真实保存+AI触发版】，完整替换掉你之前的 publishSecretBtn 监听器 vvv
-        DOM.publishSecretBtn.addEventListener('click', async () => { // <--- 关键：将函数改为 async
+       // vvv 用这个【V4 - 最终优化版】，完整替换旧的 publishSecretBtn 监听器 vvv
+
+        DOM.publishSecretBtn.addEventListener('click', async () => {
             // 1. 从输入框获取数据 (这部分逻辑不变)
             const title = DOM.secretTitleInput.value.trim();
             const content = DOM.secretContentInput.value.trim();
@@ -11022,23 +11026,31 @@ DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
                 return;
             }
 
-            // 3. 【核心升级】创建一个准备写入数据库的心事对象
+            // 3. 创建一个准备写入数据库的心事对象 (这部分逻辑不变)
             const newSecret = {
-                // 'id' 会由数据库自动生成
-                parentId: null, // 这是一个新的“主题帖”，所以没有父ID
+                parentId: null,
                 title: title || '无标题心事',
                 content: content,
                 mood: mood,
                 timestamp: Date.now(),
-                authorType: 'user' // 明确作者是用户
+                authorType: 'user'
             };
 
             try {
-                // 4. 【核心升级】将新对象存入数据库，并获取它被分配的ID
+                // 4. 将新对象存入数据库，并获取它被分配的ID
                 const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.SECRETS, newSecret);
-                newSecret.id = savedId; // 将ID加回到对象上，方便后续使用
+                newSecret.id = savedId; // 将ID加回到对象上，方便传递给AI
+                
+                utils.showToast('心事已发布');
 
-                // 5. 导航、渲染、清理 (这部分逻辑不变)
+                // --- 【【【 核心修正：调整执行顺序 】】】 ---
+                
+                // 5. 【先】在后台默默地、安全地触发AI决策流程！
+                triggerAiSecretResponseDecision(newSecret).catch(error => {
+                    console.error("[心事引擎] 后台AI决策流程发生未捕获的错误:", error);
+                });
+
+                // 6. 【后】执行所有前台的导航和UI渲染
                 navigateToPage(DOM.chatApp, 'chat-main-page');
                 const secretsTab = document.querySelector('.tab-item[data-target="secrets-pane"]');
                 if (secretsTab) {
@@ -11049,22 +11061,21 @@ DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
                     DOM.chatHeaderTitle.textContent = '心事';
                 }
                 
-                await renderSecretsList(); // 重新渲染列表（它将从数据库读取）
-
+                // 确保在导航完成后，再渲染列表
+                await renderSecretsList();
+                
+                // 7. 最后执行清理工作，为下一次发布做准备
                 DOM.secretTitleInput.value = '';
                 DOM.secretContentInput.value = '';
                 DOM.moodSelector.querySelectorAll('.mood-item').forEach(item => item.classList.remove('active'));
                 
-                utils.showToast('心事已发布');
-                
-                // 6. 【核心升级】在后台默默地触发AI决策流程！
-                triggerAiSecretResponseDecision(newSecret);
-
             } catch (error) {
                 console.error("保存或触发心事失败:", error);
                 utils.showToast('发布失败，请检查控制台');
             }
         });
+        
+        // ^^^ 函数到此结束 ^^^
 
         // --- 使用事件委托，监听对心事列表区域的所有点击 ---
        DOM.secretsListContainer.addEventListener('click', async (e) => { // <--- 关键：将函数改为 async
