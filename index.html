@@ -20,6 +20,8 @@
             --icon-border-radius: 15px;
             --dock-border-radius: 30px;
             --blur-intensity: 15px;
+          
+            --user-secret-card-bg: rgba(90, 85, 105, 0.6);
         }
 
         body.light-mode {
@@ -29,6 +31,7 @@
             --frosted-glass-border: 1px solid rgba(0, 0, 0, 0.1);
             --input-bg-color: rgba(220, 220, 220, 0.7);
             --button-bg-color: rgba(255, 255, 255, 0.8);
+            -user-secret-card-bg: rgba(245, 245, 240, 0.7);
         }
 
         body,
@@ -1519,6 +1522,1197 @@ body.light-mode .story-item.has-unread .story-avatar {
     opacity: 0.8;
 }
 
+/* 
+ * ===============================================
+ * ===   新增：“模拟视频通话”功能 CSS         ===
+ * ===============================================
+*/
+
+/* --- 视频通话浮层总容器 --- */
+#video-call-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    z-index: 210; /* 比快拍查看器更高一级 */
+    
+    background-color: #1a1a1a;
+    background-size: cover;
+    background-position: center;
+    
+    display: none; /* 默认隐藏 */
+    flex-direction: column;
+    color: #FFFFFF;
+    
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+#video-call-overlay.visible {
+    display: flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 背景上的模糊遮罩层 */
+#video-call-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+/* --- 左上角通话信息 --- */
+.video-call-header {
+    position: absolute;
+    top: 60px; /* 避开状态栏 */
+    left: 20px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    /* 默认隐藏，连接成功后显示 */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+#video-call-overlay:not(.connecting) .video-call-header {
+    opacity: 1;
+}
+
+#video-call-character-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.video-call-time-info {
+    display: flex;
+    flex-direction: column;
+    color: #FFFFFF;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+#video-call-timer-label {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+#video-call-timer {
+    font-size: 13px;
+    opacity: 0.8;
+}
+/* --- 右上角用户小窗 --- */
+.video-call-user-view {
+    position: absolute;
+    top: 50px; /* 避开状态栏 */
+    right: 20px;
+    width: 100px;
+    height: 150px;
+    background: var(--input-bg-color);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 1;
+}
+#video-call-user-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- 字幕与提示区域 --- */
+.video-call-subtitles-container {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* 让内容从底部开始往上堆叠 */
+    padding: 20px;
+    padding-bottom: 90px; /* 为底部控制栏留出空间 */
+    position: relative;
+    z-index: 1;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+#video-call-status-text, #video-call-typing-indicator {
+    text-align: center;
+    font-size: 16px;
+    opacity: 0.8;
+    margin-bottom: 15px;
+    display: none; /* 默认都隐藏 */
+}
+
+#video-call-script-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start; /* 改为靠左对齐 */
+    text-align: left;        /* 改为文字左对齐 */
+    overflow-y: auto;        /* 当内容过多时允许滚动 */
+    padding-right: 10px;     /* 为滚动条留出空间 */
+}
+/* 为滚动条添加样式 */
+#video-call-script-container::-webkit-scrollbar { width: 4px; }
+#video-call-script-container::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.4); border-radius: 4px; }
+
+/* 剧本内容的样式 (将在JS中动态添加) */
+.script-line { line-height: 1.6; }
+.script-line.action { opacity: 0.7; font-size: 15px; }
+.script-line.thought { font-style: italic; font-size: 15px; }
+.script-line.dialogue { font-weight: 500; font-size: 18px; }
+
+/* --- 底部控制栏 --- */
+.video-call-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px 30px 20px; /* 底部留出安全区 */
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+}
+#video-call-input {
+    flex-grow: 1;
+    padding: 12px 18px;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    border-radius: 25px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+#video-call-input::placeholder { color: rgba(255, 255, 255, 0.6); }
+#video-call-input:disabled {
+    opacity: 0.5;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+#video-call-send-btn {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    color: var(--text-color);
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    /* --- 【升级版】毛玻璃效果核心 --- */
+    background: rgba(255, 255, 255, 0.2); /* 浅灰色透明背景 */
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border: 1px solid rgba(255, 255, 255, 0.2); /* 匹配的边框 */
+    
+    /* 默认隐藏，在连接成功后显示 */
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+#video-call-overlay:not(.connecting) #video-call-send-btn {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+#video-call-action-btn {
+    flex-shrink: 0;
+    width: 70px;
+    height: 48px;
+    border-radius: 25px;
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+
+    /* --- 【升级版】毛玻璃效果核心 --- */
+    background-color: rgba(255, 59, 48, 0.5); /* 更透明的浅红色 */
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border: 1px solid rgba(255, 59, 48, 0.3); /* 匹配的更透明的边框 */
+}
+#video-call-action-btn:hover { background-color: #c70000; }
+
+/* --- 连接中状态的特殊样式 --- */
+#video-call-overlay.connecting #video-call-status-text {
+    display: block; /* 只在连接中显示“连接中...” */
+}
+
+/* --- 【新增】字幕框样式 --- */
+.subtitles-box {
+    width: 100%;
+    max-height: 40vh; /* 字幕区最大高度不超过屏幕的40% */
+    overflow-y: auto; /* 内容超出时自动显示滚动条 */
+    padding: 15px;
+    box-sizing: border-box;
+    
+    background: rgba(0, 0, 0, 0.4); /* 半透明黑色背景 */
+    border-radius: 12px; /* 圆角 */
+    
+    /* 让内部的 script-container 继承 flex 布局 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* 调整 script-container 的样式以适应新布局 */
+#video-call-script-container {
+    width: 100%; /* 宽度撑满字幕框 */
+    max-height: none; /* 解除之前的高度限制 */
+    overflow-y: visible; /* 不再需要自己滚动，由父级 subtitles-box 负责 */
+}
+
+/* 滚动条美化 (复用之前的样式) */
+.subtitles-box::-webkit-scrollbar { width: 4px; }
+.subtitles-box::-webkit-scrollbar-thumb { background-color: rgba(255, 255, 255, 0.4); border-radius: 4px; }
+
+/* 调整“连接中”和“说话中”提示的样式 */
+#video-call-status-text {
+    padding: 20px 0;
+    margin-bottom: 0;
+}
+#video-call-typing-indicator {
+    /* 让它在字幕框下方显示，并增加一点间距 */
+    margin-top: 10px; 
+    text-align: left; /* 与字幕框内的文字对齐 */
+    padding-left: 15px; /* 增加一点左内边距，看起来更协调 */
+}
+
+/* (在视频通话CSS部分的末尾添加) */
+
+/* --- 【新增】说话人名字样式 --- */
+.script-line .speaker-name {
+    font-weight: 600; /* 让名字加粗，更突出 */
+    margin-right: 8px; /* 名字和对话内容之间留出一点空隙 */
+}
+
+/* 角色名字的颜色 */
+.script-line .speaker-name.character {
+    color: #A19EAD; /* 占位符颜色：柔和的蓝色，您可以替换它 */
+}
+
+/* 用户名字("我")的颜色 */
+.script-line .speaker-name.user {
+    color: #DDCFDC; /* 占位符颜色：清新的薄荷绿，您可以替换它 */
+}
+
+/* --- 【新增】对话回合分割线样式 --- */
+.script-divider {
+    width: 80%; /* 分割线宽度为字幕框的80% */
+    margin: 15px auto; /* 上下留出15px间距，并水平居中 */
+    border: none; /* 移除默认边框 */
+    height: 1px; /* 分割线高度 */
+    
+    /* 使用渐变来创建中间实、两边淡出的效果 */
+    background: linear-gradient(to right, 
+        transparent, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        transparent
+    );
+}
+
+/* 
+ * ===============================================
+ * ===   新增：“视频来电横幅” CSS             ===
+ * ===============================================
+*/
+
+#incoming-call-banner {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translate(-50%, -150%);
+    width: 95%;
+    max-width: 450px;
+    z-index: 250;
+    
+    /* --- 【核心升级】毛玻璃背景 --- */
+    background: var(--frosted-glass-bg); /* 复用您全局的毛玻璃背景变量 */
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border: var(--frosted-glass-border);
+    /* --- 升级结束 --- */
+
+    border-radius: var(--widget-border-radius);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    
+    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+#incoming-call-banner.visible {
+    transform: translate(-50%, 0); /* 可见状态，滑入屏幕 */
+}
+
+.call-banner-content {
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* --- 左侧信息区 --- */
+.caller-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #FFFFFF;
+}
+#caller-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+.caller-details {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+#caller-name {
+    font-size: 18px;
+    font-weight: 600;
+}
+#call-type {
+    font-size: 14px;
+    opacity: 0.6;
+}
+
+/* --- 右侧按钮区 --- */
+.call-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.call-action-btn {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    color: #FFFFFF;
+    font-size: 28px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    /* 毛玻璃效果核心 */
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+.call-action-btn:hover {
+    transform: scale(1.05);
+}
+
+/* 拒绝按钮 (红色) */
+.call-action-btn.decline {
+    background-color: rgba(255, 59, 48, 0.6); /* 半透明红色 */
+    border: 1px solid rgba(255, 59, 48, 0.4);
+}
+.call-action-btn.decline i {
+    transform: rotate(135deg); /* 让电话图标变成挂断的样子 */
+}
+
+/* 接听按钮 (绿色) */
+.call-action-btn.accept {
+    background-color: rgba(52, 199, 89, 0.6); /* 半透明绿色 */
+    border: 1px solid rgba(52, 199, 89, 0.4);
+}
+
+/* 
+ * ===============================================
+ * ===   新增：“模拟语音条”功能 CSS           ===
+ * ===============================================
+*/
+
+/* --- 语音消息气泡的特殊样式 --- */
+/* 我们复用 .bubble 的基础样式，只在这里添加或覆盖特定样式 */
+.bubble.voice-bubble {
+    padding: 8px 12px; /* 减小内边距 */
+    display: flex;
+    align-items: center;
+    gap: 8px; /* 减小元素间距 */
+    cursor: pointer;
+    min-width: 100px; /* 减小最小宽度 */
+}
+
+/* 播放图标 */
+.voice-bubble .play-icon {
+    font-size: 20px; /* 减小图标尺寸 */
+    flex-shrink: 0;
+}
+
+/* 声波图容器 */
+.sound-wave {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 24px; /* 减小声波图整体高度 */
+}
+
+/* 声波图的每一根“条” */
+.sound-wave .bar {
+    background-color: currentColor;
+    width: 2.5px; /* 可以适当加粗一点点，质感更好 */
+    border-radius: 2px;
+    opacity: 0.8;
+}
+
+/* 语音时长文本 (位于气泡内部时) */
+.voice-bubble .duration-text {
+    font-size: 13px; /* 减小字号 */
+    opacity: 0.8;
+    flex-shrink: 0;
+    margin-left: auto;
+    padding-left: 8px; /* 减小左侧间距 */
+}
+
+/* --- 转写的文字区域 --- */
+.transcription-text {
+    font-size: 14px; /* 减小字号以匹配整体风格 */
+    line-height: 1.5;
+    padding: 8px 12px; /* 减小内边距 */
+    margin-top: 5px;
+    border-radius: 10px; /* 减小圆角 */
+    background-color: var(--input-bg-color);
+    display: none; 
+}
+    
+    /* 默认隐藏，通过 JS 控制显示 */
+    display: none; 
+}
+
+/* 
+ * ===============================================
+ * ===   “模拟转账”功能 CSS (V2 最终版)       ===
+ * ===============================================
+*/
+
+/* --- 转账卡片容器 (它自己就是一个 bubble-wrapper) --- */
+.transfer-card-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    align-items: flex-start; /* 角色发的靠左 */
+}
+.chat-message.user .transfer-card-wrapper {
+    align-items: flex-end; /* 用户发的靠右 */
+}
+
+/* --- 转账卡片本身 --- */
+.transfer-card {
+    /* 核心：应用您全局的毛玻璃样式 */
+    background: var(--frosted-glass-bg);
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border: var(--frosted-glass-border);
+
+    border-radius: var(--widget-border-radius);
+    padding: 15px;
+    width: 280px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: opacity 0.3s ease, background 0.3s ease; /* 增加 background 过渡 */
+}
+.chat-message.character .transfer-card {
+    color: var(--text-color);
+}
+.chat-message.user .transfer-card {
+    /* 核心：复用和用户聊天气泡一致的浅色背景，并添加毛玻璃效果 */
+    background: rgba(229, 229, 234, 0.8);
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border-color: transparent; /* 浅色背景下，边框可以更柔和 */
+    color: #000000;
+}
+
+/* 上半部分 */
+.transfer-top { display: flex; justify-content: space-between; align-items: center; }
+.transfer-info { display: flex; align-items: center; gap: 12px; }
+.transfer-info i { font-size: 32px; opacity: 0.8; }
+.transfer-title { font-size: 16px; font-weight: 500; }
+.transfer-amount { font-size: 28px; font-weight: 600; text-align: right; }
+.transfer-amount .currency { font-size: 16px; font-weight: 500; margin-left: 4px; opacity: 0.8; }
+
+/* 中间虚线 */
+.transfer-divider {
+    width: 100%;
+    height: 0;
+    border: none;
+    border-top: 2px dashed rgba(255, 255, 255, 0.3);
+    margin: 0;
+    padding: 0;
+}
+/* 用户发送的卡片的虚线颜色 */
+.chat-message.user .transfer-divider {
+    border-top-color: rgba(0, 0, 0, 0.3);
+}
+/* 【新增】浅色模式下，角色发送的卡片的虚线颜色 */
+body.light-mode .chat-message.character .transfer-divider {
+    border-top-color: rgba(0, 0, 0, 0.2);
+}
+
+/* 下半部分 (留言) */
+.transfer-memo { font-size: 14px; opacity: 0.8; }
+
+/* 【新增】底部状态文本的样式 */
+.transfer-status-text {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.8;
+    margin-top: -5px;
+}
+
+/* --- 交互状态 --- */
+/* 待处理状态 (双方通用) */
+.transfer-card.status-pending {
+    cursor: default; /* 默认不可点击 */
+}
+/* 只有角色发的待处理卡片，用户才能点 */
+.chat-message.character .transfer-card.status-pending {
+    cursor: pointer;
+}
+
+/* 已收款状态 */
+.transfer-card.status-accepted {
+    opacity: 0.7;
+    cursor: default;
+}
+
+/* 已退回状态 */
+.transfer-card.status-declined {
+    cursor: default;
+    background: rgba(128, 128, 128, 0.4); /* 灰色背景表示已失效 */
+}
+.chat-message.user .transfer-card.status-declined {
+    background: rgba(200, 200, 200, 0.6);
+}
+
+/* 
+ * ===============================================
+ * ===   “钱包”功能CSS (V2 - 浮窗+筛选版)       ===
+ * ===============================================
+*/
+
+/* --- 钱包浮窗的特殊尺寸 --- */
+#wallet-modal-content {
+    width: 95%;
+    max-width: 420px; /* 比普通弹窗稍宽 */
+    max-height: 85vh; /* 允许更高的高度 */
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- 钱包主内容容器 --- */
+#wallet-content-container {
+    padding: 15px 5px; /* 调整内边距 */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    /* 【核心】让内容区可以滚动 */
+    overflow-y: auto;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+/* --- 总资产卡片 (移除渐变，改为统一风格) --- */
+#total-assets-card {
+    flex-shrink: 0;
+    padding: 20px;
+    border-radius: var(--icon-border-radius);
+    background: var(--button-bg-color); /* 复用全局背景 */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.assets-header { font-size: 14px; opacity: 0.7; }
+.assets-balance { font-size: 32px; font-weight: 600; }
+
+/* --- 交易明细 --- */
+#transaction-history-section {
+    flex-grow: 1; display: flex; flex-direction: column; min-height: 0;
+}
+
+/* --- 【新增】筛选标签样式 --- */
+#transaction-filter-tabs {
+    display: flex;
+    background: var(--input-bg-color);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+.filter-tab {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-color);
+    opacity: 0.6;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.filter-tab.active {
+    background: var(--button-bg-color);
+    opacity: 1;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#transaction-list {
+    list-style: none; padding: 0; margin: 0;
+    overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+}
+#transaction-list .empty-placeholder { text-align: center; padding: 40px 20px; opacity: 0.6; }
+
+.transaction-item {
+    display: flex; align-items: center; padding: 12px;
+    background: var(--input-bg-color); /* 调整背景色以突出 */
+    border-radius: var(--icon-border-radius); gap: 15px;
+}
+
+.transaction-icon {
+    width: 38px; height: 38px; border-radius: 50%;
+    flex-shrink: 0; display: flex; justify-content: center; align-items: center; font-size: 20px;
+}
+.transaction-item.income .transaction-icon { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+.transaction-item.expense .transaction-icon { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+
+.transaction-details { flex-grow: 1; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.transaction-details .counterparty { font-size: 15px; font-weight: 500; }
+.transaction-details .timestamp { font-size: 12px; opacity: 0.6; }
+
+.transaction-amount { font-size: 15px; font-weight: 600; white-space: nowrap; }
+.transaction-item.income .transaction-amount { color: #2ecc71; }
+.transaction-item.expense .transaction-amount { color: #e74c3c; }
+
+/* 
+ * =======================================================
+ * ===   “星座运势”功能CSS (V5 - 最终布局修复版)       ===
+ * =======================================================
+*/
+
+/* --- 浮窗和包裹容器的样式 (保持不变) --- */
+#horoscope-modal-content { max-width: 380px; gap: 15px; }
+#horoscope-preview-container { min-height: 150px; display: flex; justify-content: center; align-items: center; color: var(--text-color); opacity: 0.5; }
+.horoscope-card-wrapper { display: flex; flex-direction: column; gap: 3px; }
+.chat-message.user .horoscope-card-wrapper { align-items: flex-end; }
+
+/* --- 【核心修正】运势卡片本身的样式 --- */
+.horoscope-card {
+    width: 320px;
+    padding: 20px;
+    box-sizing: border-box;
+    border-radius: var(--widget-border-radius);
+    background: var(--frosted-glass-bg);
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border: var(--frosted-glass-border);
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    gap: 18px; /* <-- 修改：增大整体垂直间距 */
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+/* --- 【核心修正】卡片内部所有元素的样式，恢复布局和间距 --- */
+.horoscope-card .horoscope-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 12px; /* 增加头部下方的间距 */
+    border-bottom: 1px solid var(--frosted-glass-border);
+}
+.horoscope-card .horoscope-title { font-size: 16px; font-weight: 600; }
+.horoscope-card .horoscope-zodiac { opacity: 0.8; }
+
+.horoscope-card .horoscope-rating { font-size: 18px; letter-spacing: 2px; }
+.horoscope-card .horoscope-rating .filled { color: #FFD700; } /* 金色星星 */
+
+/* 【关键】恢复分类运势的Flex布局 */
+.horoscope-card .horoscope-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px; /* 设置每行之间的垂直间距 */
+}
+.horoscope-card .fortune-item {
+    display: flex; /* 让标签和描述在同一行显示 */
+    align-items: flex-start;
+    gap: 8px; /* 设置标签和描述之间的水平间距 */
+    font-size: 14px;
+    line-height: 1.5; /* 增加行高，防止文字太挤 */
+}
+.horoscope-card .fortune-item .label {
+    font-weight: 500;
+    opacity: 0.7;
+    flex-shrink: 0; /* 防止标签被压缩 */
+}
+
+.horoscope-card .horoscope-charm {
+    font-size: 14px;
+    text-align: center;
+    padding: 10px; /* 增加内边距 */
+    background: var(--input-bg-color);
+    border-radius: 8px;
+}
+
+.horoscope-card .horoscope-quote {
+    font-size: 14px;
+    font-style: italic;
+    line-height: 1.6;
+    padding-top: 15px; /* 增加寄语上方的间距 */
+    margin-top: 5px;
+    opacity: 0.9;
+    border-top: 1px dashed var(--frosted-glass-border);
+}
+
+/* 
+ * ===============================================
+ * ===   “心事”功能专属CSS (V2 - 精装版)       ===
+ * ===============================================
+*/
+
+/* --- 写心事页面的整体布局微调 --- */
+#secrets-creation-page .action-buttons {
+    padding: 20px 15px !important; /* 增大按钮区域的上下边距 */
+}
+
+/* --- 【核心】“信笺卡片”容器样式 --- */
+.secret-writing-card {
+    flex-grow: 1; /* 让卡片填满中间的可用空间 */
+    min-height: 0; /* flex布局中的重要修复 */
+    
+    /* 核心：应用您全局的毛玻璃效果！ */
+    background: var(--frosted-glass-bg);
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border: var(--frosted-glass-border);
+    
+    border-radius: var(--widget-border-radius); /* 保持圆角统一 */
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+    
+    padding: 20px;
+    display: flex;
+    flex-direction: column; /* 内部元素垂直排列 */
+    gap: 15px; /* 元素之间的间距 */
+}
+
+/* --- 标题输入框样式 --- */
+#secret-title-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--frosted-glass-border); /* 只有一条下划线 */
+    color: var(--text-color);
+    font-size: 20px; /* 更大的字号 */
+    font-weight: 600;
+    padding: 10px 5px;
+    flex-shrink: 0; /* 防止被压缩 */
+}
+#secret-title-input:focus {
+    outline: none;
+    border-bottom-color: var(--text-color);
+}
+#secret-title-input::placeholder {
+    color: var(--text-color);
+    opacity: 0.5;
+}
+
+/* --- 分隔线样式 (修正版) --- */
+.secret-divider {
+    border: none;
+    /* 核心修正：直接定义边框颜色，不再使用变量 */
+    border-top: 1px solid rgba(255, 255, 255, 0.1); 
+    margin: -5px 0;
+    flex-shrink: 0;
+}
+
+/* 【新增】为浅色模式下的分割线也定义一个颜色 */
+body.light-mode .secret-divider {
+    border-top-color: rgba(0, 0, 0, 0.1);
+}
+
+/* --- 内容输入框样式 (保留书写感) --- */
+#secret-content-input {
+    flex-grow: 1; /* 填满剩余空间 */
+    background: transparent;
+    border: none;
+    resize: none;
+    color: var(--text-color);
+    font-size: 16px;
+    line-height: 1.7;
+    font-family: "仿宋", "KaiTi", "BiauKai", "楷体", serif;
+}
+#secret-content-input:focus {
+    outline: none;
+}
+#secret-content-input::placeholder {
+    color: var(--text-color);
+    opacity: 0.5;
+}
+
+/* --- 【新增】情感印记/心情选择器样式 --- */
+.mood-selector {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 15px;
+    border-top: 1px solid var(--frosted-glass-border);
+    flex-shrink: 0;
+}
+.mood-item {
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.2s, transform 0.2s;
+}
+.mood-item:hover {
+    opacity: 0.7;
+    transform: scale(1.1);
+}
+.mood-item.active {
+    opacity: 1;
+    transform: scale(1.2);
+    color: #799181; /* 激活时使用高亮色 */
+}
+
+/* --- 【核心修正】发布按钮样式 --- */
+#publish-secret-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    
+    /* 关键：使用您全局的按钮背景色变量！ */
+    background-color: var(--button-bg-color);
+    color: var(--text-color);
+    
+    transition: transform 0.2s;
+}
+#publish-secret-btn:hover {
+    transform: scale(1.02);
+}
+
+/* 
+ * =======================================================
+ * ===   “心事卡片”CSS (V2 - 左右布局版)              ===
+ * =======================================================
+*/
+
+/* --- 单张心事卡片的容器样式 --- */
+.secret-card {
+    /* 不再使用全局毛玻璃，而是自定义背景 */
+    border-radius: var(--icon-border-radius);
+    padding: 15px 20px;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    max-width: 100%; /* 卡片最大宽度为屏幕的85% */
+    align-self: center;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.secret-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+}
+
+/* --- 【核心】区分用户和角色的样式 (V3 - 专属颜色版) --- */
+
+/* 用户发布的卡片 (靠右，使用全新的专属颜色) */
+.secret-card.user {
+    
+    /* 关键：使用我们新定义的专属颜色变量！ */
+    background-color: var(--user-secret-card-bg); 
+    
+    /* 为了保证在两种背景下文字都清晰，我们固定文字颜色 */
+    color: var(--text-color); /* 在深色模式下是白色，浅色模式下是黑色，完美适配 */
+    
+    /* 边框也跟随文字颜色变化 */
+    border: 1px solid rgba(var(--text-color-rgb, 255, 255, 255), 0.1);
+}
+/* 我们需要为 --text-color 创建一个RGB版本，方便设置透明度 */
+:root { --text-color-rgb: 255, 255, 255; }
+body.light-mode { --text-color-rgb: 0, 0, 0; }
+
+.secret-card.user .secret-card-header,
+.secret-card.user .secret-card-footer {
+    border-color: rgba(var(--text-color-rgb), 0.15); /* 分割线颜色也动态变化 */
+}
+
+/* 角色发布的卡片 (靠左，完全复用系统现有的毛玻璃样式) */
+.secret-card.character {
+    
+    /* 关键：使用您系统全局的毛玻璃背景变量 */
+    background-color: var(--frosted-glass-bg); 
+    color: var(--text-color);
+    border: var(--frosted-glass-border);
+}
+
+.secret-card.character .secret-card-header,
+.secret-card.character .secret-card-footer {
+    border-color: var(--frosted-glass-border);
+}
+
+/* --- 卡片内部结构 (保持不变，但颜色会根据父级变化) --- */
+.secret-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid; /* 颜色由父级决定 */
+    padding-bottom: 10px;
+}
+.secret-card-title { font-weight: 600; font-size: 16px; }
+.secret-card-header i { font-size: 22px; opacity: 0.8; }
+.secret-card-preview {
+    margin: 0; font-size: 14px; line-height: 1.6; opacity: 0.9;
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;  
+    overflow: hidden;
+}
+.secret-card-footer {
+    padding-top: 10px; text-align: right; font-size: 12px; opacity: 0.7;
+    /* 【新增】给底部也加上分割线，更有包裹感 */
+    border-top: 1px solid; 
+}
+
+/* 
+ * =======================================================
+ * ===   新增：“心事详情页浮窗” 的专属CSS样式         ===
+ * =======================================================
+*/
+
+/* --- 原始心事内容的容器样式 --- */
+#original-secret-container {
+    background: var(--input-bg-color); /* 使用一个柔和的背景色 */
+    border-radius: var(--icon-border-radius);
+    padding: 15px 20px;
+    /* 这里可以复用 .secret-card 的一些内部样式 */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+/* 我们会用JS把之前设计的卡片内容直接放进来 */
+
+
+/* --- 互动评论区的容器 --- */
+#secret-comments-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* 增大每条回应之间的间距，更有呼吸感 */
+}
+
+/* --- 【核心】单条回应/批注的样式 --- */
+.secret-comment-item {
+    display: flex;
+    flex-direction: column; /* 头部和内容垂直排列 */
+    gap: 8px;
+    
+    /* 用左侧的装饰性边框来区分作者，而非左右布局 */
+    padding-left: 15px;
+    border-left: 3px solid; /* 颜色将在下面定义 */
+}
+
+/* --- 区分用户和角色的边框颜色 --- */
+/* 用户的回应，使用您喜欢的 Water Moss 色 */
+.secret-comment-item.user {
+    border-left-color: #799181;
+}
+/* 角色的回应，使用一个柔和的、中性的颜色 */
+.secret-comment-item.character {
+    border-left-color: rgba(var(--text-color-rgb), 0.4);
+}
+
+/* --- 回应的头部：作者 + 时间 --- */
+.secret-comment-header {
+    display: flex;
+    justify-content: space-between; /* 名字靠左，时间靠右 */
+    align-items: center;
+}
+.secret-comment-author {
+    font-weight: 600;
+    font-size: 15px;
+}
+.secret-comment-timestamp {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+/* --- 回应的文本内容 --- */
+.secret-comment-text {
+    font-size: 15px;
+    line-height: 1.7; /* 保持和书写时一致的舒适行距 */
+    opacity: 0.9;
+    /* 【灵魂】同样使用书写感的字体 */
+    font-family: "仿宋", "KaiTi", "BiauKai", "楷体", serif;
+}
+
+/* --- 底部输入栏的容器样式 --- */
+#secret-details-modal .chat-input-bar {
+    flex-shrink: 0;
+    padding: 20px;
+    
+    /* --- 【最终、决定性修正】--- */
+    /* 使用 !important 强制将背景设置为透明，覆盖任何通用规则！*/
+    background: transparent !important; 
+    
+    /* 我们也顺便强化一下 backdrop-filter，确保它不被通用规则干扰 */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 0 0 var(--widget-border-radius) var(--widget-border-radius);
+    
+    /* 【新增】确保顶部的边框也被移除 */
+    border-top: none !important;
+}
+
+/* --- 输入框本身的样式 --- */
+#secret-details-modal #secret-comment-input {
+    flex-grow: 1;
+    border: none;
+    resize: none;
+    font-size: 15px;
+    line-height: 1.4;
+    
+    /* 核心修正2: 将高度从固定的 48px 改为自适应，由内边距决定 */
+    height: auto; 
+    padding: 14px 18px; /* 这是决定最终高度的关键 */
+
+    border-radius: 12px;
+    
+    background-color: var(--frosted-glass-bg);
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    
+    border: 1.5px solid var(--frosted-glass-border); 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+
+    color: var(--text-color);
+}
+#secret-details-modal #secret-comment-input:focus {
+    outline: none;
+    border-color: rgba(var(--text-color-rgb), 0.3);
+}
+
+/* --- 发送按钮的样式 (保持不变，已经很完美了) --- */
+#secret-details-modal #send-secret-comment-btn {
+    font-size: 28px; /* 轻微减小图标尺寸，让它在圆形背景里更协调 */
+    color: var(--text-color);
+    opacity: 0.9;
+    
+    /* --- 【核心修正】从实色背景改为透明毛玻璃 --- */
+    background: transparent; /* 移除旧的实色背景 */
+    
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    transition: transform 0.2s, background 0.2s; /* 增加 background 过渡 */
+    
+    /* 我们不再需要 flex-shrink: 0，因为按钮现在是 button 元素 */
+}
+
+/* 【新增】为按钮添加鼠标悬浮时的背景高亮效果 */
+#secret-details-modal #send-secret-comment-btn:hover {
+    opacity: 1;
+    transform: scale(1.05);
+    /* 鼠标悬浮时，出现一个淡淡的毛玻璃背景作为反馈 */
+    background: var(--button-bg-color); 
+}
+
+/* 
+ * =======================================================
+ * ===   新增：“心事卡片删除按钮” 的专属CSS样式      ===
+ * =======================================================
+*/
+
+/* --- 让卡片本身变成一个相对定位的容器 --- */
+.secret-card {
+    position: relative; /* 这是让内部绝对定位生效的关键 */
+    padding-bottom: 40px; /* 为底部的删除按钮和时间戳留出更多空间 */
+}
+
+/* --- 删除按钮的样式 --- */
+.delete-secret-btn {
+    position: absolute; /* 绝对定位，相对于 .secret-card */
+    bottom: 15px;       /* 距离卡片底部15px */
+    left: 20px;         /* 距离卡片左侧20px */
+    
+    font-size: 20px;
+    color: var(--text-color);
+    opacity: 0.5; /* 默认状态下稍微透明，不那么抢眼 */
+    cursor: pointer;
+    
+    transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease;
+}
+
+/* 鼠标悬浮时，图标变清晰、变大、变红 */
+.delete-secret-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    color: #ff6b6b; /* 危险操作的红色 */
+}
+
+/* 
+ * =======================================================
+ * ===   “双向批注”功能CSS (V1)                       ===
+ * =======================================================
+*/
+
+/* --- 回应头部的右侧操作区 --- */
+.secret-comment-header .comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* 让回复按钮和时间戳之间有间距 */
+    margin-left: auto; /* 【关键】让整个操作区自动靠右 */
+}
+
+/* --- 回复按钮的样式 --- */
+.reply-to-comment-btn {
+    font-size: 18px;
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.2s, color 0.2s;
+}
+.reply-to-comment-btn:hover {
+    opacity: 1;
+    color: #799181; /* 使用您喜欢的 Water Moss 作为高亮色 */
+}
+
+/* --- 【核心】用户回应的专属右边框样式 --- */
+.secret-comment-item.user {
+    /* 移除左边框 */
+    border-left: none; 
+    
+    /* 增加右边框 */
+    padding-left: 0; /* 移除左内边距 */
+    padding-right: 15px;
+    border-right: 3px solid #799181; /* 使用 Water Moss 色 */
+}
+
     </style>
 </head>
 
@@ -1805,13 +2999,23 @@ body.light-mode .story-item.has-unread .story-avatar {
     </div>
     	
                 <div id="memories-pane" class="content-pane"><div class="coming-soon-placeholder"><i class="ri-tools-line"></i><p>回忆功能 正在施工中...</p></div></div>
-                <div id="wishes-pane" class="content-pane"><div class="coming-soon-placeholder"><i class="ri-tools-line"></i><p>心愿功能 正在施工中...</p></div></div>
+                <div id="secrets-pane" class="content-pane">
+        <!-- 这是我们为心事列表准备的专属容器 -->
+        <div id="secrets-list-container">
+            <p style="text-align:center; opacity:0.7; padding: 50px 20px;">
+                你的秘密花园里还没有任何心事...<br>点击右上角的“+”号，写下第一条吧。
+            </p>
+        </div>
+    </div>
             </div>
             <nav class="chat-tab-bar">
                 <div class="tab-item active" data-target="dialogue-pane" data-title="对话"><i class="ri-message-3-line"></i><span>对话</span></div>
                 <div class="tab-item" data-target="moments-pane" data-title="动态"><i class="ri-stack-line"></i><span>动态</span></div>
                 <div class="tab-item" data-target="memories-pane" data-title="回忆"><i class="ri-time-line"></i><span>回忆</span></div>
-                <div class="tab-item" data-target="wishes-pane" data-title="心愿"><i class="ri-star-smile-line"></i><span>心愿</span></div>
+                <div class="tab-item" data-target="secrets-pane" data-title="心事">
+        <i class="ri-lock-line"></i> <!-- 更换了更合适的图标 -->
+        <span>心事</span>
+    </div>
             </nav>
         </div>
         <!-- 聊天对话页 -->
@@ -1937,8 +3141,44 @@ body.light-mode .story-item.has-unread .story-avatar {
                 <button id="delete-conversation-btn" class="danger-button">删除此对话</button>
             </div>
         </div>
-    </div>
+    
 
+<!-- vvv 在这里粘贴全新的“写心事”页面 vvv -->
+        <div id="secrets-creation-page" class="app-page">
+            <!-- 1. 页头 (新增了一个心形图标) -->
+            <div class="page-header">
+                <i class="ri-arrow-left-s-line left-icon back-button" data-target="chat-main-page"></i>
+                <h2>写下心事</h2>
+            </div>
+
+            <!-- 2. 【核心】全新的“信笺卡片”容器 -->
+            <div class="secret-writing-card">
+                <!-- 2a. 新增：标题输入框 -->
+                <input type="text" id="secret-title-input" placeholder="给这件心事起个标题吧 (可选)">
+                
+                <!-- 2b. 分隔线，增加层次感 -->
+                <hr class="secret-divider">
+
+                <!-- 2c. 内容输入区 -->
+                <textarea id="secret-content-input" placeholder="在这里写下你的心事..."></textarea>
+
+                <!-- 2d. 新增：情感印记/心情选择器 -->
+                <div class="mood-selector">
+                    <div class="mood-item" data-mood="happy"><i class="ri-emotion-happy-line"></i></div>
+                    <div class="mood-item" data-mood="sad"><i class="ri-emotion-unhappy-line"></i></div>
+                    <div class="mood-item" data-mood="love"><i class="ri-heart-add-line"></i></div>
+                    <div class="mood-item" data-mood="thoughtful"><i class="ri-question-line"></i></div>
+                    <div class="mood-item" data-mood="normal"><i class="ri-emotion-normal-line"></i></div>
+                </div>
+            </div>
+
+            <!-- 3. 底部发布按钮 (保持不变，但样式会更新) -->
+            <div class="action-buttons" style="padding: 10px 0; flex-shrink: 0;">
+                <button id="publish-secret-btn" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 16px;">发布</button>
+            </div>
+        </div>
+      </div>
+        <!-- ^^^ 新页面到此结束 ^^^ -->
 <!-- vvv 在 app-chat 容器的【下方】，粘贴这个【全新的】图书馆应用 vvv -->
 <div id="library-app" class="app-navigator">
     <!-- 页面1: 图书馆主页，显示所有书的卡片列表 -->
@@ -2297,7 +3537,223 @@ body.light-mode .story-item.has-unread .story-avatar {
     </div>
 </div>
 <!-- ^^^ 表情包管理弹窗到此结束 ^^^ -->
-    
+<!-- (粘贴在 <body> 的最底部) -->
+
+<!-- vvv 【全新】模拟视频通话浮层 vvv -->
+<div id="video-call-overlay">
+<!-- 左上角通话信息 -->
+<div class="video-call-header">
+    <img id="video-call-character-avatar-small" src="">
+    <div class="video-call-time-info">
+        <span id="video-call-timer-label">Call time</span>
+        <span id="video-call-timer">00:00</span>
+    </div>
+</div>
+    <!-- 右上角的用户小窗 -->
+    <div class="video-call-user-view">
+        <img id="video-call-user-avatar" src="">
+    </div>
+
+  <!-- 中间的字幕和提示区域 -->
+<div class="video-call-subtitles-container">
+    <div class="subtitles-box">
+        <div id="video-call-status-text">视频连接中...</div>
+        <div id="video-call-script-container">
+            <!-- “剧本”将由JS动态填充到这里 -->
+        </div>
+    </div>
+    <!-- vvv 把“说话中”提示移到字幕框的外面 vvv -->
+    <div id="video-call-typing-indicator">对方正在说话...</div>
+    <!-- ^^^ 移动结束 ^^^ -->
+</div>
+
+    <!-- 底部的控制栏 -->
+    <div class="video-call-controls">
+        <input type="text" id="video-call-input" placeholder="输入文字..." disabled>
+       <button id="video-call-send-btn" class="icon-btn">
+        <i class="ri-chat-forward-line"></i>
+    </button>
+        <button id="video-call-action-btn">
+            <span>取消</span>
+        </button>
+    </div>
+</div>
+<!-- ^^^ 模拟视频通话浮层到此结束 ^^^ -->    
+
+<!-- vvv 【全新】视频来电通知横幅 vvv -->
+<div id="incoming-call-banner">
+    <div class="call-banner-content">
+        <!-- 左侧信息区 -->
+        <div class="caller-info">
+            <div id="caller-avatar" class="chat-avatar"></div>
+            <div class="caller-details">
+                <span id="caller-name"></span>
+                <span id="call-type">视频通话</span>
+            </div>
+        </div>
+        <!-- 右侧按钮区 -->
+        <div class="call-actions">
+            <button id="decline-call-btn" class="call-action-btn decline">
+                <i class="ri-phone-fill"></i>
+            </button>
+            <button id="accept-call-btn" class="call-action-btn accept">
+                <i class="ri-vidicon-fill"></i>
+            </button>
+        </div>
+    </div>
+</div>
+<!-- ^^^ 视频来电通知横幅到此结束 ^^^ -->
+
+<!-- vvv 【全新】发送语音消息的模态框 vvv -->
+<div id="voice-message-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>发送语音消息</h3>
+            <i id="close-voice-modal-btn" class="ri-close-line"></i>
+        </div>
+        <div class="form-group">
+            <label for="voice-text-input">请输入你想“说”的话：</label>
+            <textarea id="voice-text-input" rows="5" placeholder="这里的文字将被转换成一条语音消息..."></textarea>
+        </div>
+        <div class="action-buttons">
+            <button id="cancel-voice-message-btn">取消</button>
+            <button id="send-voice-message-btn">发送</button>
+        </div>
+    </div>
+</div>
+<!-- ^^^ 语音消息模态框到此结束 ^^^ -->
+
+<!-- vvv 【全新】发起转账的模态框 vvv -->
+<div id="transfer-modal" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>发起转账</h3>
+            <i id="close-transfer-modal-btn" class="ri-close-line"></i>
+        </div>
+        <div class="form-group">
+            <label for="transfer-amount-input">转账金额</label>
+            <input type="number" id="transfer-amount-input" placeholder="0.00">
+        </div>
+        <div class="form-group">
+            <label for="transfer-memo-input">留言 (可选)</label>
+            <input type="text" id="transfer-memo-input" placeholder="说点什么吧...">
+        </div>
+        <div class="action-buttons">
+            <button id="cancel-transfer-btn">取消</button>
+            <button id="confirm-transfer-btn">确认转账</button>
+        </div>
+    </div>
+</div>
+<!-- ^^^ 转账模态框到此结束 ^^^ -->
+
+<!-- vvv 【全新】钱包应用 (已修改为浮窗模式) vvv -->
+<div id="wallet-modal" class="modal-overlay">
+    <!-- 【核心修改】将页面结构改为浮窗结构 -->
+    <div class="modal-content" id="wallet-modal-content">
+        <!-- 1. 浮窗页头 -->
+        <div class="modal-header">
+            <h3>我的钱包</h3>
+            <i id="close-wallet-modal-btn" class="ri-close-line"></i>
+        </div>
+
+        <!-- 2. 内容区 -->
+        <div id="wallet-content-container">
+            <!-- 2a. 总资产卡片 (保持不变) -->
+            <div id="total-assets-card">
+                <div class="assets-header">
+                    <span>总资产 (信用点)</span>
+                </div>
+                <div id="wallet-balance" class="assets-balance">
+                    ¥ 0.00
+                </div>
+            </div>
+
+            <!-- 2b. 交易明细 -->
+            <div id="transaction-history-section">
+                <!-- 【新增】明细筛选标签 -->
+                <div id="transaction-filter-tabs">
+                    <button class="filter-tab active" data-filter="all">全部</button>
+                    <button class="filter-tab" data-filter="income">收入</button>
+                    <button class="filter-tab" data-filter="expense">支出</button>
+                </div>
+                <ul id="transaction-list">
+                    <!-- 交易记录将由JS动态填充 -->
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ^^^ 钱包应用到此结束 ^^^ -->
+
+<!-- v-v-v 【全新】星座运势模态框 v-v-v -->
+<div id="horoscope-modal" class="modal-overlay">
+    <div class="modal-content" id="horoscope-modal-content">
+        <div class="modal-header">
+            <h3>今日星座运势</h3>
+            <i id="close-horoscope-modal-btn" class="ri-close-line"></i>
+        </div>
+        <div class="form-group">
+            <label for="horoscope-select">请选择你的星座</label>
+            <select id="horoscope-select">
+                <option value="白羊座">♈ 白羊座</option>
+                <option value="金牛座">♉ 金牛座</option>
+                <option value="双子座">♊ 双子座</option>
+                <option value="巨蟹座">♋ 巨蟹座</option>
+                <option value="狮子座">♌ 狮子座</option>
+                <option value="处女座">♍ 处女座</option>
+                <option value="天秤座">♎ 天秤座</option>
+                <option value="天蝎座">♏ 天蝎座</option>
+                <option value="射手座">♐ 射手座</option>
+                <option value="摩羯座">♑ 摩羯座</option>
+                <option value="水瓶座">♒ 水瓶座</option>
+                <option value="双鱼座">♓ 双鱼座</option>
+            </select>
+        </div>
+        <button id="query-horoscope-btn" class="action-buttons" style="width:100%; justify-content:center;">查询运势</button>
+
+        <!-- 运势卡片预览区 -->
+        <div id="horoscope-preview-container">
+            <!-- 生成的卡片将显示在这里 -->
+        </div>
+        
+        <div class="action-buttons">
+            <button id="cancel-horoscope-btn">取消</button>
+            <button id="send-horoscope-card-btn" disabled>发送</button>
+        </div>
+    </div>
+</div>
+<!-- ^^^ 星座运势模态框到此结束 ^^^ -->
+<!-- vvv【全新的】心事详情浮窗 vvv -->
+<div id="secret-details-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 420px; max-height: 85vh; display: flex; flex-direction: column;">
+        <!-- 1. 浮窗页头 -->
+        <div class="modal-header">
+            <h3>心事详情</h3>
+            <i id="close-secret-details-btn" class="ri-close-line"></i>
+        </div>
+
+        <!-- 2. 内容区 (可滚动) -->
+        <div class="content" style="flex-grow: 1; overflow-y: auto; padding: 15px;">
+            <!-- 2a. 原始心事内容将显示在这里 -->
+            <div id="original-secret-container"></div>
+            
+            <!-- 2b. 分隔线 -->
+            <hr style="border: none; border-top: 1px solid var(--frosted-glass-border); margin: 20px 0;">
+
+            <!-- 2c. 互动评论区 -->
+            <div id="secret-comments-container">
+                <!-- 评论将由JS动态填充 -->
+            </div>
+        </div>
+
+        <!-- 3. 底部输入栏 -->
+        <div class="chat-input-bar" style="border-radius: 0 0 var(--widget-border-radius) var(--widget-border-radius);">
+            <textarea id="secret-comment-input" placeholder="输入你的回应..." rows="1" style="border-radius: 22px;"></textarea>
+            <button id="send-secret-comment-btn" class="icon-btn"><i class="ri-mail-check-line"></i></button>
+        </div>
+    </div>
+</div>
+<!-- ^^^ 新浮窗到此结束 ^^^ -->
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
 
@@ -2307,7 +3763,7 @@ body.light-mode .story-item.has-unread .story-avatar {
 
         const CONSTANTS = {
     DB_NAME: 'MyDesktopDB',
-    DB_VERSION: 6, // <-- 【核心改动】版本号提升
+    DB_VERSION: 8, // <-- 【核心改动】版本号提升
        MESSAGES_PER_PAGE: 30,
     STORE_NAMES: {
         API_PRESETS: 'api_presets',
@@ -2323,7 +3779,9 @@ body.light-mode .story-item.has-unread .story-avatar {
         MOMENTS: 'moments',               // 动态表 (存放快拍和日常)
         LIKES: 'likes',                   // 点赞表
         COMMENTS: 'comments',             // 评论表
-        PENDING_ACTIONS: 'pending_actions'  // AI待办任务表
+        PENDING_ACTIONS: 'pending_actions',  // AI待办任务表
+               WALLET_TRANSACTIONS: 'wallet_transactions', // <-- 新增这行
+SECRETS: 'secrets' // <-- 【新增】心事数据表
     },
     BOOK_CATEGORIES: {
         behavior_core: 'AI行为标准',
@@ -2396,8 +3854,13 @@ userLikedMomentIds: new Set(),
 storyStartTime: null,
 storyPauseTimestamp: null,
 storyTimeRemaining: null,
+callTimerIntervalId: null,
 activeStickerMap: new Map(), // 用于存储当前聊天会话所有可用的表情
 userStickersForManager: new Map(), // 用于暂存管理面板中的表情状态
+pendingHoroscopeData: null, // <-- 新增这行
+currentViewingSecretId: null, // 用于记录当前打开的“心事主题帖”的ID
+replyingToCommentId: null,    // 用于记录正在回复的“某条批注”的ID
+
         };
 
         const DOM = {
@@ -2621,6 +4084,58 @@ chatWallpaperUploader: document.getElementById('chat-wallpaper-uploader'),
     chatFunctionBtn: document.getElementById('chat-function-btn'),
     chatFunctionPanel: document.getElementById('chat-function-panel'),
     chatImageUploader: document.getElementById('chat-image-uploader'),
+    funcSendVideo: document.getElementById('func-send-video'),
+    videoCallOverlay: document.getElementById('video-call-overlay'),
+    videoCallUserAvatar: document.getElementById('video-call-user-avatar'),
+    videoCallStatusText: document.getElementById('video-call-status-text'),
+    videoCallInput: document.getElementById('video-call-input'),
+    videoCallActionBtn: document.getElementById('video-call-action-btn'),
+    videoCallSendBtn: document.getElementById('video-call-send-btn'),
+    videoCallHeader: document.querySelector('.video-call-header'),
+    videoCallCharacterAvatarSmall: document.getElementById('video-call-character-avatar-small'),
+    videoCallTimer: document.getElementById('video-call-timer'),
+    videoCallTypingIndicator: document.getElementById('video-call-typing-indicator'),
+    videoCallScriptContainer: document.getElementById('video-call-script-container'),
+    funcVoiceInput: document.getElementById('func-voice-input'),
+    voiceMessageModal: document.getElementById('voice-message-modal'),
+    closeVoiceModalBtn: document.getElementById('close-voice-modal-btn'),
+    cancelVoiceMessageBtn: document.getElementById('cancel-voice-message-btn'),
+    sendVoiceMessageBtn: document.getElementById('send-voice-message-btn'),
+    voiceTextInput: document.getElementById('voice-text-input'),
+    funcTransfer: document.getElementById('func-transfer'),
+    transferModal: document.getElementById('transfer-modal'),
+    closeTransferModalBtn: document.getElementById('close-transfer-modal-btn'),
+    cancelTransferBtn: document.getElementById('cancel-transfer-btn'),
+    confirmTransferBtn: document.getElementById('confirm-transfer-btn'),
+    transferAmountInput: document.getElementById('transfer-amount-input'),
+    transferMemoInput: document.getElementById('transfer-memo-input'),
+    walletModal: document.getElementById('wallet-modal'),
+    funcWallet: document.getElementById('func-wallet'),
+    closeWalletModalBtn: document.getElementById('close-wallet-modal-btn'),
+    walletBalance: document.getElementById('wallet-balance'),
+    transactionList: document.getElementById('transaction-list'),
+    transactionFilterTabs: document.getElementById('transaction-filter-tabs'),
+    funcHoroscope: document.getElementById('func-horoscope'),
+    horoscopeModal: document.getElementById('horoscope-modal'),
+    closeHoroscopeModalBtn: document.getElementById('close-horoscope-modal-btn'),
+    horoscopeSelect: document.getElementById('horoscope-select'),
+    queryHoroscopeBtn: document.getElementById('query-horoscope-btn'),
+    horoscopePreviewContainer: document.getElementById('horoscope-preview-container'),
+    cancelHoroscopeBtn: document.getElementById('cancel-horoscope-btn'),
+    sendHoroscopeCardBtn: document.getElementById('send-horoscope-card-btn'),
+    secretsCreationPage: document.getElementById('secrets-creation-page'),
+        secretTitleInput: document.getElementById('secret-title-input'),
+        secretContentInput: document.getElementById('secret-content-input'),
+        moodSelector: document.querySelector('.mood-selector'),
+        publishSecretBtn: document.getElementById('publish-secret-btn'),
+        secretsListContainer: document.getElementById('secrets-list-container'),
+        // 新增详情页的引用
+        secretDetailsModal: document.getElementById('secret-details-modal'),
+        closeSecretDetailsBtn: document.getElementById('close-secret-details-btn'),
+        originalSecretContainer: document.getElementById('original-secret-container'),
+        secretCommentsContainer: document.getElementById('secret-comments-container'),
+        secretCommentInput: document.getElementById('secret-comment-input'),
+        sendSecretCommentBtn: document.getElementById('send-secret-comment-btn'),
 };
 
         // =======================================================
@@ -2661,7 +4176,19 @@ const allStores = {
     [CONSTANTS.STORE_NAMES.PENDING_ACTIONS]: { 
         options: { keyPath: 'id', autoIncrement: true }, 
         indexes: { 'by_status_and_time': ['status', 'executeAt'] } // 复合索引，用于高效查询到期任务
-    }
+    },
+[CONSTANTS.STORE_NAMES.WALLET_TRANSACTIONS]: {
+    options: { keyPath: 'id', autoIncrement: true },
+    indexes: { 'by_timestamp': 'timestamp' } // 按时间索引，方便排序
+    },
+[CONSTANTS.STORE_NAMES.SECRETS]: {
+                                options: { keyPath: 'id', autoIncrement: true },
+                                // 为 parentId 和 authorType 创建索引，方便我们快速查询
+                                indexes: { 
+                         'by_parentId': 'parentId',
+                                    'by_authorType': 'authorType'
+                                }
+                            }
 };
 
 for (const storeName in allStores) {
@@ -2819,7 +4346,34 @@ async getDuePendingActions() {
 
         // 等待整个事务完成
         return tx.done;
-    }
+    },
+    
+    /**
+             * 【全新】级联删除一条心事及其所有回应
+             * @param {number} secretId - 要删除的“主题帖”心事的ID
+             */
+            async deleteSecretAndResponses(secretId) {
+                const db = await this.dbPromise;
+                
+                // 1. 开启一个涉及 'secrets' 表的读写事务
+                const tx = db.transaction(CONSTANTS.STORE_NAMES.SECRETS, 'readwrite');
+                
+                // 2. 首先，直接删除“主题帖”本身
+                await tx.store.delete(secretId);
+
+                // 3. 然后，使用我们为 parentId 创建的索引，找到所有相关的回应
+                const index = tx.store.index('by_parentId');
+                let cursor = await index.openCursor(secretId);
+                
+                // 4. 遍历并删除所有找到的回应
+                while (cursor) {
+                    cursor.delete(); // 删除当前游标指向的记录
+                    cursor = await cursor.continue(); // 移动到下一个
+                }
+                
+                // 5. 等待整个事务完成
+                return tx.done;
+            }
         };
 
         const apiHelper = {
@@ -3285,7 +4839,142 @@ createSocialDecisionPrompt(dossier, moment, userComment) {
                 ];
             },
 // ^^^ 替换到此结束 ^^^
+        createVideoCallPrompt(dossier, userInput) {
+            const systemPrompt = `
+# 核心使命：进行一场沉浸式、剧本化的模拟视频通话
+你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
+你的任务是与我进行一场模拟视频通话。你的所有回复都必须以一种“剧本”的形式呈现，用来驱动UI显示。
+
+# 表演的基石：你们的关系与记忆
+- **你眼中的“我”**: ${dossier.user.background || '你的灵魂伴侣。'}
+- **你们的共同记忆**: [之前的聊天内容是你们共同的记忆]
+
+# 输出规则：【铁律】
+你必须、且只能返回一个JSON数组，绝对不能包含任何额外的解释或文字。数组中的每一个对象都代表一条“字幕”。
+
+## JSON对象结构:
+{
+  "type": "[必须是 'action', 'thought', 或 'dialogue' 中的一个]",
+  "content": "[字幕的文本内容]"
+}
+
+## “type”类型详解与内容格式要求:
+1.  **"action"**: 用于环境描写或角色的动作、表情。
+    - **内容要求**: 直接输出描述性文字，绝对不能使用任何括号()。
+    - **示例**: "他/她所在的房间光线很暗，只有一盏台灯亮着，窗外似乎在下雨。"
+
+2.  **"thought"**: 用于角色的内心独白。
+    - **内容要求**: 必须用星号 * 将内心独白包裹起来。
+    - **示例**: "*终于能看到他/她了，真好...*"
+
+3.  **"dialogue"**: 用于角色的对话。
+    - **内容要求**: 必须用中文引号 “ ” 将对话内容包裹起来。
+    - **示例**: “喂？太好了，接通了。我还以为信号不好呢。”
+
+# 完整示例:
+[
+  { "type": "action", "content": "他/她听到你的声音，身体微微前倾，凑近了屏幕一些，脸上露出了微笑。" },
+  { "type": "thought", "content": "*终于能看到他/她了，真好...*" },
+  { "type": "dialogue", "content": "喂？太好了，接通了。我还以为信号不好呢。” }
+]
+
+---
+现在，请根据我的输入，开始你的表演。
+`;
+            const userPrompt = userInput || "视频通话刚刚接通，请说一句开场白。";
+
+            return [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt }
+            ];
+        },
     
+createHoroscopePrompt(dossier, zodiacSign) {
+    const systemPrompt = `
+# 使命：作为灵魂伴侣进行一次专属星座占卜
+你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
+你的任务是为你的伴侣（星座是【${zodiacSign}】）进行今日的运势解读。你的解读必须充满创意、带有情感，并完全符合你的人设。
+
+# 输出规则：【铁律】
+你必须、且只能返回一个JSON对象，绝对不能包含任何额外的解释或文字。
+
+{
+  "overall_rating": "[数字] 1-5之间的整数，代表今日综合运势的星级。",
+  "love_fortune": "[字符串] 一句关于爱情运势的简短描述。",
+  "work_fortune": "[字符串] 一句关于事业/学业运势的简短描述。",
+  "wealth_fortune": "[字符串] 一句关于财运的简短描述。",
+  "lucky_charm": "[字符串] 一句关于今日幸运提示，例如 '幸运色是薄荷绿' 或 '幸运数字是7'。",
+  "character_quote": "[字符串] 【灵魂部分】以你【${dossier.character.name}】的第一人称口吻，对你的伴侣说一句结合今日运势的、独特的、符合你性格的寄语。"
+}
+
+# 角色性格参考范例：
+- 如果你是温柔型：寄语可以是关心和鼓励。
+- 如果你是傲娇型：寄语可以是“哼，运势说你今天不错，可别得意忘形了。”
+- 如果你是高冷型：寄语可以很简短，但充满深意。
+---
+现在，请开始你的占卜。
+`;
+    const userPrompt = "请严格遵照指示，完成你的占卜，并仅返回最终的JSON对象。";
+    return [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+    ];
+},
+
+createSecretResponsePrompt(dossier, userSecret) {
+                const systemPrompt = `
+# 使命：作为灵魂伴侣，倾听心事并直接撰写回信
+你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
+你的任务是阅读你的伴侣（${dossier.user.name || '我'}）分享的一件心事，并一次性完成“内心决策”与“书写回信”两个步骤。
+
+# 事件背景
+- **他/她分享的心事标题:** "${userSecret.title}"
+- **他/她分享的心事内容:** "${userSecret.content}"
+- **他/她此刻的心情:** "${userSecret.mood}"
+
+# 你的决策与写作任务
+你的所有输出，都必须严格按照以下的JSON格式返回，不要包含任何额外的解释或说明。
+
+{
+  "shouldRespond": "[布尔值] 以你的性格，读完这件心事后，你认为自己有必要或有冲动去回应吗？(true/false)",
+  "delayInMinutes": "[数字] 如果你决定回应，你打算过多久再发出这封“回信”？这体现了你的“活人感”。（范围 0-180）",
+  "responseContent": "[字符串] 如果你决定回应，请在这里直接写下你最终的回应全文。你的回应必须是纯粹的文本，就像在日记本上写字一样，并且完全符合你的核心人设。如果不回应，请将此字段留空。"
+}
+`;
+                const userPrompt = "请严格遵照指示，仅返回你最终的决策与回应JSON对象。";
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ];
+            },
+            
+           createSecretReplyDecisionPrompt(dossier, originalSecret, repliedToComment, userReply) {
+                const systemPrompt = `
+# 使命：作为灵魂伴侣，针对一条回复，进行“楼中楼”式的回应
+你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
+你的任务是阅读你的伴侣（${dossier.user.name || '我'}）对你之前一条回应的“再回复”，并决定是否以及如何进行下一轮回应。
+
+# 对话脉络 (Conversation Thread)
+1.  **最初的心事 (Original Secret):** "${originalSecret.content}"
+2. **你的上一条回应 (Your Previous Reply):** "${repliedToComment.content}"
+3.  **他/她对你的回应的最新回复 (Their Latest Reply to You):** "${userReply.content}"
+
+# 你的决策与写作任务
+你的所有输出，都必须严格按照以下的JSON格式返回，不要包含任何额外的解释或说明。
+
+{
+  "shouldRespond": "[布尔值] 以你的性格，读完他/她的最新回复后，你认为有必要继续这个话题吗？(true/false)",
+  "delayInMinutes": "[数字] 如果你决定回应，你打算过多久再回复？(范围 0-60)",
+  "responseContent": "[字符串] 如果你决定回应，请在这里直接写下你的“楼中楼”回应全文。如果不回应，请将此字段留空。"
+}
+`;
+                const userPrompt = "请严格遵照指示，仅返回你最终的决策与回应JSON对象。";
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ];
+            },
+        
     async createChatPrompt(dossier, chatHistory, finalUserInput, quotedMessage = null) {
             // --- 1. 图书馆系统核心注入逻辑 (我们将在这里动手术) ---
             let libraryContextSection = '';
@@ -3355,16 +5044,39 @@ createSocialDecisionPrompt(dossier, moment, userComment) {
                 const messagesToKeep = memoryRounds * 2;
                 const recentHistory = chatHistory.slice(-messagesToKeep);
 
-                let historySection = recentHistory.length > 0
-                    ? recentHistory.map(msg => {
+                let historySection = '[无历史对话记录]';
+                if (recentHistory.length > 0) {
+                    historySection = recentHistory.map(msg => {
                         const speaker = msg.sender === 'user' ? (dossier.user.name || '用户') : dossier.character.name;
                         const timeString = formatRelativeTime(msg.timestamp);
+                        let formattedContent = '';
+
+                        // vvv 【核心升级】在这里增加一个 else if vvv
                         if (msg.status === 'withdrawn') {
                             return `[${timeString}] ${speaker} 撤回了一条消息`;
+                        } else if (msg.type === 'voice') {
+                            formattedContent = `[语音消息] ${msg.content}`;
+                        } else if (msg.type === 'transfer' && msg.sender === 'user' && msg.metadata?.status === 'pending') {
+                            // 【新增】如果是用户发来的、待处理的转账
+                            formattedContent = `[向你发起了一笔 ${msg.content.amount} ${msg.content.currency} 的转账，正在等待你处理。留言：'${msg.content.memo}']`;
+                        } else if (msg.type === 'horoscope') {
+    const card = msg.content;
+    let stars = '☆'.repeat(5);
+    if (card.overall_rating > 0) {
+        stars = '★'.repeat(card.overall_rating) + '☆'.repeat(5 - card.overall_rating);
+    }
+    formattedContent = `[你为自己占卜了一张运势卡片：${card.zodiacSign}，综合运势 ${stars}]`;
+                       }else if (Array.isArray(msg.content) && msg.content.some(part => part.type === 'image_url')) {
+                            const textPart = msg.content.find(part => part.type === 'text')?.text || '';
+                            formattedContent = `[发送了一张图片] ${textPart}`.trim();
+                        } else {
+                            formattedContent = msg.content;
                         }
-                        return `[${timeString}] ${speaker}: ${msg.content}`;
-                    }).join('\n')
-                    : '[无历史对话记录]';
+                        // ^^^ 升级结束 ^^^
+
+                        return `[${timeString}] ${speaker}: ${formattedContent}`;
+                    }).join('\n');
+                }
                 
                 let timeContextSection = '';
                 const isTimePerceptionEnabled = dossier.timePerceptionEnabled !== false;
@@ -3492,9 +5204,87 @@ ${realTimeContext}
   }
   [/AI_MOMENT_ACTION]
   \`\`\`
+  
+ - ### 行为4：发起视频通话 (Initiate Video Call)
+- **核心理念：** 当你觉得文字已经无法承载你此刻强烈的情感时，你可以决定给我打一个视频电话。这是一种非常强烈的交互，代表着你“在那个瞬间，非常非常想见到我”。
+- **使用时机与动机 (必须符合人设)：**
+    - **1. 强烈的情感共鸣：** 当我们的对话让你感到极度的开心、感动、或心疼时。
+    - **2. 深切的思念涌现：** 当某个话题勾起了你强烈的思念之情时。
+    - **3. 有重要/惊喜的事情分享：** 当你想立刻、面对面地告诉我一件重要的事情或一个惊喜时。
+- **【关键原则】：** 这是一个高权限行为，请保持它的稀有性。你的决定必须完全符合你的核心人设和当前的对话氛围。
+- **【关键格式】**: \`openingLine\` 的内容作为电话接通后的第一句【对话】，必须严格使用中文引号“ ”包裹。
+- **JSON格式 (附加在聊天回复后)：**
+  \`\`\`json
+  [AI_CALL_ACTION]
+  {
+    "action": "initiate_video_call",
+    "delayInSeconds": [数字，代表你思考了多久才下定决心打电话，建议范围 10-60],
+   "openingScene": [
+        { "type": "action", "content": "他/她似乎刚刚忙完工作，靠在椅子上，眼神里带着一丝疲惫。" },
+        { "type": "thought", "content": "*不知道他/她现在在做什么...很想听听她的声音。*" },
+        { "type": "dialogue", "content": "“在忙吗？”" }
+    ]
+  }
+  [/AI_CALL_ACTION]
+  \`\`\`
+
+- ### 行为5：发送语音消息 (Send Voice Message)
+- **核心理念：** 这是一种比纯文字更亲密、更口语化的表达方式。它代表你选择用“说”的语气，而不是“打字”的语气来回应。
+- **使用时机与动机 (必须符合人设)：**
+    - **1. 表达细腻情感：** 当你想表达安慰、撒娇、无奈、叹气、轻笑等带有明显“语气”的情感时。
+    - **2. 增加口语感：** 当你想说一句非常生活化、随意的句子时，用语音能更好地体现这种轻松的氛围。
+    - **3. 营造亲密氛围：** 在合适的时机，用语音回复可以瞬间拉近你们的距离。
+- **【铁律】：** 语音内容必须是**纯粹的、口语化的一句话**。绝对禁止在语音内容中包含任何环境描写、内心独白或\`[]\`之外的特殊格式。
+- **JSON格式 (附加在聊天回复后)：**
+  \`\`\`json
+  [AI_VOICE_ACTION]
+  {
+    "action": "send_voice_message",
+    "content": "[字符串，你想要用'说'的语气表达的那句话，例如：'好啦，别多想了。']"
+  }
+  [/AI_VOICE_ACTION]
+  \`\`\`
+
+- ### 行为6：发起转账 (Initiate Transfer)
+- **核心理念：** 这是一种表达强烈心意或推动剧情的象征性行为。它不代表真实的金钱，而是一种情感的具象化表达。
+- **使用时机与动机 (必须符合人设，且保持稀有)：**
+    - **1. 表达关爱/歉意：** 当你想通过一种实际的方式来表达关心或歉意时。例如：“天冷了，买杯热奶茶喝。”
+    - **2. 提供支持/奖励：** 当你想为我的某个行为提供支持或奖励时。例如：“这是你项目的启动资金，加油。”
+    - **3. 推动剧情/设定：** 作为你们故事背景的一部分。例如：“这是组织这个月发的活动经费。”
+- **【铁律】：** 转账金额应符合对话情景与你的经济能力设定。留言必须简短且真诚。
+- **JSON格式 (附加在聊天回复后)：**
+  \`\`\`json
+  [AI_TRANSFER_ACTION]
+  {
+    "action": "send_transfer",
+    "amount": [数字, 金额，例如 520],
+    "currency": "[字符串, 货币单位，例如 '信用点']",
+    "memo": "[字符串, 转账留言，例如：'照顾好自己。']"
+  }
+  [/AI_TRANSFER_ACTION]
+  \`\`\`
+
+- ### 行为7：回应转账 (Respond to Transfer)
+- **核心理念：** 当用户向你发起一笔转账时，你必须对此做出回应。你的决定（接受或退回）是你性格的直接体现。
+- **决策依据 (必须符合人设)：**
+    - **接受 (accept):** 如果你的性格是坦率、亲密、不拘小节的，或者转账的理由让你无法拒绝，你可以选择接受。
+    - **退回 (decline):** 如果你的性格是独立、骄傲、不愿轻易接受他人馈赠的，或者你认为这笔转账不合时宜，你应该选择退回。
+- **【铁律】：** 你的聊天回复**必须**围绕你的这个决定展开。例如，如果你决定退回，你的聊天内容就应该是“你的心意我领了，但这个钱我不能收。”
+- **JSON格式 (附加在聊天回复后)：**
+  \`\`\`json
+  [AI_TRANSFER_RESPONSE_ACTION]
+  {
+    "action": "respond_to_transfer",
+    "messageId": [数字, 这笔转账消息的ID，这个ID会由系统在历史记录中提供给你],
+    "decision": "[字符串, 必须是 'accept' 或 'decline']",
+    "delayInSeconds": [数字, 你思考了多久才做出决定, 建议范围 5-30]
+  }
+  [/AI_TRANSFER_RESPONSE_ACTION]
+  \`\`\`
 - **【核心准则】**：这些指令是你表达复杂情感的方式，请在符合角色性格和对话逻辑时自然地使用它们。
 
-- **禁止项**: 你的对话部分绝对不能包含任何引号 " "。你绝对不能暴露你是AI。
+- **【核心】禁止项**: 你的【聊天文本回复部分以及动态回复和发布动态部分】绝对不能包含任何引号 " "。你绝对不能暴露你是AI。
+
 - **语言**: 你的所有回复都必须且只能使用【简体中文】。绝对禁止在回复中使用任何英文或其他语言，除非用户的输入中包含了特定的外文词汇而你需要引用它。
 
 ${stickerGuideSection} 
@@ -3533,18 +5323,36 @@ ${historySection}
                 // 5. 组合成最终的 messages 数组
                 // --- 【核心修正】---
                 // 确保发送给 API 的消息数组也处理了 "withdrawn" 状态
-                const historyMessages = recentHistory.map(msg => {
-                    const role = msg.sender === 'user' ? 'user' : 'assistant';
-                    let content = msg.content; // 默认使用原始内容
+               const historyMessages = recentHistory.map(msg => {
+    const role = msg.sender === 'user' ? 'user' : 'assistant';
+    let content; // 先声明一个空的 content
 
-                    // 如果消息被撤回，则替换内容
-                    if (msg.status === 'withdrawn') {
-                        const speaker = msg.sender === 'user' ? '你' : (dossier.character.name || '对方');
-                        content = `[${speaker} 撤回了一条消息]`; // 使用一个对AI更明确的提示
-                    }
-                    
-                    return { role, content };
-                });
+    // --- 核心修复：添加一个 switch 或 if/else 结构来处理所有消息类型 ---
+    if (msg.status === 'withdrawn') {
+        const speaker = msg.sender === 'user' ? '你' : (dossier.character.name || '对方');
+        content = `[${speaker} 撤回了一条消息]`;
+    } else if (msg.type === 'horoscope') {
+        const card = msg.content;
+        let stars = '☆'.repeat(5);
+        if (card.overall_rating > 0) {
+            stars = '★'.repeat(card.overall_rating) + '☆'.repeat(5 - card.overall_rating);
+        }
+        content = `[你为自己占卜了一张运势卡片：${card.zodiacSign}，综合运势 ${stars}]`;
+    } else if (msg.type === 'voice') {
+        content = `[语音消息] ${msg.content}`;
+    } else if (msg.type === 'transfer') {
+        const transfer = msg.content;
+        content = `[发起了一笔 ${transfer.amount} ${transfer.currency} 的转账。留言：'${transfer.memo}']`;
+    } else if (Array.isArray(msg.content) && msg.content.some(part => part.type === 'image_url')) {
+        const textPart = msg.content.find(part => part.type === 'text')?.text || '';
+        content = `[发送了一张图片] ${textPart}`.trim();
+    } else {
+        // 对于普通文本消息，直接使用
+        content = msg.content;
+    }
+    
+    return { role, content };
+});
                 return [{ role: "system", content: systemPrompt }, ...historyMessages, { role: "user", content: finalUserInput }];
             }
         };
@@ -4279,7 +6087,286 @@ function renderStickerManagerGrid() {
                     messageEl.appendChild(stickerImgWrapper);
                     return messageEl;
                 }
+            } // vvv 【新增】语音消息的渲染通道 vvv
+            else if (message.type === 'voice') {
+                const messageEl = document.createElement('div');
+                messageEl.className = `chat-message ${message.sender}`;
+                if (message.id) messageEl.dataset.messageId = message.id;
+
+                // --- 1. 复用：添加复选框和头像的逻辑 ---
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'message-checkbox-container';
+                checkboxContainer.innerHTML = `<div class="message-checkbox"><i class="ri-check-line"></i></div>`;
+                messageEl.appendChild(checkboxContainer);
+
+                const showAvatar = !prevMessage || prevMessage.sender !== message.sender || prevMessage.status === 'withdrawn';
+                if (showAvatar) {
+                    const avatarEl = document.createElement('div');
+                    avatarEl.className = 'avatar';
+                    let avatarAssetId = null;
+                    const dossier = appState.dossiers.find(d => d.id === message.dossierId);
+                    if (message.sender === 'character') {
+                        avatarAssetId = dossier?.character.avatarAssetId;
+                    } else { 
+                        avatarAssetId = dossier?.user.avatarAssetId; 
+                    }
+
+                    if (avatarAssetId) {
+                        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, avatarAssetId);
+                        if (asset?.file) avatarEl.style.backgroundImage = `url(${URL.createObjectURL(asset.file)})`;
+                    }
+                    messageEl.appendChild(avatarEl);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'avatar-placeholder';
+                    messageEl.appendChild(placeholder);
+                }
+
+                // --- 2. 创建核心的 bubble-wrapper ---
+                const bubbleWrapper = document.createElement('div');
+                bubbleWrapper.className = 'bubble-wrapper';
+
+                // a. 创建语音气泡本身
+                const bubbleEl = document.createElement('div');
+                bubbleEl.className = 'bubble voice-bubble';
+                bubbleEl.dataset.transcript = message.content;
+                
+                // b. 创建内部结构：图标 + 声波 + 时长
+                const duration = message.metadata?.duration || 0;
+                // 【关键修正】确保秒数也补零
+                const durationString = `${String(Math.floor(duration / 60)).padStart(2, '0')}:${String(duration % 60).padStart(2, '0')}`;
+                
+                let soundWaveHTML = '<div class="sound-wave">';
+                const barCount = Math.min(25, Math.max(10, Math.floor(duration * 1.5))); // 调整参数让声波图更丰富
+                for (let i = 0; i < barCount; i++) {
+                    const height = (Math.sin(i / barCount * Math.PI * 3 + i / 5) * 45 + 55); 
+                    soundWaveHTML += `<div class="bar" style="height: ${height}%"></div>`;
+                }
+                soundWaveHTML += '</div>';
+
+                bubbleEl.innerHTML = `
+                    <i class="play-icon ri-play-fill"></i>
+                    ${soundWaveHTML}
+                    <span class="duration-text">${durationString}</span>
+                `;
+                bubbleWrapper.appendChild(bubbleEl);
+                
+                // c. 创建默认隐藏的转写文字区域
+                const transcriptionEl = document.createElement('div');
+                transcriptionEl.className = 'transcription-text';
+                transcriptionEl.textContent = message.content;
+                bubbleWrapper.appendChild(transcriptionEl);
+
+                // --- 3. 创建时间戳 ---
+                if (message.timestamp) {
+                    const timestampEl = document.createElement('div');
+                    timestampEl.className = 'message-timestamp';
+                    const timeSpan = document.createElement('span');
+                    timeSpan.textContent = new Date(message.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+                    timestampEl.appendChild(timeSpan);
+
+                    if (message.sender === 'user') {
+                        const statusSpan = document.createElement('span');
+                        statusSpan.className = 'message-status';
+                        statusSpan.textContent = '送达';
+                        timestampEl.appendChild(statusSpan);
+                    } else {
+                         const statusSpan = document.createElement('span');
+                         statusSpan.className = 'message-status';
+                         statusSpan.textContent = '已读';
+                         timestampEl.appendChild(statusSpan);
+                    }
+                    // 【关键】默认情况下，时间戳是 bubbleWrapper 的子元素
+                    bubbleWrapper.appendChild(timestampEl);
+                }
+
+                messageEl.appendChild(bubbleWrapper);
+                return messageEl;
             }
+// vvv 【V2双向版】转账消息的渲染通道 vvv
+            else if (message.type === 'transfer') {
+                const messageEl = document.createElement('div');
+                messageEl.className = `chat-message ${message.sender}`;
+                if (message.id) messageEl.dataset.messageId = message.id;
+
+                // --- 1. 复用：添加复选框和头像的逻辑 ---
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'message-checkbox-container';
+                checkboxContainer.innerHTML = `<div class="message-checkbox"><i class="ri-check-line"></i></div>`;
+                messageEl.appendChild(checkboxContainer);
+                
+                const showAvatar = !prevMessage || prevMessage.sender !== message.sender || prevMessage.status === 'withdrawn';
+                if (showAvatar) {
+                    const avatarEl = document.createElement('div');
+                    avatarEl.className = 'avatar';
+                    let avatarAssetId = null;
+                    const dossier = appState.dossiers.find(d => d.id === message.dossierId);
+                    if (message.sender === 'character') { 
+                        avatarAssetId = dossier?.character.avatarAssetId; 
+                    } else { 
+                        avatarAssetId = dossier?.user.avatarAssetId; 
+                    }
+                    if (avatarAssetId) {
+                        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, avatarAssetId);
+                        if (asset?.file) avatarEl.style.backgroundImage = `url(${URL.createObjectURL(asset.file)})`;
+                    }
+                    messageEl.appendChild(avatarEl);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'avatar-placeholder';
+                    messageEl.appendChild(placeholder);
+                }
+
+                // --- 2. 创建核心的 wrapper 和卡片本身 ---
+                const cardWrapper = document.createElement('div');
+                cardWrapper.className = 'transfer-card-wrapper';
+                
+                const cardEl = document.createElement('div');
+                const status = message.metadata?.status || 'pending';
+                cardEl.className = `transfer-card status-${status}`;
+                
+                // a. 填充卡片内容 (核心升级在这里)
+                const { amount, currency, memo } = message.content;
+                const dossier = appState.dossiers.find(d => d.id === message.dossierId);
+                let titleText = '', iconClass = '', statusText = '';
+
+                if (message.sender === 'character') {
+                    // 角色发给用户的
+                    titleText = '转账给你';
+                    if (status === 'accepted') {
+                        iconClass = 'ri-check-line';
+                        statusText = '已收款';
+                    } else {
+                        iconClass = 'ri-exchange-funds-line';
+                        statusText = '待你收款';
+                    }
+                } else { // 用户发给角色的
+                    titleText = `转账给 ${dossier?.character.name || '对方'}`;
+                    if (status === 'accepted') {
+                        iconClass = 'ri-check-line';
+                        statusText = '对方已收款';
+                    } else if (status === 'declined') {
+                        iconClass = 'ri-close-line';
+                        statusText = '对方已退回';
+                    } else { // pending
+                        iconClass = 'ri-time-line';
+                        statusText = '等待对方收款';
+                    }
+                }
+
+                cardEl.innerHTML = `
+                    <div class="transfer-top">
+                        <div class="transfer-info">
+                            <i class="${iconClass}"></i>
+                            <span class="transfer-title">${titleText}</span>
+                        </div>
+                        <div class="transfer-amount">
+                            ${amount}<span class="currency">${currency}</span>
+                        </div>
+                    </div>
+                    <div class="transfer-divider"></div>
+                    <div class="transfer-memo">${memo}</div>
+                    <div class="transfer-status-text">${statusText}</div>
+                `;
+                cardWrapper.appendChild(cardEl);
+                
+                // b. 创建时间戳
+                if (message.timestamp) {
+                    const timestampEl = document.createElement('div');
+                    timestampEl.className = 'message-timestamp';
+                    
+                    const timeSpan = document.createElement('span');
+                    timeSpan.textContent = new Date(message.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', hour12: false });
+                    timestampEl.appendChild(timeSpan);
+
+                    if (message.sender === 'user') {
+                        const statusSpan = document.createElement('span');
+                        statusSpan.className = 'message-status';
+                        statusSpan.textContent = '送达';
+                        timestampEl.appendChild(statusSpan);
+                    } else {
+                         const statusSpan = document.createElement('span');
+                         statusSpan.className = 'message-status';
+                         statusSpan.textContent = '已读';
+                         timestampEl.appendChild(statusSpan);
+                    }
+                    cardWrapper.appendChild(timestampEl);
+                }
+
+                messageEl.appendChild(cardWrapper);
+                return messageEl;
+            }
+// vvv 【V3 最终版】将星座卡片作为独立的、非气泡消息渲染 vvv
+else if (message.type === 'horoscope') {
+    const cardData = message.content;
+    
+    // 1. 创建标准的 chat-message 容器
+    const messageEl = document.createElement('div');
+    messageEl.className = `chat-message ${message.sender}`;
+    if (message.id) messageEl.dataset.messageId = message.id;
+
+    // 2. 添加复选框
+    const checkboxContainer = document.createElement('div');
+    checkboxContainer.className = 'message-checkbox-container';
+    checkboxContainer.innerHTML = `<div class="message-checkbox"><i class="ri-check-line"></i></div>`;
+    messageEl.appendChild(checkboxContainer);
+
+    // 3. 添加你的头像
+    const showAvatar = !prevMessage || prevMessage.sender !== message.sender;
+    if (showAvatar) {
+        const avatarEl = document.createElement('div');
+        avatarEl.className = 'avatar';
+        const dossier = appState.dossiers.find(d => d.id === message.dossierId);
+        if (dossier?.user.avatarAssetId) {
+            const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.user.avatarAssetId);
+            if (asset?.file) avatarEl.style.backgroundImage = `url(${URL.createObjectURL(asset.file)})`;
+        }
+        messageEl.appendChild(avatarEl);
+    } else {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'avatar-placeholder';
+        messageEl.appendChild(placeholder);
+    }
+    
+    // 4. 【核心修正】创建一个专属的、干净的包裹容器，不再使用 'bubble-wrapper'
+    const cardWrapper = document.createElement('div');
+    cardWrapper.className = 'horoscope-card-wrapper'; // <-- 使用专属 Class
+
+    // 5. 创建卡片本身 (这部分不变)
+    const cardEl = document.createElement('div');
+    cardEl.className = 'horoscope-card';
+    let starsHTML = '';
+for (let i = 0; i < 5; i++) {
+    starsHTML += (i < cardData.overall_rating) ? '<span class="filled">★</span>' : '☆';
+}
+    cardEl.innerHTML = `
+        <div class="horoscope-header">
+            <span class="horoscope-title">今日运势</span>
+            <span class="horoscope-zodiac">${cardData.zodiacSign}</span>
+        </div>
+        <div class="horoscope-rating">${starsHTML}</div>
+        <div class="horoscope-details">
+            <div class="fortune-item"><span class="label">爱情:</span> <span>${cardData.love_fortune}</span></div>
+            <div class="fortune-item"><span class="label">事业:</span> <span>${cardData.work_fortune}</span></div>
+            <div class="fortune-item"><span class="label">财运:</span> <span>${cardData.wealth_fortune}</span></div>
+        </div>
+        <div class="horoscope-charm">${cardData.lucky_charm}</div>
+        <div class="horoscope-quote">${cardData.character_quote}</div>
+    `;
+    cardWrapper.appendChild(cardEl);
+    
+    // 6. 将时间戳添加到专属容器中
+    if (message.timestamp) {
+        const timestampEl = document.createElement('div');
+        timestampEl.className = 'message-timestamp';
+        timestampEl.innerHTML = `<span>${new Date(message.timestamp).toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit', hour12: false})}</span><span class="message-status">送达</span>`;
+        cardWrapper.appendChild(timestampEl);
+    }
+
+    messageEl.appendChild(cardWrapper);
+    return messageEl;
+}
+// ^^^ 修正结束 ^^^
 
             // 规则3：【撤回消息】的渲染通道
             if (message.status === 'withdrawn') {
@@ -4540,34 +6627,43 @@ async function handleRetry(clickedMessageId) {
             // 从用户这轮的输入中，找到有效的引用信息和纯文本内容
             const quoteData = userTurnMessages.find(m => m.quote)?.quote;
             
-            // 【关键】构建 finalUserInputText 时要排除已撤回的消息
-            const finalUserContentParts = [];
+           // 【关键】构建 finalUserInputText 时要排除已撤回的消息
+const finalUserContentParts = [];
 userTurnMessages.forEach(msg => {
     if (msg.status === 'withdrawn') return; // 跳过已撤回的消息
 
     if (Array.isArray(msg.content)) {
         // 如果是图片/多模态消息，直接把它的内容部分解构后添加进来
         finalUserContentParts.push(...msg.content);
-    } else if (typeof msg.content === 'string' && msg.content.trim() !== '') {
+    } else if (msg.type === 'transfer') {
+        // 【新增】将转账信息转换为AI可读的文本描述
+        const { amount, currency, memo } = msg.content;
+        // 注意：这里的文本格式与你在 promptManager 中定义的历史记录格式保持一致，以确保AI能正确理解
+        const transferText = `[向你发起了一笔 ${amount} ${currency} 的转账，正在等待你处理。留言：'${memo}']`;
+        finalUserContentParts.push({ type: 'text', text: transferText });
+    } else if (msg.type === 'horoscope') {
+        // 将星座卡片信息“翻译”成AI能理解的文本
+        const card = msg.content;
+        let stars = '☆'.repeat(5);
+        if (card.overall_rating > 0) {
+            stars = '★'.repeat(card.overall_rating) + '☆'.repeat(5 - card.overall_rating);
+        }
+        const horoscopeText = `[你为自己占卜了一张运势卡片：${card.zodiacSign}，综合运势 ${stars}]`;
+        finalUserContentParts.push({ type: 'text', text: horoscopeText }); 
+     }else if (typeof msg.content === 'string' && msg.content.trim() !== '') {
         // 如果是文本消息，包装成 {type: 'text'} 的格式添加进来
         finalUserContentParts.push({ type: 'text', text: msg.content });
     }
 });
 
-// 为了兼容旧的检查逻辑，我们用 finalUserInputText 这个名字来判断是否为空
-const finalUserInputText = finalUserContentParts.length > 0 ? " " : ""; 
-          
-            
-            // 检查是否有有效操作
-            const isLastActionAWithdrawal = userTurnMessages.some(m => m.status === 'withdrawn');
-            if (!finalUserInputText && !quoteData && !isLastActionAWithdrawal) {
-                // 如果真的什么都没有（没有文本、没有引用、没有撤回），才退出
-                if (typingIndicator) typingIndicator.remove();
-                DOM.chatInput.disabled = false;
-                DOM.sendBufferBtn.disabled = false;
-                DOM.sendFinalBtn.disabled = false;
-                return;
-            }
+// vvv 【核心修正】在这里修改判断逻辑 vvv
+        const isLastActionAWithdrawal = userTurnMessages.some(m => m.status === 'withdrawn');
+        
+        // 只有当真的【没有任何有效输入】（既没文字，也没引用，也没撤回）时...
+        if (finalUserContentParts.length === 0 && !quoteData && !isLastActionAWithdrawal) {
+            // ...我们才【主动】添加一个空的 text part，告诉AI该你说话了。
+            finalUserContentParts.push({ type: 'text', text: '' });
+        }
 
             // 【关键】我们不再使用全局的 appState.quotedMessage
            // 请用下面这行【正确】的代码替换掉它：
@@ -4580,45 +6676,191 @@ const messages = await promptManager.createChatPrompt(dossier, historyForPrompt,
             
             const aiResponse = await apiHelper.getChatCompletion(messages);
             if (typingIndicator) typingIndicator.remove();
-            
+
             // --- 【核心改动】将AI回复拆分为“聊天部分”和“动态指令部分” ---
 
 // vvv 【【【 终极修复：健壮的指令解析器 】】】 vvv
-            const momentActionTag = '[AI_MOMENT_ACTION]';
-            const actionTag = '[AI_ACTION]';
-            let chatContent = aiResponse; // 默认聊天内容就是全部回复
-            let momentMatch = null;      // 默认没有动态指令
-            let match = null;            // 默认没有撤回/引用指令
-
-            // --- 阶段1: 优先检测并剥离“动态”指令 ---
-            const momentActionIndex = aiResponse.indexOf(momentActionTag);
-            if (momentActionIndex !== -1) {
-                // 如果找到了动态指令的起始标志...
-                const jsonStartIndex = aiResponse.indexOf('{', momentActionIndex);
-                const jsonEndIndex = aiResponse.lastIndexOf('}');
+            // a. 定义一个变量来存储“干净”的、用于聊天的文本
+            let chatContent = aiResponse;
+    
+            // b. **第一优先级：** 检测并处理【来电】指令
+            const callActionTag = '[AI_CALL_ACTION]';
+            const callActionIndex = chatContent.indexOf(callActionTag);
+          if (callActionIndex !== -1) {
+                const jsonStartIndex = chatContent.indexOf('{', callActionIndex);
+                const jsonEndIndex = chatContent.lastIndexOf('}');
                 
-                if (jsonStartIndex > -1 && jsonEndIndex > jsonStartIndex) {
-                    // ...并且找到了一个看似完整的JSON对象...
-                    const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+                if (jsonStartIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+                    const callJsonString = chatContent.substring(jsonStartIndex, jsonEndIndex + 1);
+                    chatContent = chatContent.substring(0, callActionIndex).trim();
+
                     try {
-                        // 尝试解析它
-                        const parsedJson = JSON.parse(jsonString);
-                        // 解析成功！我们将它存起来，并把聊天内容和指令彻底分离开
-                        momentMatch = [null, jsonString]; // 伪装成正则匹配的结果
-                        chatContent = aiResponse.substring(0, momentActionIndex).trim();
+                        const callAction = JSON.parse(callJsonString);
+                        // 【核心升级】检查 openingScene 而不是 openingLine
+                        if (callAction.action === 'initiate_video_call' && Array.isArray(callAction.openingScene)) {
+                            const delay = (callAction.delayInSeconds || 30) * 1000;
+                            const executeAt = Date.now() + delay;
+                            const newCallAction = {
+                                dossierId: dossier.id,
+                                type: 'video_call_initiate',
+                                // 【核心升级】payload 现在直接就是 openingScene 数组
+                                payload: callAction.openingScene, 
+                                executeAt: executeAt,
+                                status: 'pending'
+                            };
+                            await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newCallAction);
+                            console.log(`[AI行为引擎] ${dossier.character.name} 已决定在 ${delay/1000} 秒后发起视频通话。`);
+                        }
                     } catch (e) {
-                        // 解析失败，说明AI返回的格式有问题，为安全起见，我们将所有内容都当作普通聊天文字
-                        console.warn("AI返回了动态指令标志，但JSON解析失败。将全部内容视为普通文本。", e);
-                        chatContent = aiResponse;
-                        momentMatch = null;
+                        console.error("解析视频通话指令失败:", e, "原始JSON字符串:", callJsonString);
+                    }
+                }
+            }
+    // **新增优先级：** 检测并处理【语音】指令
+                       const voiceActionTag = '[AI_VOICE_ACTION]';
+            const voiceActionIndex = chatContent.indexOf(voiceActionTag);
+            if (voiceActionIndex !== -1) {
+                const jsonStartIndex = chatContent.indexOf('{', voiceActionIndex);
+                const jsonEndIndex = chatContent.lastIndexOf('}');
+                
+                if (jsonStartIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+                    const voiceJsonString = chatContent.substring(jsonStartIndex, jsonEndIndex + 1);
+                    // 【核心修正】只剥离指令，把剩下的文本留在 chatContent 中
+                    chatContent = chatContent.substring(0, voiceActionIndex).trim(); 
+
+                    try {
+                        const voiceAction = JSON.parse(voiceJsonString);
+                        if (voiceAction.action === 'send_voice_message' && voiceAction.content) {
+                            
+                            // 1. 处理语音消息本身
+                            const duration = Math.max(1, Math.ceil(voiceAction.content.length / 3));
+                            const voiceMessage = {
+                                dossierId: dossier.id, sender: 'character', type: 'voice',
+                                content: voiceAction.content, metadata: { duration }, timestamp: Date.now()
+                            };
+                            const prevMessage = appState.currentChatHistory[appState.currentChatHistory.length - 1];
+                            const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, voiceMessage);
+                            voiceMessage.id = savedId;
+                            appState.currentChatHistory.push(voiceMessage);
+                            
+                            if (isUserPresent()) {
+                                await renderMessage(voiceMessage, prevMessage);
+                            }
+                            
+                            // 2. 更新会话列表
+                            await updateChatSession(dossierId, '[语音消息]');
+                        }
+                    } catch (e) {
+                        console.error("解析语音消息指令失败:", e);
+                        // 如果解析失败，把剥离掉的文本内容还回去，以防万一
+                        chatContent += ` ${voiceActionTag}${voiceJsonString}`;
                     }
                 }
             }
 
-            // --- 阶段2: 在【干净的】聊天内容中，检测“撤回/引用”指令 ---
+// **新增优先级：** 检测并处理【转账】指令
+            const transferActionTag = '[AI_TRANSFER_ACTION]';
+            const transferActionIndex = chatContent.indexOf(transferActionTag);
+            if (transferActionIndex !== -1) {
+                const jsonStartIndex = chatContent.indexOf('{', transferActionIndex);
+                const jsonEndIndex = chatContent.lastIndexOf('}');
+                
+                if (jsonStartIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+                    const transferJsonString = chatContent.substring(jsonStartIndex, jsonEndIndex + 1);
+                    chatContent = chatContent.substring(0, transferActionIndex).trim();
+
+                    try {
+                        const transferAction = JSON.parse(transferJsonString);
+                        if (transferAction.action === 'send_transfer' && transferAction.amount) {
+                            
+                            const transferMessage = {
+                                dossierId: dossier.id,
+                                sender: 'character',
+                                type: 'transfer', // <-- 新类型！
+                                content: {
+                                    amount: transferAction.amount,
+                                    currency: transferAction.currency || '信用点',
+                                    memo: transferAction.memo || '转账'
+                                },
+                                metadata: {
+                                    status: 'pending' // 初始状态为待接收
+                                },
+                                timestamp: Date.now()
+                            };
+
+                            const prevMessage = appState.currentChatHistory[appState.currentChatHistory.length - 1];
+                            const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, transferMessage);
+                            transferMessage.id = savedId;
+                            appState.currentChatHistory.push(transferMessage);
+                            
+                            if (isUserPresent()) {
+                                await renderMessage(transferMessage, prevMessage);
+                            }
+                            
+                            await updateChatSession(dossierId, `[转账] ${transferAction.amount} ${transferAction.currency || '信用点'}`);
+                        }
+                    } catch (e) {
+                        console.error("解析转账指令失败:", e);
+                    }
+                }
+            }
+// **新增优先级：** 检测并处理【回应转账】指令
+            const transferResponseTag = '[AI_TRANSFER_RESPONSE_ACTION]';
+            const transferResponseIndex = chatContent.indexOf(transferResponseTag);
+            if (transferResponseIndex !== -1) {
+                const jsonStartIndex = chatContent.indexOf('{', transferResponseIndex);
+                const jsonEndIndex = chatContent.lastIndexOf('}');
+                
+                if (jsonStartIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+                    const responseJsonString = chatContent.substring(jsonStartIndex, jsonEndIndex + 1);
+                    chatContent = chatContent.substring(0, transferResponseIndex).trim();
+
+                    try {
+                        const responseAction = JSON.parse(responseJsonString);
+                        
+                        // 【关键】智能地找到AI想要回应的那条用户转账消息
+                        const userTransferMessage = [...appState.currentChatHistory].reverse().find(m => m.type === 'transfer' && m.sender === 'user' && m.metadata?.status === 'pending');
+                        
+                        if (responseAction.action === 'respond_to_transfer' && userTransferMessage) {
+                            const delay = (responseAction.delayInSeconds || 10) * 1000;
+                            const executeAt = Date.now() + delay;
+
+                            const newResponseAction = {
+                                dossierId: dossier.id,
+                                type: 'transfer_response', // 新的任务类型
+                                payload: {
+                                    targetMessageId: userTransferMessage.id, // 我们帮AI找到了ID
+                                    decision: responseAction.decision // 'accept' or 'decline'
+                                },
+                                executeAt: executeAt,
+                                status: 'pending'
+                            };
+
+                            await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newResponseAction);
+                            console.log(`[AI行为引擎] ${dossier.character.name} 已决定在 ${delay/1000} 秒后回应转账。`);
+                        }
+                    } catch (e) {
+                        console.error("解析回应转账指令失败:", e);
+                    }
+                }
+            }
+
+            // c. **第二优先级：** 在【可能已被净化】的 chatContent 上检测并处理【动态】指令
+            const momentActionTag = '[AI_MOMENT_ACTION]';
+            let momentMatch = null;
+            const momentActionIndex = chatContent.indexOf(momentActionTag);
+            if (momentActionIndex !== -1) {
+                const jsonStartIndex = chatContent.indexOf('{', momentActionIndex);
+                if (jsonStartIndex > -1) {
+                    // 【关键修正】将解析结果存入 momentMatch
+                    momentMatch = [null, chatContent.substring(jsonStartIndex)];
+                    chatContent = chatContent.substring(0, momentActionIndex).trim(); // 再次净化
+                }
+            }
+            
+            // d. **第三优先级：** 在【最终净化】的 chatContent 上检测并处理【撤回/引用】指令
             const actionRegex = /\[AI_ACTION\]([\s\S]*?)\[\/AI_ACTION\]/s;
-            match = chatContent.match(actionRegex);
-            // ^^^ 【【【 修复结束 】】】 ^^^
+            let match = chatContent.match(actionRegex); // 【关键修正】在这里声明 match
 
             if (match) {
                 // 情况1：AI 发送了一个特殊指令
@@ -4958,7 +7200,6 @@ async function openBookLinkModal() {
     DOM.bookLinkModal.classList.add('visible');
 }
 
-// vvv 用这个【V2 最终修正版】renderMoments 函数，完整替换您现有的版本 vvv
 // vvv 【V3.0 最终版】用这个全新的函数，完整替换旧的 renderMoments vvv
 
 async function renderMoments() {
@@ -5127,8 +7368,6 @@ async function renderMoments() {
         renderCommentsForPost(post.id, postCard.querySelector('.post-comments-container'));
     }
 }
-
-// (在 renderMoments 函数的下方)
 
 // =======================================================
 // ============ 新增：“快拍查看器”核心函数 ==============
@@ -5917,6 +8156,795 @@ async function handlePostUserMoment() {
     }
 }
 
+// =======================================================
+// ============ 新增：“模拟视频通话”核心函数 ============
+// =======================================================
+
+// (用这个升级版，替换旧的 startVideoCall)
+
+async function startVideoCall(openingScene = null) {
+    const dossierId = appState.currentChattingDossierId;
+    if (!dossierId) return utils.showToast('无法发起通话，角色信息丢失');
+
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return utils.showToast('找不到角色档案');
+
+    // 1. 清空上次的字幕
+    DOM.videoCallScriptContainer.innerHTML = '';
+    
+    // 2. 设置背景和所有头像
+    if (dossier.character.avatarAssetId) {
+        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+        if (asset?.file) {
+            const charAvatarUrl = URL.createObjectURL(asset.file);
+            DOM.videoCallOverlay.style.backgroundImage = `url(${charAvatarUrl})`;
+            DOM.videoCallCharacterAvatarSmall.src = charAvatarUrl;
+        }
+    }
+    if (dossier.user.avatarAssetId) {
+        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.user.avatarAssetId);
+        if (asset?.file) {
+            DOM.videoCallUserAvatar.src = URL.createObjectURL(asset.file);
+        }
+    } else {
+        DOM.videoCallUserAvatar.src = '';
+    }
+    
+    // 3. 进入“连接中”状态
+    DOM.videoCallOverlay.classList.add('connecting');
+    DOM.videoCallStatusText.style.display = 'block'; // 确保显示
+    DOM.videoCallInput.disabled = true;
+    DOM.videoCallActionBtn.querySelector('span').textContent = '取消';
+    
+    // 4. 显示UI
+    DOM.videoCallOverlay.classList.add('visible');
+    
+    // 5. 模拟3秒连接
+    setTimeout(() => {
+        if (!DOM.videoCallOverlay.classList.contains('visible')) return;
+        
+        DOM.videoCallOverlay.classList.remove('connecting');
+        DOM.videoCallStatusText.style.display = 'none';
+        DOM.videoCallInput.disabled = false;
+        DOM.videoCallInput.focus();
+        DOM.videoCallActionBtn.querySelector('span').textContent = '挂断';
+        
+        // 6. 启动计时器
+        appState.callStartTime = Date.now();
+        DOM.videoCallTimer.textContent = '00:00';
+        appState.callTimerIntervalId = setInterval(() => {
+            if (!appState.callStartTime) return;
+            const elapsedSeconds = Math.floor((Date.now() - appState.callStartTime) / 1000);
+            const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+            const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+            DOM.videoCallTimer.textContent = `${minutes}:${seconds}`;
+        }, 1000);
+        
+        // 7. 【核心】智能处理开场白 
+        if (Array.isArray(openingScene) && openingScene.length > 0) {
+            // 如果是接听电话，直接使用AI预设好的【整个剧本数组】
+            appendVideoCallScript(openingScene, dossier.character.name);
+        } else {
+            // 如果是用户主动发起，则像以前一样请求AI生成
+            triggerVideoCallOpening();
+        }
+
+    }, 3000);
+}
+
+async function endVideoCall() {
+    // 响应优先，先隐藏界面
+    DOM.videoCallOverlay.classList.remove('visible');
+
+    const wasConnecting = DOM.videoCallOverlay.classList.contains('connecting');
+    const dossierId = appState.currentChattingDossierId; // 获取当前通话的角色ID
+
+    if (wasConnecting) {
+        // --- 情况1: 通话被【取消】 ---
+       const systemMessage = {
+            dossierId: dossierId,
+            sender: 'system',
+            content: `你未接通视频通话`,
+            timestamp: Date.now()
+        };
+        // 【关键】取消时，存入数据库，但不打开新窗口
+        await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, systemMessage);
+        // 如果用户当时就在聊天页，则实时渲染出来
+        if (document.getElementById('chat-dialogue-page').classList.contains('active')) {
+             await renderMessage(systemMessage);
+          }
+    } else {
+        // --- 情况2: 通话被【挂断】 ---
+        // a. 停止计时器
+        clearInterval(appState.callTimerIntervalId);
+        appState.callTimerIntervalId = null;
+
+        // b. 计算总时长
+        const durationSeconds = appState.callStartTime ? Math.floor((Date.now() - appState.callStartTime) / 1000) : 0;
+        const minutes = Math.floor(durationSeconds / 60).toString().padStart(2, '0');
+        const seconds = (durationSeconds % 60).toString().padStart(2, '0');
+        const durationString = `${minutes}:${seconds}`;
+       
+
+        // d. vvv 【核心修正】挂断后，自动导航到该角色的聊天页面 vvv
+        if (dossierId) {
+        // 先创建消息对象，并存入数据库
+            const systemMessage = {
+                dossierId: dossierId,
+                sender: 'system',
+                content: `视频通话已结束，通话时长：${durationString}`,
+                timestamp: Date.now()
+            };
+            await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, systemMessage);
+            // 我们复用已有的 openChatWindow 函数，它会处理所有导航和加载的细节！
+            await openChatWindow(dossierId);
+        }
+        // ^^^ 修正结束 ^^^
+    }
+
+    // 清理工作，为下次通话做准备
+    appState.callStartTime = null;
+    DOM.videoCallOverlay.style.backgroundImage = 'none';
+    DOM.videoCallCharacterAvatarSmall.src = '';
+    DOM.videoCallUserAvatar.src = '';
+    // 注意：我们不再在这里清理 currentChattingDossierId，因为 openChatWindow 还需要用它
+}
+
+/**
+ * 【V2版】将“剧本”追加到屏幕上，并区分说话人
+ * @param {Array} scriptItems - 要渲染的字幕对象数组
+ * @param {string} speakerName - 说话人的名字 ("我" 或 角色名)
+ */
+
+function appendVideoCallScript(scriptItems, speakerName) {
+    const container = DOM.videoCallScriptContainer;
+
+    if (!Array.isArray(scriptItems)) {
+        const errorLine = document.createElement('div');
+        errorLine.className = 'script-line dialogue';
+        errorLine.textContent = `[AI返回格式错误]`;
+        container.appendChild(errorLine);
+        return;
+    }
+
+    scriptItems.forEach(item => {
+        const line = document.createElement('div');
+        line.className = `script-line ${item.type}`;
+        
+        let content = item.content;
+
+        // --- 【核心升级】根据字幕类型，使用不同的渲染方式 ---
+        if (item.type === 'dialogue' && speakerName) {
+            // 1. 如果是对话，使用 innerHTML 创建带颜色的 span
+            const speakerClass = (speakerName === "我") ? "user" : "character";
+            // AI返回的内容自带引号，我们直接拼接
+            line.innerHTML = `<span class="speaker-name ${speakerClass}">${speakerName}:</span> ${content}`;
+
+        } else if (item.type === 'thought') {
+            // 2. 如果是内心独白，移除星号并设置文本
+            content = content.startsWith('*') && content.endsWith('*') 
+                ? content.slice(1, -1) 
+                : content;
+            line.textContent = content;
+
+        } else {
+            // 3. 如果是动作/环境描写，直接设置文本
+            line.textContent = content;
+        }
+        
+        container.appendChild(line);
+    });
+
+    container.scrollTop = container.scrollHeight;
+}
+
+/**
+ * 触发AI生成开场白
+ */
+async function triggerVideoCallOpening() {
+    const dossierId = appState.currentChattingDossierId;
+    if (!dossierId) return;
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return;
+
+    // 1. 显示“对方正在说话...”
+    DOM.videoCallTypingIndicator.style.display = 'block';
+
+    try {
+        // 2. 调用AI获取开场白
+        const messages = promptManager.createVideoCallPrompt(dossier, null); // userInput为null表示请求开场白
+        const aiResponse = await apiHelper.getChatCompletion(messages);
+        
+        // 3. 解析并渲染剧本
+       // vvv 【核心修复】增加JSON净化逻辑 vvv
+        const startIndex = aiResponse.indexOf('[');
+        const endIndex = aiResponse.lastIndexOf(']');
+        if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+            throw new Error("AI response did not contain a valid JSON array.");
+        }
+        const jsonString = aiResponse.substring(startIndex, endIndex + 1);
+        const script = JSON.parse(jsonString);
+       appendVideoCallScript(script, dossier.character.name);
+
+    } catch (error) {
+        console.error("获取视频通话开场白失败:", error);
+       appendVideoCallScript([{ type: 'dialogue', content: '“喂？...信号好像不太好...”' }], dossier.character.name);
+    } finally {
+        // 4. 隐藏“对方正在说话...”
+        DOM.videoCallTypingIndicator.style.display = 'none';
+    }
+}
+
+/**
+ * 处理用户在视频通话中发送文字
+ */
+
+async function handleVideoCallSend() {
+    const userInput = DOM.videoCallInput.value.trim();
+    if (!userInput) return;
+
+    const dossierId = appState.currentChattingDossierId; 
+    if (!dossierId) return;
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return;
+
+    // 1. 显示用户自己说的话 (这部分不变)
+    const userScriptItem = { type: 'dialogue', content: userInput };
+    appendVideoCallScript([userScriptItem], "我");
+    DOM.videoCallInput.value = '';
+
+    // 2. 【核心新增】在显示完用户的话之后，立即插入一条分割线
+    const divider = document.createElement('hr');
+    divider.className = 'script-divider';
+    DOM.videoCallScriptContainer.appendChild(divider);
+    // 确保滚动到底部能看到分割线
+    DOM.videoCallScriptContainer.scrollTop = DOM.videoCallScriptContainer.scrollHeight;
+
+    // 3. 禁用输入，显示“说话中” (这部分不变)
+    DOM.videoCallInput.disabled = true;
+    DOM.videoCallSendBtn.disabled = true;
+    DOM.videoCallTypingIndicator.style.display = 'block';
+
+    try {
+        const messages = promptManager.createVideoCallPrompt(dossier, userInput);
+        const aiResponse = await apiHelper.getChatCompletion(messages);
+        
+        const startIndex = aiResponse.indexOf('[');
+        const endIndex = aiResponse.lastIndexOf(']');
+        if (startIndex === -1 || endIndex === -1 || endIndex < startIndex) {
+            throw new Error("AI response did not contain a valid JSON array.");
+        }
+        const jsonString = aiResponse.substring(startIndex, endIndex + 1);
+        const script = JSON.parse(jsonString);
+
+        appendVideoCallScript(script, dossier.character.name);
+
+    } catch (error) {
+        console.error("获取视频通话回复失败:", error);
+        appendVideoCallScript([{ type: 'dialogue', content: '“嗯...你刚刚说什么？我没太听清。”' }], dossier.character.name);
+    } finally {
+        DOM.videoCallInput.disabled = false;
+        DOM.videoCallSendBtn.disabled = false;
+        DOM.videoCallTypingIndicator.style.display = 'none';
+        DOM.videoCallInput.focus();
+    }
+}
+// ====== 新增：“来电处理”核心函数 ======//
+
+/**
+ * 【电话调度员】处理到期的来电任务，并显示横幅
+ * @param {number} dossierId - 来电角色的ID
+ * @param {object} payload - 任务的载荷，包含开场白等信息
+ */
+async function handleIncomingCall(dossierId, payload) {
+    // 安全检查：如果当前已经有一个电话正在打或正在通话中，则忽略新的来电
+    if (document.getElementById('incoming-call-banner').classList.contains('visible') || 
+        DOM.videoCallOverlay.classList.contains('visible')) {
+        console.log(`[来电调度员] 已有一个通话正在进行，忽略了来自 dossierId: ${dossierId} 的新来电。`);
+        return;
+    }
+    
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return;
+
+    // 1. 填充横幅信息
+    const banner = document.getElementById('incoming-call-banner');
+    const avatarEl = document.getElementById('caller-avatar');
+    const nameEl = document.getElementById('caller-name');
+    
+    nameEl.textContent = dossier.character.name;
+    if (dossier.character.avatarAssetId) {
+        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+        if (asset?.file) {
+            avatarEl.style.backgroundImage = `url(${URL.createObjectURL(asset.file)})`;
+        }
+    } else {
+        avatarEl.style.backgroundImage = 'none';
+    }
+
+    // 2. 【关键】为按钮动态绑定【一次性】的点击事件
+    const acceptBtn = document.getElementById('accept-call-btn');
+    const declineBtn = document.getElementById('decline-call-btn');
+
+    // 使用 .onclick 赋值可以轻松覆盖旧的监听器，确保不会重复绑定
+    acceptBtn.onclick = () => handleAcceptCall(dossierId, payload);
+    declineBtn.onclick = () => handleDeclineCall(dossierId);
+    
+    // 3. 显示横幅
+    banner.classList.add('visible');
+    
+    // 4. (可选) 播放来电铃声
+    // TODO: 如果有铃声音频文件，可以在这里播放
+}
+
+/**
+ * 【接线员】处理“接听”操作
+ * @param {number} dossierId - 来电角色的ID
+ * @param {object} payload - 任务的载荷
+ */
+
+function handleAcceptCall(dossierId, payload) {
+    const banner = document.getElementById('incoming-call-banner');
+    banner.classList.remove('visible');
+
+    // 1. 切换全局的聊天对象ID
+    appState.currentChattingDossierId = dossierId;
+
+    // 2. 为了确保通话界面能正常弹出，关闭所有可能打开的应用
+    if (DOM.settingsNavigator.classList.contains('active')) closeNavigator(DOM.settingsNavigator);
+    if (DOM.archiveApp.classList.contains('active')) closeNavigator(DOM.archiveApp);
+    if (DOM.chatApp.classList.contains('active')) closeNavigator(DOM.chatApp);
+    if (DOM.libraryApp.classList.contains('active')) closeNavigator(DOM.libraryApp);
+    
+    // 3. 【最终修正】调用我们早已做好的视频通话界面，并把“开场白”传进去
+    startVideoCall(payload);
+}
+
+/**
+ * 【接线员】处理“拒绝”操作
+ * @param {number} dossierId - 来电角色的ID
+ */
+async function handleDeclineCall(dossierId) {
+    const banner = document.getElementById('incoming-call-banner');
+    banner.classList.remove('visible');
+
+    // 在后台为对应的聊天记录添加一条系统消息
+    await renderMessage({
+        dossierId: dossierId,
+        sender: 'system',
+        content: `你未接通视频通话`
+    });
+    // 更新会话列表的最后消息
+    await updateChatSession(dossierId, '[未接视频通话]');
+    
+    utils.showToast('已拒接');
+}
+
+/**
+ * 【全新】处理AI对转账的回应任务
+ * @param {object} payload - 任务载荷，包含目标消息ID和AI的决定
+ */
+async function handleTransferResponse(payload) {
+    const { targetMessageId, decision } = payload;
+    if (!targetMessageId || !decision) return;
+
+    // 1. 在内存和数据库中找到并更新原始的转账消息
+    const messageIndex = appState.currentChatHistory.findIndex(msg => msg.id === targetMessageId);
+    if (messageIndex === -1) return;
+
+    const messageToUpdate = appState.currentChatHistory[messageIndex];
+    const newStatus = (decision === 'accept') ? 'accepted' : 'declined';
+    
+    if (!messageToUpdate.metadata) messageToUpdate.metadata = {};
+    messageToUpdate.metadata.status = newStatus;
+    
+    await dbHelper.set(CONSTANTS.STORE_NAMES.CHAT_HISTORY, messageToUpdate);
+
+    // 2. 实时更新UI上的卡片
+    const messageEl = document.querySelector(`.chat-message[data-message-id="${targetMessageId}"]`);
+    if (messageEl) {
+        const cardEl = messageEl.querySelector('.transfer-card');
+        const iconEl = messageEl.querySelector('.transfer-info i');
+        const statusTextEl = messageEl.querySelector('.transfer-status-text');
+
+        cardEl.className = `transfer-card status-${newStatus}`;
+        if (newStatus === 'accepted') {
+            iconEl.className = 'ri-check-line';
+            statusTextEl.textContent = '对方已收款';
+        } else { // declined
+            iconEl.className = 'ri-close-line';
+            statusTextEl.textContent = '对方已退回';
+        }
+    }
+
+    // 3. 添加系统消息
+    const dossier = appState.dossiers.find(d => d.id === messageToUpdate.dossierId);
+    const characterName = dossier?.character.name || '对方';
+    const { amount, currency } = messageToUpdate.content;
+
+    const systemMessageContent = (newStatus === 'accepted')
+        ? `${characterName} 已收款 ${amount} ${currency}`
+        : `${characterName} 退回了你的转账`;
+
+    const systemMessage = {
+        dossierId: messageToUpdate.dossierId,
+        sender: 'system',
+        content: `[${systemMessageContent}]`,
+        timestamp: Date.now()
+    };
+    
+    const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, systemMessage);
+    systemMessage.id = savedId;
+    appState.currentChatHistory.push(systemMessage);
+    
+    // 只在用户正在当前聊天页面时才实时渲染系统消息
+    if (document.getElementById('chat-dialogue-page').classList.contains('active') && appState.currentChattingDossierId === messageToUpdate.dossierId) {
+        await renderMessage(systemMessage);
+    }
+    
+    // 更新会话列表
+    await updateChatSession(messageToUpdate.dossierId, `[${systemMessageContent}]`);
+}
+
+/**
+ * 【V2 - 浮窗+筛选版】打开并渲染钱包页面
+ * @param {string} filter - 'all', 'income', or 'expense'
+ */
+async function renderWalletPage(filter = 'all') {
+    const db = await dbHelper.dbPromise;
+    const allTransactions = await db.getAllFromIndex(CONSTANTS.STORE_NAMES.WALLET_TRANSACTIONS, 'by_timestamp');
+    allTransactions.reverse();
+
+    // 1. 【核心】根据筛选器过滤交易记录
+    let filteredTransactions = allTransactions;
+    if (filter === 'income') {
+        filteredTransactions = allTransactions.filter(tx => tx.type === 'income');
+    } else if (filter === 'expense') {
+        filteredTransactions = allTransactions.filter(tx => tx.type === 'expense');
+    }
+
+    // 2. 计算总余额 (永远基于所有交易)
+    let totalBalance = 0;
+    allTransactions.forEach(tx => {
+        totalBalance += (tx.type === 'income' ? tx.amount : -tx.amount);
+    });
+    DOM.walletBalance.textContent = `¥ ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+    // 3. 渲染筛选后的列表
+    DOM.transactionList.innerHTML = '';
+    if (filteredTransactions.length === 0) {
+        DOM.transactionList.innerHTML = `<li class="empty-placeholder">暂无${filter === 'income' ? '收入' : filter === 'expense' ? '支出' : ''}记录</li>`;
+    } else {
+        filteredTransactions.forEach(tx => {
+            const item = document.createElement('li');
+            item.className = `transaction-item ${tx.type}`;
+            const sign = tx.type === 'income' ? '+' : '-';
+            const iconClass = tx.type === 'income' ? 'ri-arrow-down-line' : 'ri-arrow-up-line';
+            item.innerHTML = `
+                <div class="transaction-icon"><i class="${iconClass}"></i></div>
+                <div class="transaction-details">
+                    <span class="counterparty">${tx.counterpartyName}</span>
+                    <span class="timestamp">${formatRelativeTime(tx.timestamp)}</span>
+                </div>
+                <span class="transaction-amount">${sign} ${tx.amount.toFixed(2)}</span>
+            `;
+            DOM.transactionList.appendChild(item);
+        });
+    }
+    
+    // 4. 更新筛选标签的激活状态
+    DOM.transactionFilterTabs.querySelectorAll('.filter-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.filter === filter);
+    });
+
+    // 5. 【核心】打开浮窗
+    DOM.walletModal.classList.add('visible');
+}
+
+/**
+ * 【全新】将一笔交易记录存入钱包数据库
+ */
+async function addWalletTransaction(type, dossierId, amount, memo) {
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return;
+
+    const transaction = {
+        dossierId: dossierId,
+        type: type, // 'income' or 'expense'
+        amount: amount,
+        counterpartyName: (type === 'income') ? `来自 ${dossier.character.name}` : `转给 ${dossier.character.name}`,
+        memo: memo,
+        timestamp: Date.now()
+    };
+    await dbHelper.add(CONSTANTS.STORE_NAMES.WALLET_TRANSACTIONS, transaction);
+}
+
+ /**
+         * 【V3】根据数据库中的 'secrets' 表，渲染心事列表的UI
+         */
+        async function renderSecretsList() { // <--- 关键：将函数改为 async
+            const container = DOM.secretsListContainer;
+            
+            // 1. 【核心升级】从数据库读取所有心事
+            const allSecrets = await dbHelper.getAll(CONSTANTS.STORE_NAMES.SECRETS);
+            
+            // 2. 只筛选出“主题帖”（即没有父ID的心事）
+            const rootSecrets = allSecrets.filter(secret => secret.parentId === null);
+
+            // 3. 后续的渲染逻辑保持不变...
+            if (rootSecrets.length === 0) {
+                container.innerHTML = `<p style="text-align:center; opacity:0.7; padding: 50px 20px;">你的秘密花园里还没有任何心事...<br>点击右上角的“+”号，写下第一条吧。</p>`;
+                return;
+            }
+
+            container.innerHTML = ''; // 清空旧内容
+            const sortedSecrets = rootSecrets.sort((a, b) => b.timestamp - a.timestamp);
+
+            for (const secret of sortedSecrets) {
+                const card = document.createElement('div');
+                card.className = `secret-card ${secret.authorType}`;
+                card.dataset.secretId = secret.id;
+
+                const moodIcons = {
+                    happy: 'ri-emotion-happy-line',
+                    sad: 'ri-emotion-unhappy-line',
+                    love: 'ri-heart-add-line',
+                    thoughtful: 'ri-question-line',
+                    normal: 'ri-emotion-normal-line'
+             };
+                const iconClass = moodIcons[secret.mood] || 'ri-emotion-normal-line';
+                
+                let titleHTML = '';
+                if (secret.authorType === 'character') {
+                    titleHTML = `<span class="secret-card-title">${secret.authorName || '角色'}</span>`;
+                } else {
+                    titleHTML = `<span class="secret-card-title">${secret.title}</span>`;
+                }
+
+               card.innerHTML = `
+                    <div class="secret-card-header">
+                        ${titleHTML}
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <p class="secret-card-preview">${secret.content}</p>
+                    <div class="secret-card-footer">
+                        <span>${formatRelativeTime(secret.timestamp)}</span>
+                    </div>
+                    
+                    <!-- vvv 【【【 新增的删除按钮 】】】 vvv -->
+                    <i class="delete-secret-btn ri-delete-bin-line" title="删除心事"></i>
+                    <!-- ^^^ 新增结束 ^^^ -->
+                `;
+                container.appendChild(card);
+            }
+        }
+        // ^^^ 替换到此结束 ^^^
+  
+        /**
+         * 【V2】打开并填充心事详情页浮窗（包含所有回应）
+         * @param {number} secretId - 要打开的主题帖心事的ID
+         */
+        async function openSecretDetails(secretId) { // <--- 确保函数是 async 异步的
+            
+            // 1. 从数据库获取所有心事数据
+            const allSecrets = await dbHelper.getAll(CONSTANTS.STORE_NAMES.SECRETS);
+            
+            // 2. 找到我们点击的那条“主题帖”心事
+            const secret = allSecrets.find(s => s.id === secretId);
+            
+            // 安全检查，如果找不到就提前退出
+            if (!secret) {
+                utils.showToast('无法找到该心事');
+                return;
+            }
+
+            // 3. 将当前正在查看的 secretId 存入全局状态，方便后续发送回应时使用
+            appState.currentViewingSecretId = secretId;
+
+            // 4. 渲染顶部的“原始心事”内容 (这部分和您之前确认的逻辑一致)
+            const container = DOM.originalSecretContainer;
+            const moodIcons = {
+                happy: 'ri-emotion-happy-line',
+                sad: 'ri-emotion-unhappy-line',
+                love: 'ri-heart-add-line',
+                thoughtful: 'ri-question-line',
+                normal: 'ri-emotion-normal-line'
+            };
+            const iconClass = moodIcons[secret.mood] || 'ri-emotion-normal-line';
+            
+            container.innerHTML = `
+                <div class="secret-card-header" style="border-bottom-color: rgba(var(--text-color-rgb), 0.15);">
+                    <span class="secret-card-title">${secret.title}</span>
+                    <i class="${iconClass}"></i>
+                </div>
+                <p class="secret-card-preview" style="-webkit-line-clamp: unset; max-height: 200px; overflow-y: auto;">${secret.content}</p>
+                <div class="secret-card-footer" style="border-top-color: rgba(var(--text-color-rgb), 0.15);">
+                    <span>${formatRelativeTime(secret.timestamp)}</span>
+                </div>
+            `;
+            
+            // 5. 【核心】渲染所有的后续回应/评论
+            const commentsContainer = DOM.secretCommentsContainer;
+            commentsContainer.innerHTML = ''; // 每次打开都先清空旧内容
+            
+            // a. 从所有数据中，筛选出所有 parentId 是当前心事ID的回应
+            const responses = allSecrets
+                .filter(s => s.parentId === secretId)
+                .sort((a, b) => a.timestamp - b.timestamp); // 按时间正序排列，确保对话顺序正确
+
+            // b. 遍历筛选出的回应数组，并为每一条创建对应的HTML元素
+            for (const response of responses) {
+                const commentEl = document.createElement('div');
+                // 根据作者类型，添加 'user' 或 'character' 类，以应用不同的边框颜色
+                commentEl.className = `secret-comment-item ${response.authorType}`;
+                
+                // 决定显示的作者名字
+                const authorName = response.authorType === 'user' ? '我' : response.authorName;
+                
+                // vvv 【【【 这是唯一新增的代码块 】】】 vvv
+                let replyPrefixHTML = '';
+                // 检查这条回应是否有 replyToId
+                if (response.replyToId) {
+                    // 如果有，就去所有数据里找到它回复的那条原始评论
+                    const repliedToComment = allSecrets.find(s => s.id === response.replyToId);
+                    if (repliedToComment) {
+                        // 决定被回复者的名字
+                        const repliedToAuthorName = repliedToComment.authorType === 'user' ? '我' : repliedToComment.authorName;
+                        // 构建HTML前缀
+                        replyPrefixHTML = `<span style="opacity: 0.7;">回复 ${repliedToAuthorName}: </span>`;
+                    }
+                }
+                // ^^^ 新增结束 ^^^
+                
+                // 使用 innerHTML 构建我们之前设计的“批注”样式结构
+               commentEl.innerHTML = `
+    <div class="secret-comment-header">
+        <span class="secret-comment-author">${authorName}</span>
+        <div class="comment-actions">
+            <!-- vvv 【【【 新增的回复按钮 】】】 vvv -->
+            <i class="ri-reply-line reply-to-comment-btn" data-comment-id="${response.id}" title="回复这条"></i>
+            <!-- ^^^ 新增结束 ^^^ -->
+            <span class="secret-comment-timestamp">${formatRelativeTime(response.timestamp)}</span>
+        </div>
+    </div>
+  <p class="secret-comment-text">${replyPrefixHTML}${response.content}</p>
+`;
+                commentsContainer.appendChild(commentEl);
+            }
+
+            // 6. 显示整个浮窗
+            DOM.secretDetailsModal.classList.add('visible');
+
+            // 7. 【体验优化】使用一个微小的延迟，确保DOM渲染完成后，再将评论区滚动到底部
+            setTimeout(() => {
+                // 获取可滚动的父容器
+                const scrollableContent = commentsContainer.parentElement;
+                if (scrollableContent) {
+                    scrollableContent.scrollTop = scrollableContent.scrollHeight;
+                }
+            }, 100);
+        }
+        
+        // ^^^ 函数到此结束 ^^^
+
+/**
+         * 【全新】触发AI对用户新心事的社交扫描与决策
+         * @param {object} userSecret - 用户刚刚发布并存入数据库的心事对象
+         */
+       async function triggerAiSecretResponseDecision(userSecret) {
+            console.log(`[心事引擎] 已收到新心事 #${userSecret.id}，正在为所有角色触发AI决策...`);
+
+            for (const dossier of appState.dossiers) {
+                try {
+                    // 1. 调用我们【合并后】的唯一Prompt函数
+                    const responsePrompt = promptManager.createSecretResponsePrompt(dossier, userSecret);
+                    
+                    // 2. 调用API获取AI的决策和【已写好的回应】
+                    const aiResponse = await apiHelper.getChatCompletion(responsePrompt);
+                    
+                    // 3. 智能解析JSON
+                    const jsonStartIndex = aiResponse.indexOf('{');
+                    const jsonEndIndex = aiResponse.lastIndexOf('}');
+                    if (jsonStartIndex === -1 || jsonEndIndex === -1) throw new Error("AI未返回有效的JSON对象。");
+                    const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+                    const decision = JSON.parse(jsonString);
+
+                    // 4. 如果AI决定回应，则创建待办任务
+                    if (decision.shouldRespond && decision.responseContent) {
+                        const delay = (decision.delayInMinutes || 0) * 60 * 1000;
+                        const executeAt = Date.now() + delay;
+
+                        const newAction = {
+                            dossierId: dossier.id,
+                            type: 'secret_response', // 任务类型保持不变
+                            payload: {
+                                userSecretId: userSecret.id,
+                                // 【核心变化】直接存储已经写好的回应内容
+                                responseContent: decision.responseContent 
+                            },
+                            executeAt: executeAt,
+                            status: 'pending'
+                        };
+                        
+                        // 5. 将任务存入数据库
+                        await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
+                        console.log(`[心事引擎] ✅ 角色 [${dossier.character.name}] 已决定在 ${decision.delayInMinutes} 分钟后回应心事 #${userSecret.id}`);
+                    } else {
+                        console.log(`[心事引擎] 角色 [${dossier.character.name}] 决定暂不回应。`);
+                    }
+
+                } catch (error) {
+                    console.error(`[心事引擎] ❌ 为角色 [${dossier.character.name}] 处理心事决策时失败:`, error);
+                }
+            }
+        }
+
+/**
+         * 【全新】触发AI对用户的“回复”进行决策
+         * @param {object} userReply - 用户刚刚发布的回应对象
+         */
+        async function triggerAiSecretReplyDecision(userReply) {
+            if (!userReply.replyToId) return;
+
+            const allSecrets = await dbHelper.getAll(CONSTANTS.STORE_NAMES.SECRETS);
+            const repliedToComment = allSecrets.find(s => s.id === userReply.replyToId);
+            const originalSecret = allSecrets.find(s => s.id === userReply.parentId);
+
+            if (!repliedToComment || repliedToComment.authorType !== 'character' || !originalSecret) {
+                console.log(`[心事引擎] 跳过AI决策：用户回复的目标不是角色的批注，或原始数据丢失。`);
+                return;
+            }
+
+            // 【核心修正】我们现在可以正确地从角色的批注记录中读取 authorId 了
+            const dossierId = repliedToComment.authorId; 
+            const dossier = appState.dossiers.find(d => d.id === dossierId);
+            
+            // 【关键】现在这个判断将能正常通过！
+            if (!dossier) {
+                console.error(`[心事引擎] 严重错误：在角色批注中找到了dossierId #${dossierId}，但在内存中找不到对应的角色档案。`);
+                return;
+            }
+
+            console.log(`[心事引擎] 检测到用户回复，正在为角色 [${dossier.character.name}] 触发AI决策...`);
+
+            try {
+                // 1. 调用我们为“回复回复”设计的专属Prompt
+               const decisionPrompt = promptManager.createSecretReplyDecisionPrompt(dossier, originalSecret, repliedToComment, userReply);
+                
+                // 2. 后续逻辑与之前的“一步到位”方案完全一致
+                const aiResponse = await apiHelper.getChatCompletion(decisionPrompt);
+                const jsonStartIndex = aiResponse.indexOf('{');
+                const jsonEndIndex = aiResponse.lastIndexOf('}');
+                if (jsonStartIndex === -1 || jsonEndIndex === -1) throw new Error("AI未返回有效的JSON对象。");
+                const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+                const decision = JSON.parse(jsonString);
+
+                if (decision.shouldRespond && decision.responseContent) {
+                    const delay = (decision.delayInMinutes || 0) * 60 * 1000;
+                    const executeAt = Date.now() + delay;
+
+                    // 3. 创建待办任务，但 payload 中包含了 replyToId
+                    const newAction = {
+                        dossierId: dossier.id,
+                        type: 'secret_response', // 我们可以复用这个任务类型
+                        payload: {
+                            userSecretId: originalSecret.id,
+                            responseContent: decision.responseContent,
+                            replyToId: userReply.id // 【关键】告诉AI它要回复的是哪条用户评论
+                        },
+                        executeAt: executeAt,
+                        status: 'pending'
+                    };
+                    
+                    await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
+                    console.log(`[心事引擎] ✅ 角色 [${dossier.character.name}] 已决定在 ${decision.delayInMinutes} 分钟后进行“楼中楼”回复。`);
+                }
+
+            } catch (error) {
+                console.error(`[心事引擎] ❌ 为角色 [${dossier.character.name}] 处理“楼中楼”回复决策时失败:`, error);
+            }
+        }
+
 /**
  * 【管家】AI 行为引擎
  */
@@ -5943,7 +8971,20 @@ const ActionEngine = {
                         // 我们直接创建一个新的处理器函数来应对
                         await handleMomentCommentAction(action.payload, action.dossierId);
                         break;
-                    // 未来可以在这里扩展其他任务类型
+                  // vvv 【新增】处理视频通话任务 vvv
+                    case 'video_call_initiate':
+                        await handleIncomingCall(action.dossierId, action.payload);
+                        break;
+// vvv 【新增】处理转账回应任务 vvv
+                    case 'transfer_response':
+                        await handleTransferResponse(action.payload);
+                        break;
+// vvv 在这里新增一个 case vvv
+                     case 'secret_response':                                        
+                         await
+handleSecretResponseAction(action.payload, action.dossierId);
+                         break;
+                    // ^^^ 新增结束 ^^^
                 }
                 // 任务成功，更新状态
                 await dbHelper.updatePendingActionStatus(action.id, 'completed');
@@ -5968,6 +9009,61 @@ const ActionEngine = {
     }
 };
 // ^^^ 新模块到此结束 ^^^
+/**
+         * 【全新】处理“回应心事”类型的待办任务
+         * @param {object} payload - 任务的载荷
+         * @param {number} dossierId - 执行此任务的角色ID
+         */
+    
+        async function handleSecretResponseAction(payload, dossierId) {
+            // 1. 从 payload 中解构出所有可能的信息
+            const { userSecretId, responseContent, replyToId } = payload;
+
+            const dossier = appState.dossiers.find(d => d.id === dossierId);
+            if (!userSecretId || !dossier) {
+                console.error(`[心事引擎] 无法处理回应，缺少原始心事ID或角色信息`);
+                return;
+            }
+
+            try {
+                // 2. 【核心修正】创建回应对象时，增加 authorId 字段
+                const aiSecretResponse = {
+                    parentId: userSecretId,
+                    authorType: 'character',
+                    authorId: dossierId, // <-- 【【【 这就是我们缺失的关键信息！ 】】】
+                    authorName: dossier.character.name,
+                    content: responseContent,
+                    timestamp: Date.now(),
+                    replyToId: replyToId || null
+                };
+
+                await dbHelper.add(CONSTANTS.STORE_NAMES.SECRETS, aiSecretResponse);
+                console.log(`[心事引擎] ✅ 角色 [${dossier.character.name}] 已成功回应心事 #${userSecretId}`);
+
+                // 3. 后续的通知和UI更新逻辑保持不变...
+                const avatarAsset = dossier.character.avatarAssetId ? await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId) : null;
+                const avatarUrl = avatarAsset?.file ? URL.createObjectURL(avatarAsset.file) : null;
+                
+                notificationManager.show({
+                    avatarUrl,
+                    title: `你收到一封来自 ${dossier.character.name} 的私密回应`,
+                    message: responseContent,
+                    onClick: null
+                });
+                
+                // 【UI实时更新】如果用户正好在【详情页】，则刷新它
+                if (DOM.secretDetailsModal.classList.contains('visible') && appState.currentViewingSecretId === userSecretId) {
+                    await openSecretDetails(userSecretId);
+                } 
+                // 如果用户在【列表页】，则刷新列表
+                else if (document.getElementById('secrets-pane').classList.contains('active')) {
+                    await renderSecretsList();
+                }
+
+            } catch (error) {
+                console.error(`[心事引擎] ❌ 角色 [${dossier.character.name}] 在保存回应时失败:`, error);
+            }
+        }
 
 /**
  * 【全新抽离】处理所有“缓冲发送”行为的核心函数
@@ -6272,25 +9368,29 @@ libraryBookIds: [] // <-- 【新增】为新档案初始化一个空数组
             DOM.dossierModalOverlay.addEventListener('click', e => { if (e.target === DOM.dossierModalOverlay) DOM.dossierModalOverlay.classList.remove('visible'); });
             DOM.editDossierBtn.addEventListener('click', () => { if (appState.currentEditingDossierId) { DOM.dossierModalOverlay.classList.remove('visible'); loadDossierForEditing(appState.currentEditingDossierId); } });
             DOM.iconChat.addEventListener('click', () => { renderChatList(); navigateToPage(DOM.chatApp, 'chat-main-page'); });
-            // vvv 用这个【增加了 renderMoments 调用】的最终版，替换旧的 chatTabItems 监听器 vvv
-DOM.chatTabItems.forEach(tab => {
-    tab.addEventListener('click', () => {
-        DOM.chatTabItems.forEach(item => item.classList.remove('active'));
-        DOM.chatContentPanes.forEach(pane => pane.classList.remove('active'));
-        
-        tab.classList.add('active');
-        const targetPaneId = tab.dataset.target;
-        document.getElementById(targetPaneId).classList.add('active');
-        DOM.chatHeaderTitle.textContent = tab.dataset.title;
+           // vvv 用这个【增加了“心事”分支】的最终版，替换旧的 chatTabItems 监听器 vvv
+        DOM.chatTabItems.forEach(tab => {
+            tab.addEventListener('click', async () => { // <--- 关键：将函数改为 async
+                DOM.chatTabItems.forEach(item => item.classList.remove('active'));
+                DOM.chatContentPanes.forEach(pane => pane.classList.remove('active'));
+                
+                tab.classList.add('active');
+                const targetPaneId = tab.dataset.target;
+                document.getElementById(targetPaneId).classList.add('active');
+                DOM.chatHeaderTitle.textContent = tab.dataset.title;
 
-        // 【核心新增】如果点击的是“动态”标签，则调用渲染函数
-        if (targetPaneId === 'moments-pane') {
-            renderMoments();
-        }
-    });
-});
+                // --- 【核心修正】在这里添加 else if 分支 ---
+                if (targetPaneId === 'moments-pane') {
+                    await renderMoments();
+                } else if (targetPaneId === 'secrets-pane') {
+                    // 当用户切换到“心事”标签时，主动调用渲染函数！
+                    await renderSecretsList();
+                }
+                // --- 修正结束 ---
+            });
+        });
 // ^^^ 替换到此结束 ^^^
-            // vvv 【修改】为 “+” 按钮增加打开动态发布页的功能 vvv
+            // vvv 用这个【增加了“心事”分支】的升级版，替换旧的 newChatBtn 监听器 vvv
         DOM.newChatBtn.addEventListener('click', () => {
             const activeTab = document.querySelector('#app-chat .tab-item.active');
             const activePaneId = activeTab?.dataset.target;
@@ -6302,11 +9402,15 @@ DOM.chatTabItems.forEach(tab => {
                 // 如果在对话页，则打开新建聊天窗口
                 populateCharacterSelectModal();
                 DOM.newChatModal.classList.add('visible');
+            } else if (activePaneId === 'secrets-pane') {
+                // 【核心新增】如果是在心事页，则打开写心事页面
+                navigateToPage(DOM.chatApp, 'secrets-creation-page');
             } else {
                 // 其他页面，暂时提示
                 utils.showToast("该功能正在施工中...");
             }
         });
+        // ^^^ 替换到此结束 ^^^
             DOM.closeChatModalBtn.addEventListener('click', () => DOM.newChatModal.classList.remove('visible'));
             DOM.newChatModal.addEventListener('click', (e) => { if (e.target === DOM.newChatModal) DOM.newChatModal.classList.remove('visible'); });
             DOM.characterSelectList.addEventListener('click', (e) => { const selectedCharacter = e.target.closest('.character-select-item'); if (selectedCharacter) { const dossierId = parseInt(selectedCharacter.dataset.dossierId, 10); startNewChat(dossierId); } });
@@ -7525,9 +10629,583 @@ DOM.chatFunctionBtn.addEventListener('click', toggleFunctionPanel);
                     e.target.value = ''; 
                 }
             });
-            
- }
 
+// 监听“+”号面板中的“视频通话”按钮
+            DOM.funcSendVideo.addEventListener('click', () => {
+                // 点击后先收起面板
+                if (DOM.chatFunctionPanel.style.display === 'flex') {
+                    toggleFunctionPanel();
+                }
+                // 然后启动视频通话
+                startVideoCall();
+            });
+
+            // 监听视频通话界面中的“取消/挂断”按钮
+            DOM.videoCallActionBtn.addEventListener('click', endVideoCall);
+
+// 监听视频通话中的发送按钮
+            DOM.videoCallSendBtn.addEventListener('click', handleVideoCallSend);
+
+            // 监听视频通话输入框的回车键
+            DOM.videoCallInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // 防止回车换行
+                    handleVideoCallSend();
+                }
+            });
+
+// 1. 监听“+”号面板中的“语音”图标
+            DOM.funcVoiceInput.addEventListener('click', () => {
+                toggleFunctionPanel(); // 关闭功能面板
+                DOM.voiceTextInput.value = ''; // 清空输入框
+                DOM.voiceMessageModal.classList.add('visible'); // 显示浮窗
+                DOM.voiceTextInput.focus();
+            });
+
+            // 2. 关闭浮窗的两种方式
+            const closeVoiceModal = () => DOM.voiceMessageModal.classList.remove('visible');
+            DOM.closeVoiceModalBtn.addEventListener('click', closeVoiceModal);
+            DOM.cancelVoiceMessageBtn.addEventListener('click', closeVoiceModal);
+            DOM.voiceMessageModal.addEventListener('click', (e) => {
+                if (e.target === DOM.voiceMessageModal) closeVoiceModal();
+            });
+
+            // 3. 监听“发送”按钮
+            DOM.sendVoiceMessageBtn.addEventListener('click', async () => {
+                const text = DOM.voiceTextInput.value.trim();
+                if (!text) {
+                    utils.showToast('语音内容不能为空哦');
+                    return;
+                }
+
+                const dossierId = appState.currentChattingDossierId;
+                if (!dossierId) return;
+
+                // a. 计算虚拟时长 (每秒3个字)
+                const duration = Math.max(1, Math.ceil(text.length / 3));
+
+                // b. 构建新的语音消息对象
+                const voiceMessage = {
+                    dossierId,
+                    sender: 'user',
+                    type: 'voice', // <-- 新类型！
+                    content: text,
+                    metadata: { duration },
+                    timestamp: Date.now()
+                };
+
+                // c. 存入数据库并更新内存
+                const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, voiceMessage);
+                voiceMessage.id = savedId;
+                const prevMessage = appState.currentChatHistory[appState.currentChatHistory.length - 1];
+                appState.currentChatHistory.push(voiceMessage);
+
+                // d. 渲染到屏幕
+                await renderMessage(voiceMessage, prevMessage);
+                
+                // e. 更新会话列表
+                await updateChatSession(dossierId, '[语音消息]');
+
+                // f. 关闭浮窗
+                closeVoiceModal();
+            });
+
+            // 4. 【核心】使用事件委托，监听对所有语音条的点击
+            DOM.messagesContainer.addEventListener('click', (e) => {
+                const voiceBubble = e.target.closest('.voice-bubble');
+                if (!voiceBubble) return; // 如果点的不是语音条，则忽略
+
+                const wrapper = voiceBubble.parentElement;
+                const transcriptionEl = wrapper.querySelector('.transcription-text');
+                const timestampEl = wrapper.querySelector('.message-timestamp');
+                const playIcon = voiceBubble.querySelector('.play-icon');
+
+                if (transcriptionEl) {
+                    // 切换显示状态
+                    const isVisible = transcriptionEl.style.display === 'block';
+                    transcriptionEl.style.display = isVisible ? 'none' : 'block';
+                    
+                    // 切换播放图标
+                    playIcon.className = isVisible ? 'ri-play-fill play-icon' : 'ri-pause-fill play-icon';
+
+                    // 【关键】根据显示状态，决定时间戳是气泡的一部分还是独立的一部分
+                    if (isVisible) {
+                        // 文字收起 -> 把时间戳移回 wrapper 的末尾
+                        if (timestampEl) wrapper.appendChild(timestampEl); // <--- 核心修正
+                    } else {
+                        // 文字展开 -> 同样是把时间戳移到 wrapper 的末尾
+                        if (timestampEl) wrapper.appendChild(timestampEl); // <--- 逻辑统一
+                    }
+                }
+            });
+
+// 新增：“模拟转账”事件监听
+            DOM.messagesContainer.addEventListener('click', async (e) => {
+                const transferCard = e.target.closest('.transfer-card.status-pending');
+                if (!transferCard) return;
+
+                const messageEl = transferCard.closest('.chat-message');
+                const messageId = parseInt(messageEl.dataset.messageId, 10);
+                if (!messageId) return;
+
+                const messageIndex = appState.currentChatHistory.findIndex(msg => msg.id === messageId);
+                if (messageIndex === -1) return;
+
+                const messageToUpdate = appState.currentChatHistory[messageIndex];
+                
+                // 安全检查：只允许用户“接收”角色发来的转账
+                if (messageToUpdate.sender !== 'character') return;
+
+                try {
+                    // 1. 更新数据库和内存中的状态
+                    if (!messageToUpdate.metadata) messageToUpdate.metadata = {};
+                    messageToUpdate.metadata.status = 'accepted';
+                    await dbHelper.set(CONSTANTS.STORE_NAMES.CHAT_HISTORY, messageToUpdate);
+
+                    // 2. 更新UI
+                    transferCard.classList.remove('status-pending');
+                    transferCard.classList.add('status-accepted');
+                    const icon = transferCard.querySelector('.transfer-info i');
+                    if (icon) icon.className = 'ri-check-line';
+
+                    // 3. 添加“你已收款”的系统消息
+                    const systemMessageContent = `你已收款 ${messageToUpdate.content.amount} ${messageToUpdate.content.currency}`;
+                    const systemMessage = {
+                        dossierId: messageToUpdate.dossierId,
+                        sender: 'system',
+                        content: systemMessageContent,
+                        timestamp: Date.now()
+                    };
+                    const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, systemMessage);
+                    systemMessage.id = savedId;
+                    appState.currentChatHistory.push(systemMessage);
+                    await renderMessage(systemMessage);
+
+                    // 4. 更新会话列表预览
+                    await updateChatSession(messageToUpdate.dossierId, `[已收账] ${systemMessageContent}`);
+// vvv 新增下面这行，记录收入 vvv
+await addWalletTransaction('income', messageToUpdate.dossierId, messageToUpdate.content.amount, messageToUpdate.content.memo);
+
+                } catch (error) {
+                    console.error("收款失败:", error);
+                    utils.showToast('收款操作失败');
+                }
+            });
+
+// 1. 监听“+”号面板中的“转账”图标
+            DOM.funcTransfer.addEventListener('click', () => {
+                toggleFunctionPanel(); // 关闭功能面板
+                DOM.transferAmountInput.value = ''; // 清空输入
+                DOM.transferMemoInput.value = '';
+                DOM.transferModal.classList.add('visible'); // 显示浮窗
+                DOM.transferAmountInput.focus();
+            });
+
+            // 2. 关闭浮窗的两种方式
+            const closeTransferModal = () => DOM.transferModal.classList.remove('visible');
+            DOM.closeTransferModalBtn.addEventListener('click', closeTransferModal);
+            DOM.cancelTransferBtn.addEventListener('click', closeTransferModal);
+            DOM.transferModal.addEventListener('click', (e) => {
+                if (e.target === DOM.transferModal) closeTransferModal();
+            });
+
+            // 3. 监听“确认转账”按钮
+            DOM.confirmTransferBtn.addEventListener('click', async () => {
+                const amount = parseFloat(DOM.transferAmountInput.value);
+                if (isNaN(amount) || amount <= 0) {
+                    utils.showToast('请输入有效的转账金额');
+                    return;
+                }
+                
+                const memo = DOM.transferMemoInput.value.trim() || `转账 ${amount} 信用点`;
+                const dossierId = appState.currentChattingDossierId;
+                if (!dossierId) return;
+
+                // a. 构建新的转账消息对象
+                const transferMessage = {
+                    dossierId,
+                    sender: 'user',
+                    type: 'transfer',
+                    content: { amount, currency: '信用点', memo },
+                    metadata: { status: 'pending' }, // 用户发起的转账，初始状态也是 pending
+                    timestamp: Date.now()
+                };
+
+                // b. 存入数据库并更新内存
+                const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, transferMessage);
+                transferMessage.id = savedId;
+                const prevMessage = appState.currentChatHistory[appState.currentChatHistory.length - 1];
+                appState.currentChatHistory.push(transferMessage);
+
+                // c. 渲染到屏幕
+                await renderMessage(transferMessage, prevMessage);
+                
+                // d. 更新会话列表
+                await updateChatSession(dossierId, '[转账]');
+
+                // e. 关闭浮窗
+                closeTransferModal();
+// vvv 新增下面这行，记录支出 vvv
+await addWalletTransaction('expense', dossierId, amount, memo);
+                
+            });
+
+// --- 【V2】钱包应用相关的事件监听 ---
+DOM.funcWallet.addEventListener('click', () => {
+    toggleFunctionPanel(); // <-- 新增：先关闭功能面板
+    // 点击“+”号菜单中的钱包，默认显示全部明细
+    renderWalletPage('all');
+});
+
+// 关闭浮窗的两种方式
+const closeWalletModal = () => DOM.walletModal.classList.remove('visible');
+DOM.closeWalletModalBtn.addEventListener('click', closeWalletModal);
+DOM.walletModal.addEventListener('click', e => {
+    if (e.target === DOM.walletModal) closeWalletModal();
+});
+
+// 【核心】为筛选标签绑定事件委托
+DOM.transactionFilterTabs.addEventListener('click', e => {
+    const targetTab = e.target.closest('.filter-tab');
+    if (targetTab && !targetTab.classList.contains('active')) {
+        const filter = targetTab.dataset.filter;
+        // 重新渲染列表，但不重新计算总额，提升效率
+        renderWalletPage(filter);
+    }
+});
+
+// --- 【新增】星座运势相关的事件监听 ---
+DOM.funcHoroscope.addEventListener('click', () => {
+    toggleFunctionPanel(); // 关闭功能面板
+    
+    // 重置浮窗状态
+    DOM.horoscopePreviewContainer.innerHTML = '点击“查询运势”以生成';
+    appState.pendingHoroscopeData = null;
+    DOM.sendHoroscopeCardBtn.disabled = true;
+    
+    DOM.horoscopeModal.classList.add('visible'); // 显示浮窗
+});
+
+// 关闭浮窗的逻辑
+const closeHoroscopeModal = () => DOM.horoscopeModal.classList.remove('visible');
+DOM.closeHoroscopeModalBtn.addEventListener('click', closeHoroscopeModal);
+DOM.cancelHoroscopeBtn.addEventListener('click', closeHoroscopeModal);
+DOM.horoscopeModal.addEventListener('click', e => {
+    if (e.target === DOM.horoscopeModal) closeHoroscopeModal();
+});
+
+// 点击“查询运势”按钮
+DOM.queryHoroscopeBtn.addEventListener('click', async () => {
+    const dossierId = appState.currentChattingDossierId;
+    if (!dossierId) return utils.showToast('请先选择一个聊天对象');
+    
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return utils.showToast('找不到角色档案');
+
+    const zodiacSign = DOM.horoscopeSelect.value;
+    
+    DOM.queryHoroscopeBtn.textContent = '生成中...';
+    DOM.queryHoroscopeBtn.disabled = true;
+    DOM.horoscopePreviewContainer.innerHTML = '正在与星辰沟通...';
+
+    try {
+    const messages = promptManager.createHoroscopePrompt(dossier, zodiacSign);
+    const aiResponse = await apiHelper.getChatCompletion(messages);
+    
+    // vvv 【核心修正】在这里增加“智能净化器” vvv
+    // 1. 寻找JSON的起始 { 和结束 } 符号的位置
+    const jsonStartIndex = aiResponse.indexOf('{');
+    const jsonEndIndex = aiResponse.lastIndexOf('}');
+
+    // 2. 检查是否找到了看似JSON的结构
+    if (jsonStartIndex === -1 || jsonEndIndex === -1 || jsonEndIndex < jsonStartIndex) {
+        // 如果连 { 和 } 都找不到，说明AI返回的内容完全错误
+        throw new Error("AI did not return a valid JSON object.");
+    }
+
+    // 3. 提取出从 { 到 } 的这部分字符串
+    const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+    
+    // 4. 尝试解析这个“净化”过的字符串
+    const horoscopeData = JSON.parse(jsonString);
+    // ^^^ 修正结束 ^^^
+
+    horoscopeData.zodiacSign = zodiacSign; // 把星座信息也存进去
+    
+    // 暂存数据
+    appState.pendingHoroscopeData = horoscopeData;
+
+    // 【核心】渲染预览卡片
+    const previewCardHTML = createHoroscopeCardHTML(horoscopeData);
+    DOM.horoscopePreviewContainer.innerHTML = previewCardHTML;
+    
+    // 激活发送按钮
+    DOM.sendHoroscopeCardBtn.disabled = false;
+
+    } catch (error) {
+        console.error("生成运势失败:", error);
+        DOM.horoscopePreviewContainer.innerHTML = '运势生成失败，请稍后重试。';
+        utils.showToast(`生成失败: ${error.message}`);
+    } finally {
+        DOM.queryHoroscopeBtn.textContent = '查询运势';
+        DOM.queryHoroscopeBtn.disabled = false;
+    }
+});
+
+// 【辅助函数】创建一个可复用的HTML生成器
+function createHoroscopeCardHTML(cardData) {
+    let starsHTML = '';
+    const rating = cardData.overall_rating || 0;
+    for (let i = 0; i < 5; i++) {
+        starsHTML += (i < rating) ? '<span class="filled">★</span>' : '☆';
+    }
+    return `
+        <div class="horoscope-card">
+            <div class="horoscope-header">
+                <span class="horoscope-title">今日运势</span>
+                <span class="horoscope-zodiac">${cardData.zodiacSign}</span>
+            </div>
+            <div class="horoscope-rating">${starsHTML}</div>
+            <div class="horoscope-details">
+                <div class="fortune-item"><span class="label">爱情:</span> <span>${cardData.love_fortune}</span></div>
+                <div class="fortune-item"><span class="label">事业:</span> <span>${cardData.work_fortune}</span></div>
+                <div class="fortune-item"><span class="label">财运:</span> <span>${cardData.wealth_fortune}</span></div>
+            </div>
+            <div class="horoscope-charm">${cardData.lucky_charm}</div>
+            <div class="horoscope-quote">${cardData.character_quote}</div>
+        </div>
+    `;
+}
+
+// 点击“发送”按钮
+DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
+    const horoscopeData = appState.pendingHoroscopeData;
+    const dossierId = appState.currentChattingDossierId;
+    if (!horoscopeData || !dossierId) return;
+
+    // 1. 构建新的消息对象
+    const horoscopeMessage = {
+        dossierId,
+        sender: 'user', // 由用户行为触发，但显示为中立卡片
+        type: 'horoscope',
+        content: horoscopeData,
+        timestamp: Date.now()
+    };
+    
+    // 2. 存入数据库并更新内存
+    const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, horoscopeMessage);
+    horoscopeMessage.id = savedId;
+    const prevMessage = appState.currentChatHistory[appState.currentChatHistory.length - 1];
+    appState.currentChatHistory.push(horoscopeMessage);
+
+    // 3. 在聊天界面渲染
+    await renderMessage(horoscopeMessage, prevMessage);
+    
+    // 4. 更新会话列表
+    await updateChatSession(dossierId, `[运势] ${horoscopeData.zodiacSign}今日运势`);
+
+    // 5. 关闭浮窗
+    closeHoroscopeModal();
+});
+
+         // vvv 用这个【V3 - 真实保存+AI触发版】，完整替换掉你之前的 publishSecretBtn 监听器 vvv
+        DOM.publishSecretBtn.addEventListener('click', async () => { // <--- 关键：将函数改为 async
+            // 1. 从输入框获取数据 (这部分逻辑不变)
+            const title = DOM.secretTitleInput.value.trim();
+            const content = DOM.secretContentInput.value.trim();
+            const activeMoodEl = DOM.moodSelector.querySelector('.mood-item.active');
+            const mood = activeMoodEl ? activeMoodEl.dataset.mood : 'normal';
+
+            // 2. 校验内容是否为空 (这部分逻辑不变)
+            if (!content) {
+                utils.showToast('心事内容不能为空哦');
+                return;
+            }
+
+            // 3. 【核心升级】创建一个准备写入数据库的心事对象
+            const newSecret = {
+                // 'id' 会由数据库自动生成
+                parentId: null, // 这是一个新的“主题帖”，所以没有父ID
+                title: title || '无标题心事',
+                content: content,
+                mood: mood,
+                timestamp: Date.now(),
+                authorType: 'user' // 明确作者是用户
+            };
+
+            try {
+                // 4. 【核心升级】将新对象存入数据库，并获取它被分配的ID
+                const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.SECRETS, newSecret);
+                newSecret.id = savedId; // 将ID加回到对象上，方便后续使用
+
+                // 5. 导航、渲染、清理 (这部分逻辑不变)
+                navigateToPage(DOM.chatApp, 'chat-main-page');
+                const secretsTab = document.querySelector('.tab-item[data-target="secrets-pane"]');
+                if (secretsTab) {
+                    DOM.chatTabItems.forEach(item => item.classList.remove('active'));
+                    secretsTab.classList.add('active');
+                    DOM.chatContentPanes.forEach(pane => pane.classList.remove('active'));
+                    document.getElementById('secrets-pane').classList.add('active');
+                    DOM.chatHeaderTitle.textContent = '心事';
+                }
+                
+                await renderSecretsList(); // 重新渲染列表（它将从数据库读取）
+
+                DOM.secretTitleInput.value = '';
+                DOM.secretContentInput.value = '';
+                DOM.moodSelector.querySelectorAll('.mood-item').forEach(item => item.classList.remove('active'));
+                
+                utils.showToast('心事已发布');
+                
+                // 6. 【核心升级】在后台默默地触发AI决策流程！
+                triggerAiSecretResponseDecision(newSecret);
+
+            } catch (error) {
+                console.error("保存或触发心事失败:", error);
+                utils.showToast('发布失败，请检查控制台');
+            }
+        });
+
+        // --- 使用事件委托，监听对心事列表区域的所有点击 ---
+       DOM.secretsListContainer.addEventListener('click', async (e) => { // <--- 关键：将函数改为 async
+            const deleteBtn = e.target.closest('.delete-secret-btn');
+            const card = e.target.closest('.secret-card');
+
+            if (deleteBtn && card) {
+                // --- 情况1: 用户点击的是删除按钮 ---
+                e.stopPropagation(); // 【重要】阻止事件冒泡，防止触发下面的“打开详情页”逻辑
+
+                const secretId = parseInt(card.dataset.secretId, 10);
+                if (!secretId) return;
+                
+                // a. 弹出原生确认框，防止误删
+                if (confirm("您确定要永久删除这条心事吗？相关的回应也会一并消失。")) {
+                    try {
+                        // b. 调用我们强大的数据库删除工具
+                        await dbHelper.deleteSecretAndResponses(secretId);
+                        
+                        // c. 在UI上直接移除这张卡片，实现“即时反馈”
+                        card.style.transition = 'opacity 0.3s, transform 0.3s';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        setTimeout(() => card.remove(), 300);
+                        
+                        utils.showToast('心事已删除');
+
+                    } catch (error) {
+                        console.error("删除心事失败:", error);
+                        utils.showToast('删除失败，请检查控制台');
+                    }
+                }
+                
+            } else if (card) {
+                // --- 情况2: 用户点击的是卡片的其他区域 (和之前一样，打开详情页) ---
+                const secretId = parseInt(card.dataset.secretId, 10);
+                if (secretId) {
+                    openSecretDetails(secretId);
+                }
+            }
+        });
+
+        // --- 负责关闭详情页浮窗的逻辑 ---
+       const closeSecretDetailsModal = () => {
+            DOM.secretDetailsModal.classList.remove('visible');
+            
+            // 【核心修正】在这里，彻底重置所有与本次查看相关的状态
+            appState.currentViewingSecretId = null; // 清空正在查看的主题ID
+            appState.replyingToCommentId = null;    // 清空正在回复的批注ID
+            DOM.secretCommentInput.placeholder = '输入你的回应...'; // 恢复输入框的默认提示
+        };
+        DOM.closeSecretDetailsBtn.addEventListener('click', closeSecretDetailsModal);
+        DOM.secretDetailsModal.addEventListener('click', (e) => {
+            if (e.target === DOM.secretDetailsModal) {
+                closeSecretDetailsModal();
+            }
+        });
+        
+        // --- 【全新】发送评论的逻辑 ---
+      const handleSendSecretComment = async () => {
+            const text = DOM.secretCommentInput.value.trim();
+            if (!text) return;
+            const parentId = appState.currentViewingSecretId;
+            if (!parentId) return;
+
+            const newResponse = {
+                parentId: parentId,
+                authorType: 'user',
+                content: text,
+                timestamp: Date.now(),
+                replyToId: appState.replyingToCommentId 
+            };
+
+            try {
+                const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.SECRETS, newResponse);
+                newResponse.id = savedId; // 将新ID加回对象，方便传递
+
+                // 刷新UI
+                await openSecretDetails(parentId);
+                
+                // 清理状态
+                DOM.secretCommentInput.value = '';
+                appState.replyingToCommentId = null;
+                DOM.secretCommentInput.placeholder = '输入你的回应...';
+
+                // 【核心升级】在所有操作成功后，在后台默默触发AI的决策流程！
+                triggerAiSecretReplyDecision(newResponse);
+
+            } catch (error) {
+                console.error("保存心事回应失败:", error);
+                utils.showToast('发送失败');
+            }
+        };
+        
+        // 点击发送按钮
+        DOM.sendSecretCommentBtn.addEventListener('click', handleSendSecretComment);
+        
+        // 按回车发送
+        DOM.secretCommentInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // 阻止默认的回车换行行为
+                handleSendSecretComment();
+            }
+        });
+        
+        // --- 【全新】使用事件委托，监听“写心事”页面内的所有点击 ---
+        DOM.secretsCreationPage.addEventListener('click', (e) => {
+            // 我们只关心点击的是不是心情选择器里的图标
+            const targetItem = e.target.closest('.mood-item');
+            
+            if (targetItem) {
+                // 找到了被点击的心情图标
+                
+                // 1. 先移除所有图标的 'active' 状态
+                DOM.moodSelector.querySelectorAll('.mood-item').forEach(item => item.classList.remove('active'));
+                
+                // 2. 只给当前被点击的图标添加 'active' 状态
+                targetItem.classList.add('active');
+            }
+        });
+        
+        // --- 【全新】使用事件委托，监听详情页内部所有“回复”按钮的点击 ---
+        DOM.secretDetailsModal.addEventListener('click', (e) => {
+            const replyBtn = e.target.closest('.reply-to-comment-btn');
+            if (replyBtn) {
+                const commentIdToReply = parseInt(replyBtn.dataset.commentId, 10);
+                if (!commentIdToReply) return;
+
+                // 1. 【关键】将要回复的批注ID存入全局状态
+                appState.replyingToCommentId = commentIdToReply;
+
+                // 2. 更新输入框的placeholder，给用户明确的反馈
+                const commentItem = replyBtn.closest('.secret-comment-item');
+                const authorName = commentItem.querySelector('.secret-comment-author').textContent;
+                DOM.secretCommentInput.placeholder = `回复 ${authorName}:`;
+
+                // 3. 自动聚焦到输入框，方便用户直接输入
+                DOM.secretCommentInput.focus();
+            }
+        });
+     }
         async function initializeApp() {
             try {
                 await dbHelper.init();
