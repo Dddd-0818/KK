@@ -10368,14 +10368,18 @@ document.body.addEventListener('click', async (e) => {
     
     const replyText = prompt(`回复 ${repliedToAuthorName}:`);
 
-    if (replyText && replyText.trim() !== '') {
-        // 【关键】调用 handlePostComment 时，传入第三个参数 repliedToCommentId
-        await handlePostComment(momentId, null, replyText.trim(), repliedToCommentId);
-        utils.showToast("回复已发布！");
-        if (document.getElementById('moments-pane').classList.contains('active')) {
-            await renderMoments(); 
-        }
+   if (replyText && replyText.trim() !== '') {
+    // 【核心修正】从动态卡片上重新获取原始作者的 dossierId
+    const momentAuthorDossierId = postCardEl.querySelector('.comment-btn').dataset.dossierId;
+
+    // 【核心修正】在调用时，将正确的 ID 传递过去
+    await handlePostComment(momentId, momentAuthorDossierId, replyText.trim(), repliedToCommentId);
+    
+    utils.showToast("回复已发布！");
+    if (document.getElementById('moments-pane').classList.contains('active')) {
+        await renderMoments(); 
     }
+}
 });
 
     // vvv 【新增】使用事件委托监听所有删除动态按钮的点击 vvv
