@@ -6846,17 +6846,23 @@ const messages = await promptManager.createChatPrompt(dossier, historyForPrompt,
             }
 
             // c. **第二优先级：** 在【可能已被净化】的 chatContent 上检测并处理【动态】指令
-            const momentActionTag = '[AI_MOMENT_ACTION]';
-            let momentMatch = null;
-            const momentActionIndex = chatContent.indexOf(momentActionTag);
-            if (momentActionIndex !== -1) {
-                const jsonStartIndex = chatContent.indexOf('{', momentActionIndex);
-                if (jsonStartIndex > -1) {
-                    // 【关键修正】将解析结果存入 momentMatch
-                    momentMatch = [null, chatContent.substring(jsonStartIndex)];
-                    chatContent = chatContent.substring(0, momentActionIndex).trim(); // 再次净化
-                }
-            }
+const momentActionTag = '[AI_MOMENT_ACTION]';
+let momentMatch = null;
+const momentActionIndex = chatContent.indexOf(momentActionTag);
+if (momentActionIndex !== -1) {
+    const jsonStartIndex = chatContent.indexOf('{', momentActionIndex);
+    // 【核心修正】智能寻找 JSON 的结束位置，这里我们假设指令总在末尾，所以用 lastIndexOf
+    const jsonEndIndex = chatContent.lastIndexOf('}');
+    
+    if (jsonStartIndex > -1 && jsonEndIndex > jsonStartIndex) {
+        // 只提取从 '{' 到 '}' 的纯净JSON字符串
+        const momentJsonString = chatContent.substring(jsonStartIndex, jsonEndIndex + 1);
+        momentMatch = [null, momentJsonString]; // 将纯净的JSON存起来
+        
+        // 从 chatContent 中彻底剥离掉整个指令，为后续解析做准备
+        chatContent = chatContent.substring(0, momentActionIndex).trim();
+    }
+}
             
             // d. **第三优先级：** 在【最终净化】的 chatContent 上检测并处理【撤回/引用】指令
             const actionRegex = /\[AI_ACTION\]([\s\S]*?)\[\/AI_ACTION\]/s;
