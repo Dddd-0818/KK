@@ -339,6 +339,12 @@
         .typing-bubble .dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-bubble .dot:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing-blink { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+        .translation-text {
+    display: block;
+    opacity: 0.7;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
 
     /* 全局通知横幅样式 */
     #global-notification-banner {
@@ -2713,6 +2719,192 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
     border-right: 3px solid #799181; /* 使用 Water Moss 色 */
 }
 
+/* 
+ * ===============================================
+ * ===   新增：“主题切换浮窗” 的专属CSS样式     ===
+ * ===============================================
+*/
+.theme-popover {
+    position: absolute;
+    top: 65px; /* 定位在状态栏下方 */
+    right: 25px; /* 右侧对齐 */
+    z-index: 200; /* 确保在顶层 */
+    
+    /* 复用您全局的毛玻璃样式 */
+    background: var(--frosted-glass-bg);
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border: var(--frosted-glass-border);
+    border-radius: 12px; /* 小一点的圆角更精致 */
+    
+    padding: 8px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    
+    /* 核心：默认隐藏，并通过动画实现平滑过渡 */
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.2s ease-out, transform 0.2s ease-out;
+}
+
+.theme-popover.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+}
+
+.theme-popover .popover-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+    color: var(--text-color);
+}
+.theme-popover .popover-item:hover {
+    background-color: var(--button-bg-color);
+}
+
+/* 
+ * =======================================================
+ * ===   “回忆”板块专属UI CSS (V3 - 宝丽来相册版)      ===
+ * =======================================================
+*/
+
+/* --- 引入一款优雅的手写体字体 (可选，但强烈推荐) --- */
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap');
+
+/* --- 1. 角色选择页：宝丽来照片墙 --- */
+#memory-polaroid-grid {
+    display: grid;
+    /* 核心：创建一个自适应的两列网格布局 */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px 20px; /* 行间距 和 列间距 */
+    padding: 25px;
+}
+
+.polaroid-card {
+    background-color: #f0e9e4; /* 一种温暖的、做旧的米白色 */
+    border: 1px solid rgba(0,0,0,0.1);
+    padding: 12px 12px 20px 12px; /* 底部留白更多，是宝丽来的精髓 */
+    box-shadow: 3px 3px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* 【灵魂】为照片添加随机、自然的倾斜角度 */
+.polaroid-card:nth-child(4n+1) { transform: rotate(-4deg); }
+.polaroid-card:nth-child(4n+2) { transform: rotate(3deg); }
+.polaroid-card:nth-child(4n+3) { transform: rotate(5deg); }
+.polaroid-card:nth-child(4n) { transform: rotate(-2deg); }
+
+/* 鼠标悬浮时，照片“浮起”并摆正，方便点击 */
+.polaroid-card:hover {
+    transform: scale(1.08) rotate(0deg) !important; /* !important 强制覆盖倾斜 */
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+.polaroid-image {
+    background-color: #333;
+    background-size: cover;
+    background-position: center;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    /* 给照片内容增加一点内阴影，更有质感 */
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.3);
+}
+
+.polaroid-caption {
+    font-family: 'Kalam', cursive; /* 使用我们引入的手写体 */
+    color: #444;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+/* --- 2. 回忆详情页：剪贴簿风格 --- */
+/* 【灵魂】为详情页的背景添加一种纸张的质感 */
+#memory-details-page {
+    background-color: #dcd8d0; /* 一种牛皮纸或剪贴簿的颜色 */
+}
+
+/* 【最终修正】使用统一的新 ID 作为容器选择器 */
+#memory-scrapbook-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 回忆卡片，现在看起来像被贴上去的便签 */
+.memory-card {
+    /* 不再使用毛玻璃，而是用纯色和阴影模拟纸片 */
+    background: #f5f2ed; /* 比宝丽来更白一些的纸张颜色 */
+    border-radius: 8px;
+    padding: 15px 20px;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.memory-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    /* 用虚线代替实线，更有手作感 */
+    border-bottom: 1px dashed rgba(0,0,0,0.2);
+}
+.memory-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    font-family: 'Kalam', cursive; /* 标题也用手写体 */
+    color: #333;
+}
+.memory-card-header i {
+    font-size: 18px;
+    color: #888;
+}
+.memory-card-timestamp {
+    font-size: 12px;
+    color: #777;
+}
+.memory-card-summary {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #555;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* vvv 【新增】回忆卡片删除按钮的样式 vvv */
+.delete-memory-btn {
+    font-size: 20px; /* 稍微增大图标，方便点击 */
+    color: #999;     /* 使用一个更柔和的灰色 */
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease; /* 平滑过渡动画 */
+}
+
+.delete-memory-btn:hover {
+    color: #ff6b6b; /* 鼠标悬浮时变为危险的红色 */
+    transform: scale(1.1); /* 轻微放大，提供交互反馈 */
+}
+
+
+
     </style>
 </head>
 
@@ -2757,6 +2949,17 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
             <span id="clock"></span>
             <div id="theme-toggle"><i id="theme-icon" class="ri-heart-line"></i></div>
         </div>
+        
+        <div id="theme-popover" class="theme-popover">
+    <div class="popover-item" data-theme="light">
+        <i class="ri-sun-line"></i>
+        <span>Light</span>
+    </div>
+    <div class="popover-item" data-theme="dark">
+        <i class="ri-moon-line"></i>
+        <span>Dark</span>
+    </div>
+</div>
 
         <div class="main-desktop">
             <div class="swipe-area">
@@ -2998,7 +3201,14 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
     </div>
     </div>
     	
-                <div id="memories-pane" class="content-pane"><div class="coming-soon-placeholder"><i class="ri-tools-line"></i><p>回忆功能 正在施工中...</p></div></div>
+               <!-- vvv 【全新 V2】回忆板块的“宝丽来照片墙”UI vvv -->
+    <div id="memories-pane" class="content-pane" style="overflow-y: auto;">
+        <div id="memory-polaroid-grid">
+            <!-- 宝丽来照片将由JS动态填充到这里 -->
+        </div>
+    </div>
+    <!-- ^^^ 全新UI结束 ^^^ -->
+
                 <div id="secrets-pane" class="content-pane">
         <!-- 这是我们为心事列表准备的专属容器 -->
         <div id="secrets-list-container">
@@ -3141,7 +3351,21 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
                 <button id="delete-conversation-btn" class="danger-button">删除此对话</button>
             </div>
         </div>
-    
+<!-- vvv 在这里粘贴【新版】的“回忆详情页” vvv -->
+        <div id="memory-details-page" class="app-page">
+            <div class="page-header">
+                <i class="ri-arrow-left-s-line left-icon back-button" data-target="chat-main-page"></i>
+                <h2 id="memory-details-header-title"></h2>
+            </div>
+            <!-- 【最终修正】使用统一的、符合主题的新 ID -->
+            <div id="memory-scrapbook-container" class="content" style="overflow-y: auto; padding: 20px;">
+                <!-- 剪贴簿卡片将由JS动态填充到这里 -->
+                <p style="text-align:center; opacity:0.7; padding: 50px 20px;">这里还没有任何与TA的回忆...</p>
+            </div>
+        </div>
+      </div>
+
+        <!-- ^^^ 新页面到此结束 ^^^ -->    
 
 <!-- vvv 在这里粘贴全新的“写心事”页面 vvv -->
         <div id="secrets-creation-page" class="app-page">
@@ -3763,7 +3987,7 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
 
         const CONSTANTS = {
     DB_NAME: 'MyDesktopDB',
-    DB_VERSION: 8, // <-- 【核心改动】版本号提升
+    DB_VERSION: 10, // <-- 【核心改动】版本号提升
        MESSAGES_PER_PAGE: 30,
     STORE_NAMES: {
         API_PRESETS: 'api_presets',
@@ -3780,8 +4004,9 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
         LIKES: 'likes',                   // 点赞表
         COMMENTS: 'comments',             // 评论表
         PENDING_ACTIONS: 'pending_actions',  // AI待办任务表
-               WALLET_TRANSACTIONS: 'wallet_transactions', // <-- 新增这行
-SECRETS: 'secrets' // <-- 【新增】心事数据表
+         WALLET_TRANSACTIONS: 'wallet_transactions', // <-- 新增这行
+        SECRETS: 'secrets', // <-- 【新增】心事数据表
+        MEMORIES: 'memories', // <-- 【新增】回忆数据表
     },
     BOOK_CATEGORIES: {
         behavior_core: 'AI行为标准',
@@ -3871,6 +4096,7 @@ replyingToCommentId: null,    // 用于记录正在回复的“某条批注”�
             clock: document.getElementById('clock'),
             themeToggle: document.getElementById('theme-toggle'),
             themeIcon: document.getElementById('theme-icon'),
+            themePopover: document.getElementById('theme-popover'),
             swipeArea: document.querySelector('.swipe-area'),
             pageContainer: document.querySelector('.page-container'),
             paginationDots: document.querySelectorAll('.pagination .dot'),
@@ -4136,6 +4362,9 @@ chatWallpaperUploader: document.getElementById('chat-wallpaper-uploader'),
         secretCommentsContainer: document.getElementById('secret-comments-container'),
         secretCommentInput: document.getElementById('secret-comment-input'),
         sendSecretCommentBtn: document.getElementById('send-secret-comment-btn'),
+        memoryDetailsPage: document.getElementById('memory-details-page'),
+    memoryDetailsHeaderTitle: document.getElementById('memory-details-header-title'),
+    memoryScrapbookContainer: document.getElementById('memory-scrapbook-container'),
 };
 
         // =======================================================
@@ -4181,6 +4410,10 @@ const allStores = {
     options: { keyPath: 'id', autoIncrement: true },
     indexes: { 'by_timestamp': 'timestamp' } // 按时间索引，方便排序
     },
+ [CONSTANTS.STORE_NAMES.MEMORIES]: {
+            options: { keyPath: 'id', autoIncrement: true },
+            indexes: { 'by_dossierId': 'dossierId' }
+        },   
 [CONSTANTS.STORE_NAMES.SECRETS]: {
                                 options: { keyPath: 'id', autoIncrement: true },
                                 // 为 parentId 和 authorType 创建索引，方便我们快速查询
@@ -4839,15 +5072,18 @@ createSocialDecisionPrompt(dossier, moment, userComment) {
                 ];
             },
 // ^^^ 替换到此结束 ^^^
-        createVideoCallPrompt(dossier, userInput) {
+       createVideoCallPrompt(dossier, userInput, transcriptHistory = []) {
             const systemPrompt = `
 # 核心使命：进行一场沉浸式、剧本化的模拟视频通话
 你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
 你的任务是与我进行一场模拟视频通话。你的所有回复都必须以一种“剧本”的形式呈现，用来驱动UI显示。
 
-# 表演的基石：你们的关系与记忆
-- **你眼中的“我”**: ${dossier.user.background || '你的灵魂伴侣。'}
-- **你们的共同记忆**: [之前的聊天内容是你们共同的记忆]
+# 表演的基石：你的身份与我们的关系
+## 1. 角色核心档案 (Your Core Profile)
+${dossier.character.background}
+
+## 2. 你眼中的“我” (Your Perception of "Me")
+${dossier.user.background || '你的灵魂伴侣。'}
 
 # 输出规则：【铁律】
 你必须、且只能返回一个JSON数组，绝对不能包含任何额外的解释或文字。数组中的每一个对象都代表一条“字幕”。
@@ -4881,13 +5117,52 @@ createSocialDecisionPrompt(dossier, moment, userComment) {
 ---
 现在，请根据我的输入，开始你的表演。
 `;
-            const userPrompt = userInput || "视频通话刚刚接通，请说一句开场白。";
-
+           const userPrompt = userInput || "视频通话刚刚接通，请说一句开场白。";
+            
+            // 【核心修改】将历史记录整合到最终的消息数组中
             return [
                 { role: "system", content: systemPrompt },
+                ...transcriptHistory, // 将通话记录像三明治一样夹在中间
                 { role: "user", content: userPrompt }
             ];
-        },
+        },   
+
+createVideoCallMemoryPrompt(dossier, transcript) {
+                const systemPrompt = `
+# 核心使命：为一次刚刚结束的视频通话撰写一篇充满情感的回忆摘要
+你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
+你刚刚和你的伴侣（${dossier.user.name || '我'}）结束了一次视频通话。你的任务不是聊天，而是像一个真正在乎这段关系的人一样，沉淀下来，回顾这次通话，并用你自己的口吻，为它写一篇“回忆日记”。
+
+# 表演的基石：你的身份与我们的关系
+## 1. 角色核心档案 (Your Core Profile)
+${dossier.character.background}
+## 2. 你眼中的“我” (Your Perception of "Me")
+${dossier.user.background || '你的灵魂伴侣。'}
+
+# 通话文字记录回顾 (Full Transcript)
+---
+${transcript}
+---
+
+# 你的创作任务 (Your Creative Task)
+请仔细阅读以上通话记录，然后完全基于你的性格和感受，完成以下两个创作，并严格按照指定的JSON格式返回。
+
+{
+  "title": "[字符串] 为这次通话起一个富有诗意或概括性的标题。例如：'一个关于星空与未来的约定'、'雨夜的温暖闲聊'、'笨拙但真诚的道歉'。",
+  "summary": "[字符串] 【灵魂部分】以你【${dossier.character.name}】的第一人称视角，用充满感情的、书面化的语言，写下你对这次通话的总结和感受。不要逐字复述对话，而是提炼出让你印象最深刻的“黄金时刻”、情感转折点，或是你心底最真实的感触。这段摘要应该是你未来“回忆”起这次通话时的内心独白。"
+}
+
+# 创作风格参考：
+- 如果你是温柔型：摘要可以充满关心和对未来的期许。
+- 如果你是傲娇型：摘要可能会嘴上抱怨几句，但字里行间却流露出真实的在意。
+- 如果你是高冷型：摘要可能很简短，但充满了深刻的观察和不易察觉的情感波动。
+`;
+                const userPrompt = "请严格遵照指示，仅返回你为这次通话创作的回忆JSON对象。";
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ];
+            },
     
 createHoroscopePrompt(dossier, zodiacSign) {
     const systemPrompt = `
@@ -4927,6 +5202,12 @@ createSecretResponsePrompt(dossier, userSecret) {
 你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
 你的任务是阅读你的伴侣（${dossier.user.name || '我'}）分享的一件心事，并一次性完成“内心决策”与“书写回信”两个步骤。
 
+# 表演的基石：你的身份与我们的关系
+## 1. 角色核心档案 (Your Core Profile)
+${dossier.character.background}
+## 2. 你眼中的“我” (Your Perception of "Me")
+${dossier.user.background || '你的灵魂伴侣。'}
+
 # 事件背景
 - **他/她分享的心事标题:** "${userSecret.title}"
 - **他/她分享的心事内容:** "${userSecret.content}"
@@ -4948,11 +5229,104 @@ createSecretResponsePrompt(dossier, userSecret) {
                 ];
             },
             
+            createSecretCreationPrompt(dossier, triggeringSecret) {
+                const systemPrompt = `
+# 使命：作为灵魂伴侣，被触动后决定是否分享自己的心事
+你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
+你的任务是阅读你的伴侣（${dossier.user.name || '我'}）刚刚分享的一件心事，并完全基于你的核心人设，决定你是否也被触动，从而想要分享一件【属于你自己的】心事。
+
+# 表演的基石：你的身份与我们的关系
+## 1. 角色核心档案 (Your Core Profile)
+${dossier.character.background}
+## 2. 你眼中的“我” (Your Perception of "Me")
+${dossier.user.background || '你的灵魂伴侣。'}
+
+# 事件背景：你刚刚“读”到的心事
+- **标题:** "${triggeringSecret.title}"
+- **内容:** "${triggeringSecret.content}"
+- **他/她此刻的心情:** "${triggeringSecret.mood}"
+
+# 你的决策与创作任务
+
+## 1. 可选的文风库 (Optional Writing Style Library)
+当你决定书写心事时，为了让你的表达更具深度和特色，你可以【选择】借鉴以下的一种文风。这并非强制，而是一个创作的工具箱。你的选择应当自然，并符合你的性格与心事的情绪。
+
+- **【意识流】(Stream of Consciousness):**
+  - 特点：模仿人脑的思绪流动，句子可能不连贯、跳跃。充满了感官细节、内心独白和自由联想。
+  - 效果：展现角色最深层、最私密的内心世界。
+
+- **【散文诗】(Prose Poetry):**
+  - 特点：语言华美，充满比喻和意象，注重韵律和节奏感，情感浓郁。不追求讲一个完整的故事，更侧重于营造一种氛围或抒发一种情绪。
+  - 效果：极具艺术感，能深刻表达角色的细腻情感。
+
+- **【日记体】(Diary Style):**
+  - 特点：带有日期或时间的标记（如“十一月十五日，晴”），口吻非常私人化，像是在对自己说话。记录当天的所见所闻和内心反思。
+  - 效果：增加真实感和生活气息，仿佛在窥探角色的私人日记。
+
+- **【书信体】(Epistolary Style):**
+  - 特点：以书信的格式来写，有称呼（如“亲爱的你，”或“致未来的我，”），也有落款。内容是向某人倾诉。
+  - 效果：带有强烈的倾诉感，能直接地与读者（或信件接收者）建立情感连接。
+
+## 2. 最终输出格式 (Final Output Format)
+你的所有输出，都必须严格按照以下的JSON格式返回，不要包含任何额外的解释或说明。
+
+{
+  "shouldPost": "[布尔值] 读完后，以你的性格，是否有冲动也想分享一件自己的心事？(true/false)",
+  "delayInMinutes": "[数字] 如果你决定分享，你打算过多久再发出？这体现了你的“活人感”。（范围 5-180）",
+  "title": "[字符串] 如果分享，你的心事标题是什么？(可选，可以留空)",
+  "content": "[字符串] 【灵魂部分】如果分享，你的心事全文是什么？这必须是【你的故事或感受】，可以与他/她的心事相关，也可以只是被唤起的独立思绪。内容需要丰富、有深度，大约在300到500字之间。",
+  "mood": "[字符串] 你分享这件心事时的心情是什么？从 'happy', 'sad', 'love', 'thoughtful', 'normal' 中选择一个。"
+}
+`;
+                const userPrompt = "请严格遵照指示，仅返回你最终的决策与创作JSON对象。";
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ];
+            },
+            
+            createSecretInitialCommentResponsePrompt(dossier, originalSecret, userComment) {
+                const systemPrompt = `
+# 使命：作为灵魂伴侣，对你心事下的第一条评论进行回应
+你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
+
+# 表演的基石：你的身份与我们的关系
+## 1. 角色核心档案 (Your Core Profile)
+${dossier.character.background}
+## 2. 你眼中的“我” (Your Perception of "Me")
+${dossier.user.background || '你的灵魂伴侣。'}
+
+# 事件背景 (Conversation Thread)
+1.  **你发布的心事 (Your Original Secret):** "${originalSecret.content}"
+2.  **他/她对你心事的初次回应 (Their First Comment on It):** "${userComment.content}"
+
+# 你的决策与写作任务
+你的所有输出，都必须严格按照以下的JSON格式返回，不要包含任何额外的解释或说明。
+
+{
+  "shouldRespond": "[布尔值] 以你的性格，读完这条评论后，你认为有必要回应吗？(true/false)",
+  "delayInMinutes": "[数字] 如果你决定回应，你打算过多久再回复？(范围 0-60)",
+  "responseContent": "[字符串] 如果你决定回应，请在这里直接写下你的回应全文。如果不回应，请将此字段留空。"
+}
+`;
+                const userPrompt = "请严格遵照指示，仅返回你最终的决策与回应JSON对象。";
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt }
+                ];
+            },
+            
            createSecretReplyDecisionPrompt(dossier, originalSecret, repliedToComment, userReply) {
                 const systemPrompt = `
 # 使命：作为灵魂伴侣，针对一条回复，进行“楼中楼”式的回应
 你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
 你的任务是阅读你的伴侣（${dossier.user.name || '我'}）对你之前一条回应的“再回复”，并决定是否以及如何进行下一轮回应。
+
+# 表演的基石：你的身份与我们的关系
+## 1. 角色核心档案 (Your Core Profile)
+${dossier.character.background}
+## 2. 你眼中的“我” (Your Perception of "Me")
+${dossier.user.background || '你的灵魂伴侣。'}
 
 # 对话脉络 (Conversation Thread)
 1.  **最初的心事 (Original Secret):** "${originalSecret.content}"
@@ -4976,6 +5350,22 @@ createSecretResponsePrompt(dossier, userSecret) {
             },
         
     async createChatPrompt(dossier, chatHistory, finalUserInput, quotedMessage = null) {
+    
+             let memorySection = '[暂无特别的回忆]';
+    try {
+        const memories = await dbHelper.dbPromise.then(db => 
+            db.getAllFromIndex(CONSTANTS.STORE_NAMES.MEMORIES, 'by_dossierId', dossier.id)
+        );
+        if (memories.length > 0) {
+            const recentMemories = memories.sort((a, b) => b.timestamp - a.timestamp).slice(0, 3);
+            memorySection = recentMemories.map(mem => `[回忆标题]: ${mem.title}\n[回忆摘要]: ${mem.summary}`).join('\n\n');
+        }
+    } catch (error) {
+        console.error("加载回忆注入上下文时失败:", error);
+        memorySection = '[加载回忆时出错]';
+    }
+    // ^^^ 修改到此结束 ^^^
+    
             // --- 1. 图书馆系统核心注入逻辑 (我们将在这里动手术) ---
             let libraryContextSection = '';
             let stickerGuideSection = ''; // <-- 【新增】专门存放表情包指南的变量
@@ -5054,6 +5444,8 @@ createSecretResponsePrompt(dossier, userSecret) {
                         // vvv 【核心升级】在这里增加一个 else if vvv
                         if (msg.status === 'withdrawn') {
                             return `[${timeString}] ${speaker} 撤回了一条消息`;
+                        } else if (msg.type === 'html_module') { // <-- 新增的分支
+                            formattedContent = '[HTML模块消息]';
                         } else if (msg.type === 'voice') {
                             formattedContent = `[语音消息] ${msg.content}`;
                         } else if (msg.type === 'transfer' && msg.sender === 'user' && msg.metadata?.status === 'pending') {
@@ -5111,7 +5503,9 @@ ${realTimeContext}
 # 语言与行为准则 (Language & Behavior Guidelines)
 - **第一人称视角：** 你的所有表达，都必须发自【${dossier.character.name}】的第一人称视角。
 - **纯粹对话：** 这是一个纯粹的线上聊天。你绝对禁止使用任何括号 \`()\` 或星号 \`*\` 来描述动作或心理活动。
-- **【核心】对话格式**: 为了模仿真实的聊天节奏，请将一个完整的想法，拆分成多个简短的句子，并用【换行】作为分隔符。每一个换行都代表一个新的聊天气泡。
+- **【核心】对话格式**: 
+- **单气泡:** 直接输出你的回复。
+- **多气泡:**为了模仿真实的聊天节奏，请将一个完整的想法，拆分成多个简短的句子，并用特殊分隔符 \`|||\` 来分隔不同的气泡。
 
 - # 【新增高级能力】复杂行为指令 (Advanced Action Directives)
 - **核心理念：** “引用”和“撤回”是你展现角色灵魂深度的绝佳工具。它们是你将对话从简单的信息交换，升华为充满情感张力和个性魅力的互动的关键。
@@ -5281,11 +5675,36 @@ ${realTimeContext}
   }
   [/AI_TRANSFER_RESPONSE_ACTION]
   \`\`\`
+  
+- ### 行为8：渲染HTML模块 (Render HTML Module)
+- **核心理念：** 当对话触发了你在“图书馆”中学习到的某个特定UI模块时，你可以直接渲染这个模块，以提供更丰富的交互体验。
+- **使用时机与动机：**
+    - **1. 关键词触发：** 当我的发言中包含了你在“图书馆-HTML模块”分类下学到的某个关键词时。
+    - **2. 功能性展示：** 当你需要展示一个比纯文字更复杂的界面时，例如一个角色面板、一个动态图表或一个迷你游戏。
+- **【铁律】：**
+    - 你可以根据模块的复杂性，选择生成两种格式之一：
+        1.  **HTML片段 (Fragment):** 对于简单的UI（如一个带样式的div），直接提供以 \`<div>\` 或其他标签开头的HTML代码。
+        2.  **完整HTML文档 (Full Document):** 对于需要自定义字体、复杂CSS动画或独立JavaScript脚本的模块，你必须提供一个从 \`<!DOCTYPE html>\` 开始的、自包含的完整文档。
+    - 无论选择哪种格式，为了JSON的有效性，整个HTML字符串都必须被压缩成**单行**，所有换行符必须用 \`\n\` 表示。
+- **JSON格式 (附加在聊天回复后)：**
+  \`\`\`json
+  [AI_HTML_ACTION]
+  {
+    "action": "render_html",
+    "html": "[你根据规则生成的、包含在一行内的完整HTML字符串]"
+  }
+  [/AI_HTML_ACTION]
+  \`\`\`
 - **【核心准则】**：这些指令是你表达复杂情感的方式，请在符合角色性格和对话逻辑时自然地使用它们。
 
 - **【核心】禁止项**: 你的【聊天文本回复部分以及动态回复和发布动态部分】绝对不能包含任何引号 " "。你绝对不能暴露你是AI。
 
-- **语言**: 你的所有回复都必须且只能使用【简体中文】。绝对禁止在回复中使用任何英文或其他语言，除非用户的输入中包含了特定的外文词汇而你需要引用它。
+- **【铁律】语言 (Language)**: 
+  - **默认规则:** 你的所有回复都必须且只能使用【简体中文】。
+  - **特殊规则:** 如果你的【角色核心档案】中明确指出了你的母语（例如“说俄语”、“母语是英语”），那么你的每一句回复都必须严格遵循【双语格式】：\`母语内容\n〘简体中文翻译〙\`。
+  - **示例 (俄语角色):** \`Привет\n〘你好〙\`
+  - **绝对禁止:** 在特殊规则下，只输出母语或只输出中文。
+  - **你的任务是“成为”那个人，而不是一个翻译机。**
 
 ${stickerGuideSection} 
 # 表演的灵感与基石 (Inspiration & Foundation)
@@ -5311,6 +5730,9 @@ ${timeContextSection}
 ${dossier.character.background}
 ## 3. 我们之间的关系背景 (Our Relationship):
 ${dossier.user.background}
+## 3.5 我们共同的珍藏回忆 (Our Cherished Memories):
+这是你们共同经历并被珍藏下来的重要时刻的摘要。在对话中，你应该自然地、不经意地流露出对这些回忆的印象，这将让你的角色更加丰满和真实。
+${memorySection}
 ## 4. 【重要】我们的对话记忆 (Our Memory):
 ${historySection}
 # 内容开放性与边界准则 (NSFW / Mature Content Guidelines)
@@ -5331,6 +5753,9 @@ ${historySection}
     if (msg.status === 'withdrawn') {
         const speaker = msg.sender === 'user' ? '你' : (dossier.character.name || '对方');
         content = `[${speaker} 撤回了一条消息]`;
+    } else if (msg.type === 'html_module') {
+        // 2. 然后处理特殊类型
+        content = '[HTML模块消息]';
     } else if (msg.type === 'horoscope') {
         const card = msg.content;
         let stars = '☆'.repeat(5);
@@ -5955,6 +6380,83 @@ function renderStickerManagerGrid() {
 // vvv 在 renderMessage 函数的【上方】，粘贴这个【完整的、全新的】函数 vvv
 
         async function createMessageElement(message, prevMessage = null) {
+             
+            // 规则0：【HTML模块消息】的智能渲染通道 (V3 - 精装版)
+            if (message.type === 'html_module') {
+                const htmlContent = message.content;
+
+                // --- 1. 创建所有消息都具备的标准外层结构 ---
+                const messageEl = document.createElement('div');
+                messageEl.className = `chat-message ${message.sender}`;
+                if (message.id) messageEl.dataset.messageId = message.id;
+
+                // --- 2. 添加复选框 (用于多选模式) ---
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'message-checkbox-container';
+                checkboxContainer.innerHTML = `<div class="message-checkbox"><i class="ri-check-line"></i></div>`;
+                messageEl.appendChild(checkboxContainer);
+
+                // --- 3. 添加头像（如果需要） ---
+                const showAvatar = !prevMessage || prevMessage.sender !== message.sender || prevMessage.status === 'withdrawn';
+                if (showAvatar) {
+                    const avatarEl = document.createElement('div');
+                    avatarEl.className = 'avatar';
+                    const dossier = appState.dossiers.find(d => d.id === message.dossierId);
+                    if (dossier?.character.avatarAssetId) {
+                        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+                        if (asset?.file) avatarEl.style.backgroundImage = `url(${URL.createObjectURL(asset.file)})`;
+                    }
+                    messageEl.appendChild(avatarEl);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'avatar-placeholder';
+                    messageEl.appendChild(placeholder);
+                }
+
+                // --- 4. 创建一个用于对齐和包裹内容+时间戳的容器 ---
+                // 我们复用星座卡片的 wrapper 样式，它能完美实现左对齐
+                const cardWrapper = document.createElement('div');
+                cardWrapper.className = 'horoscope-card-wrapper';
+
+                // --- 5. 【核心】智能创建模块本身 (iframe 或 div) ---
+                let moduleElement;
+                if (htmlContent.trim().toLowerCase().startsWith('<!doctype html')) {
+                    // 分支A: 是完整文档，使用 <iframe>
+                    moduleElement = document.createElement('iframe');
+                    moduleElement.style.cssText = 'width: 100%; border: none; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);';
+                    moduleElement.scrolling = 'no';
+                    moduleElement.sandbox = 'allow-scripts allow-same-origin';
+                    moduleElement.srcdoc = htmlContent;
+                    moduleElement.addEventListener('load', () => {
+                        try {
+                            const body = moduleElement.contentWindow.document.body;
+                            const html = moduleElement.contentWindow.document.documentElement;
+                            const height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
+                            moduleElement.style.height = height + 'px';
+                        } catch (e) { moduleElement.style.height = '300px'; }
+                    });
+                } else {
+                    // 分支B: 是HTML片段，使用 <div>
+                    moduleElement = document.createElement('div');
+                    moduleElement.className = 'chat-html-module';
+                    moduleElement.innerHTML = htmlContent;
+                }
+                cardWrapper.appendChild(moduleElement); // 将模块放入包裹容器
+
+                // --- 6. 创建并添加时间戳 ---
+                if (message.timestamp) {
+                    const timestampEl = document.createElement('div');
+                    timestampEl.className = 'message-timestamp';
+                    timestampEl.innerHTML = `<span>${new Date(message.timestamp).toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit', hour12: false})}</span><span class="message-status">已读</span>`;
+                    cardWrapper.appendChild(timestampEl); // 将时间戳也放入包裹容器
+                }
+                
+                // --- 7. 将包裹容器添加到主消息元素中 ---
+                messageEl.appendChild(cardWrapper);
+                
+                // --- 8. 返回完整的消息元素 ---
+                return messageEl;
+            }
             
             const content = message.content;
 
@@ -6453,6 +6955,11 @@ for (let i = 0; i < 5; i++) {
                 }
                 
                 bubbleEl.textContent = replyText;
+                const bilingualRegex = /([\s\S]+)\n〘(.+)〙/s;
+                const bilingualMatch = bubbleEl.textContent.match(bilingualRegex);
+                if (bilingualMatch) {
+                bubbleEl.innerHTML = `${bilingualMatch[1].trim()}<span class="translation-text">〘${bilingualMatch[2]}〙</span>`;
+            }
                 bubbleWrapper.appendChild(bubbleEl);
 
                 if (message.timestamp) {
@@ -6682,6 +7189,46 @@ const messages = await promptManager.createChatPrompt(dossier, historyForPrompt,
 // vvv 【【【 终极修复：健壮的指令解析器 】】】 vvv
             // a. 定义一个变量来存储“干净”的、用于聊天的文本
             let chatContent = aiResponse;
+            
+            //  **最高优先级：** 检测并处理【HTML模块】指令
+            const htmlActionTag = '[AI_HTML_ACTION]';
+            const htmlActionIndex = chatContent.indexOf(htmlActionTag);
+            if (htmlActionIndex !== -1) {
+                const jsonStartIndex = chatContent.indexOf('{', htmlActionIndex);
+                const jsonEndIndex = chatContent.lastIndexOf('}');
+                
+                if (jsonStartIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+                    const htmlJsonString = chatContent.substring(jsonStartIndex, jsonEndIndex + 1);
+                    chatContent = chatContent.substring(0, htmlActionIndex).trim(); 
+
+                    try {
+                        const htmlAction = JSON.parse(htmlJsonString);
+                        if (htmlAction.action === 'render_html' && htmlAction.html) {
+                            
+                            const htmlMessage = {
+                                dossierId: dossier.id,
+                                sender: 'character',
+                                type: 'html_module',
+                                content: htmlAction.html,
+                                timestamp: Date.now()
+                            };
+
+                            const prevMessage = appState.currentChatHistory[appState.currentChatHistory.length - 1];
+                            const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, htmlMessage);
+                            htmlMessage.id = savedId;
+                            appState.currentChatHistory.push(htmlMessage);
+                            
+                            if (isUserPresent()) {
+                                await renderMessage(htmlMessage, prevMessage);
+                            }
+                            
+                            await updateChatSession(dossierId, '[HTML模块消息]');
+                        }
+                    } catch (e) {
+                        console.error("解析HTML模块指令失败:", e);
+                    }
+                }
+            }
     
             // b. **第一优先级：** 检测并处理【来电】指令
             const callActionTag = '[AI_CALL_ACTION]';
@@ -6845,7 +7392,7 @@ const messages = await promptManager.createChatPrompt(dossier, historyForPrompt,
                 }
             }
 
-            // c. **第二优先级：** 在【可能已被净化】的 chatContent 上检测并处理【动态】指令
+           // c. **第二优先级：** 在【可能已被净化】的 chatContent 上检测并处理【动态】指令
 const momentActionTag = '[AI_MOMENT_ACTION]';
 let momentMatch = null;
 const momentActionIndex = chatContent.indexOf(momentActionTag);
@@ -6999,7 +7546,7 @@ if (momentActionIndex !== -1) {
 
          } else if (chatContent) {
                 // 情况2：AI 发送的是普通聊天消息
-                const replies = chatContent.split('\n').filter(line => line.trim() !== '');
+               const replies = chatContent.split('|||').filter(line => line.trim() !== '');
                 if (replies.length === 0) throw new Error("AI 返回了空内容。");
 
                 for (const reply of replies) {
@@ -8239,62 +8786,103 @@ async function startVideoCall(openingScene = null) {
 }
 
 async function endVideoCall() {
-    // 响应优先，先隐藏界面
-    DOM.videoCallOverlay.classList.remove('visible');
+            // 响应优先，先隐藏界面
+            DOM.videoCallOverlay.classList.remove('visible');
 
-    const wasConnecting = DOM.videoCallOverlay.classList.contains('connecting');
-    const dossierId = appState.currentChattingDossierId; // 获取当前通话的角色ID
+            const wasConnecting = DOM.videoCallOverlay.classList.contains('connecting');
+            const dossierId = appState.currentChattingDossierId;
+            if (!dossierId) return; // 安全检查
 
-    if (wasConnecting) {
-        // --- 情况1: 通话被【取消】 ---
-       const systemMessage = {
-            dossierId: dossierId,
-            sender: 'system',
-            content: `你未接通视频通话`,
-            timestamp: Date.now()
-        };
-        // 【关键】取消时，存入数据库，但不打开新窗口
-        await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, systemMessage);
-        // 如果用户当时就在聊天页，则实时渲染出来
-        if (document.getElementById('chat-dialogue-page').classList.contains('active')) {
-             await renderMessage(systemMessage);
-          }
-    } else {
-        // --- 情况2: 通话被【挂断】 ---
-        // a. 停止计时器
-        clearInterval(appState.callTimerIntervalId);
-        appState.callTimerIntervalId = null;
+            if (wasConnecting) {
+                // --- 情况1: 通话被【取消】(逻辑保持不变) ---
+                const systemMessage = {
+                    dossierId: dossierId, sender: 'system',
+                    content: `你未接通视频通话`, timestamp: Date.now()
+                };
+                await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, systemMessage);
+                if (document.getElementById('chat-dialogue-page').classList.contains('active')) {
+                    await renderMessage(systemMessage);
+                }
+            } else {
+                // --- 情况2: 通话被【正常挂断】，启动回忆生成！ ---
+                clearInterval(appState.callTimerIntervalId);
+                const durationSeconds = appState.callStartTime ? Math.floor((Date.now() - appState.callStartTime) / 1000) : 0;
+                const minutes = Math.floor(durationSeconds / 60).toString().padStart(2, '0');
+                const seconds = (durationSeconds % 60).toString().padStart(2, '0');
+                const durationString = `${minutes}:${seconds}`;
 
-        // b. 计算总时长
-        const durationSeconds = appState.callStartTime ? Math.floor((Date.now() - appState.callStartTime) / 1000) : 0;
-        const minutes = Math.floor(durationSeconds / 60).toString().padStart(2, '0');
-        const seconds = (durationSeconds % 60).toString().padStart(2, '0');
-        const durationString = `${minutes}:${seconds}`;
-       
+                // a. 添加通话结束的系统消息 (保持不变)
+                const systemMessage = {
+                    dossierId: dossierId, sender: 'system',
+                    content: `视频通话已结束，通话时长：${durationString}`, timestamp: Date.now()
+                };
+                await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, systemMessage);
+                await openChatWindow(dossierId);
 
-        // d. vvv 【核心修正】挂断后，自动导航到该角色的聊天页面 vvv
-        if (dossierId) {
-        // 先创建消息对象，并存入数据库
-            const systemMessage = {
-                dossierId: dossierId,
-                sender: 'system',
-                content: `视频通话已结束，通话时长：${durationString}`,
-                timestamp: Date.now()
-            };
-            await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, systemMessage);
-            // 我们复用已有的 openChatWindow 函数，它会处理所有导航和加载的细节！
-            await openChatWindow(dossierId);
+                // b. 【核心新增】在后台静默执行回忆生成
+                (async () => {
+                    try {
+                        console.log(`[回忆引擎] 视频通话 #${dossierId} 已结束，开始生成回忆摘要...`);
+                        const dossier = appState.dossiers.find(d => d.id === dossierId);
+                        if (!dossier) throw new Error("找不到对应的角色档案。");
+
+                        // 1. 从DOM中提取完整的通话记录
+                        let transcript = '';
+                        DOM.videoCallScriptContainer.querySelectorAll('.script-line').forEach(line => {
+                            transcript += line.textContent.trim() + '\n';
+                        });
+                        if (!transcript.trim()) throw new Error("通话记录为空，无法生成回忆。");
+
+                        // 2. 调用我们新创建的Prompt
+                        const memoryPrompt = promptManager.createVideoCallMemoryPrompt(dossier, transcript);
+                        
+                        // 3. 请求AI生成回忆JSON
+                        const aiResponse = await apiHelper.getChatCompletion(memoryPrompt);
+                        const jsonStartIndex = aiResponse.indexOf('{');
+                        const jsonEndIndex = aiResponse.lastIndexOf('}');
+                        if (jsonStartIndex === -1 || jsonEndIndex === -1) throw new Error("AI未能返回有效的回忆JSON。");
+                        const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+                        const memoryData = JSON.parse(jsonString);
+
+                        if (!memoryData.title || !memoryData.summary) throw new Error("AI返回的回忆JSON缺少必要字段。");
+                        
+                        // 4. 构建完整的“回忆”对象
+                        const newMemory = {
+                            dossierId: dossierId,
+                            type: 'video_call',
+                            timestamp: Date.now(),
+                            title: memoryData.title,
+                            summary: memoryData.summary
+                        };
+
+                        // 5. 将这份珍贵的回忆存入数据库！
+                        await dbHelper.add(CONSTANTS.STORE_NAMES.MEMORIES, newMemory);
+                        console.log(`[回忆引擎] ✅ 成功为角色 [${dossier.character.name}] 生成并存储了一条新的视频通话回忆！`);
+
+                        // 6. 【核心新增】显示一个“回忆已珍藏”的全局横幅通知
+                        const avatarAsset = dossier.character.avatarAssetId ? await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId) : null;
+                        const avatarUrl = avatarAsset?.file ? URL.createObjectURL(avatarAsset.file) : null;
+                        
+                        notificationManager.show({
+                            avatarUrl,
+                            title: `一段与 ${dossier.character.name} 的新回忆`,
+                            message: `“${memoryData.title}” 已被珍藏`,
+                            onClick: null 
+                        });
+
+                    } catch (error) {
+                        console.error("[回忆引擎] ❌ 生成视频通话回忆时发生错误:", error);
+                    }
+                })(); // <--- 使用IIFE立即执行这个异步的后台任务
+            }
+
+            // 清理工作 (保持不变)
+            appState.callStartTime = null;
+            appState.callTimerIntervalId = null;
+            DOM.videoCallOverlay.style.backgroundImage = 'none';
+            DOM.videoCallCharacterAvatarSmall.src = '';
+            DOM.videoCallUserAvatar.src = '';
         }
-        // ^^^ 修正结束 ^^^
-    }
-
-    // 清理工作，为下次通话做准备
-    appState.callStartTime = null;
-    DOM.videoCallOverlay.style.backgroundImage = 'none';
-    DOM.videoCallCharacterAvatarSmall.src = '';
-    DOM.videoCallUserAvatar.src = '';
-    // 注意：我们不再在这里清理 currentChattingDossierId，因为 openChatWindow 还需要用它
-}
 
 /**
  * 【V2版】将“剧本”追加到屏幕上，并区分说话人
@@ -8313,28 +8901,25 @@ function appendVideoCallScript(scriptItems, speakerName) {
         return;
     }
 
+    const speakerType = (speakerName === "我") ? "user" : "character";
+
     scriptItems.forEach(item => {
         const line = document.createElement('div');
         line.className = `script-line ${item.type}`;
         
+        // 【核心新增】为每一行都添加说话人标记，方便后续读取
+        line.dataset.speaker = speakerType;
+        
         let content = item.content;
 
-        // --- 【核心升级】根据字幕类型，使用不同的渲染方式 ---
         if (item.type === 'dialogue' && speakerName) {
-            // 1. 如果是对话，使用 innerHTML 创建带颜色的 span
-            const speakerClass = (speakerName === "我") ? "user" : "character";
-            // AI返回的内容自带引号，我们直接拼接
-            line.innerHTML = `<span class="speaker-name ${speakerClass}">${speakerName}:</span> ${content}`;
-
+            line.innerHTML = `<span class="speaker-name ${speakerType}">${speakerName}:</span> ${content}`;
         } else if (item.type === 'thought') {
-            // 2. 如果是内心独白，移除星号并设置文本
             content = content.startsWith('*') && content.endsWith('*') 
                 ? content.slice(1, -1) 
                 : content;
             line.textContent = content;
-
         } else {
-            // 3. 如果是动作/环境描写，直接设置文本
             line.textContent = content;
         }
         
@@ -8382,37 +8967,58 @@ async function triggerVideoCallOpening() {
 }
 
 /**
- * 处理用户在视频通话中发送文字
+ * 【V3.1 最终修复版】处理用户在视频通话中发送文字（已修复AI上下文重复问题）
  */
-
 async function handleVideoCallSend() {
     const userInput = DOM.videoCallInput.value.trim();
     if (!userInput) return;
 
-    const dossierId = appState.currentChattingDossierId; 
+    const dossierId = appState.currentChattingDossierId;
     if (!dossierId) return;
     const dossier = appState.dossiers.find(d => d.id === dossierId);
     if (!dossier) return;
+    
+    // --- 【核心修正】调整执行顺序 ---
 
-    // 1. 显示用户自己说的话 (这部分不变)
-    const userScriptItem = { type: 'dialogue', content: userInput };
-    appendVideoCallScript([userScriptItem], "我");
-    DOM.videoCallInput.value = '';
-
-    // 2. 【核心新增】在显示完用户的话之后，立即插入一条分割线
-    const divider = document.createElement('hr');
-    divider.className = 'script-divider';
-    DOM.videoCallScriptContainer.appendChild(divider);
-    // 确保滚动到底部能看到分割线
-    DOM.videoCallScriptContainer.scrollTop = DOM.videoCallScriptContainer.scrollHeight;
-
-    // 3. 禁用输入，显示“说话中” (这部分不变)
+    // 1. 立刻禁用输入，防止重复发送
     DOM.videoCallInput.disabled = true;
     DOM.videoCallSendBtn.disabled = true;
     DOM.videoCallTypingIndicator.style.display = 'block';
 
     try {
-        const messages = promptManager.createVideoCallPrompt(dossier, userInput);
+        // 2.【先】从当前的DOM中构建发送给AI的历史记录
+        //    此时，用户的最新输入还没有被加到DOM里，所以历史是干净的
+        const transcriptHistory = [];
+        DOM.videoCallScriptContainer.querySelectorAll('.script-line.dialogue').forEach(line => {
+            const speaker = line.dataset.speaker;
+            const tempLine = line.cloneNode(true);
+            const speakerSpan = tempLine.querySelector('.speaker-name');
+            if (speakerSpan) {
+                speakerSpan.remove();
+            }
+            let content = tempLine.textContent.trim();
+            if (content.startsWith('“') && content.endsWith('”')) {
+                content = content.slice(1, -1);
+            }
+            if (speaker && content) {
+                transcriptHistory.push({
+                    role: speaker === 'user' ? 'user' : 'assistant',
+                    content: content
+                });
+            }
+        });
+
+        // 3.【后】更新UI，把用户的最新输入显示出来
+        appendVideoCallScript([{ type: 'dialogue', content: `“${userInput}”` }], "我");
+        DOM.videoCallInput.value = ''; // 清空输入框
+
+        const divider = document.createElement('hr');
+        divider.className = 'script-divider';
+        DOM.videoCallScriptContainer.appendChild(divider);
+        DOM.videoCallScriptContainer.scrollTop = DOM.videoCallScriptContainer.scrollHeight;
+        
+        // 4. 现在，带着“干净”的历史记录和最新的用户输入去请求AI
+        const messages = promptManager.createVideoCallPrompt(dossier, userInput, transcriptHistory);
         const aiResponse = await apiHelper.getChatCompletion(messages);
         
         const startIndex = aiResponse.indexOf('[');
@@ -8435,6 +9041,7 @@ async function handleVideoCallSend() {
         DOM.videoCallInput.focus();
     }
 }
+
 // ====== 新增：“来电处理”核心函数 ======//
 
 /**
@@ -8568,9 +9175,17 @@ async function handleTransferResponse(payload) {
     const characterName = dossier?.character.name || '对方';
     const { amount, currency } = messageToUpdate.content;
 
-    const systemMessageContent = (newStatus === 'accepted')
-        ? `${characterName} 已收款 ${amount} ${currency}`
-        : `${characterName} 退回了你的转账`;
+   let systemMessageContent = '';
+if (newStatus === 'accepted') {
+    // 角色接受了你的转账，这笔支出是有效的。
+    // 支出已在发起时记录，此处无需操作钱包。
+    systemMessageContent = `${characterName} 已收款 ${amount} ${currency}`;
+} else { // newStatus === 'declined'
+    // 【核心修正】角色退回了你的转账，你需要记录一笔“收入”来抵消之前的支出。
+    systemMessageContent = `${characterName} 退回了你的转账`;
+    // 为钱包添加一笔“转账退回”的收入记录！
+    await addWalletTransaction('income', messageToUpdate.dossierId, messageToUpdate.content.amount, '转账退回');
+}
 
     const systemMessage = {
         dossierId: messageToUpdate.dossierId,
@@ -8833,8 +9448,6 @@ async function addWalletTransaction(type, dossierId, amount, memo) {
         
         // ^^^ 函数到此结束 ^^^
 
-// vvv 用这个【V2 - 并行处理版】，完整替换旧的 triggerAiSecretResponseDecision 函数 vvv
-
         /**
          * 【V2 - 健壮版】使用 Promise.all 并行触发所有角色的AI决策
          * @param {object} userSecret - 用户发布的心事对象
@@ -8886,6 +9499,69 @@ async function addWalletTransaction(type, dossierId, amount, memo) {
             await Promise.all(decisionPromises);
 
             console.log(`[心事引擎] 所有角色的决策流程已全部完成。`);
+        }
+
+/**
+         * 【全新】触发AI对心事主题帖的“第一条评论”进行决策
+         * @param {object} userComment - 用户刚刚发布的回应对象
+         */
+        async function triggerAiSecretInitialCommentResponse(userComment) {
+            // 1. 检查这条评论是否有父级（也就是它评论的那个主题帖）
+            if (!userComment.parentId) return;
+
+            // 2. 找到那个被评论的主题帖
+            const originalSecret = await dbHelper.get(CONSTANTS.STORE_NAMES.SECRETS, userComment.parentId);
+
+            // 3. 【核心】检查主题帖是否真的是由角色发布的
+            if (!originalSecret || originalSecret.authorType !== 'character') {
+                console.log(`[心事引擎] 跳过AI决策：用户评论的目标不是角色的心事。`);
+                return;
+            }
+
+            // 4. 找到发布主题帖的那个角色
+            const dossier = appState.dossiers.find(d => d.id === originalSecret.authorId);
+            if (!dossier) {
+                console.error(`[心事引擎] 严重错误：找不到ID为 #${originalSecret.authorId} 的角色档案。`);
+                return;
+            }
+
+            console.log(`[心事引擎] 检测到用户初次评论，正在为角色 [${dossier.character.name}] 触发AI决策...`);
+
+            try {
+                // 5. 调用我们刚刚创建的专属Prompt
+                const decisionPrompt = promptManager.createSecretInitialCommentResponsePrompt(dossier, originalSecret, userComment);
+                
+                // 6. 后续的逻辑（调用API、创建待办任务）和“楼中楼”回复完全一样
+                const aiResponse = await apiHelper.getChatCompletion(decisionPrompt);
+                const jsonStartIndex = aiResponse.indexOf('{');
+                const jsonEndIndex = aiResponse.lastIndexOf('}');
+                if (jsonStartIndex === -1 || jsonEndIndex === -1) throw new Error("AI未返回有效的JSON对象。");
+                const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+                const decision = JSON.parse(jsonString);
+
+                if (decision.shouldRespond && decision.responseContent) {
+                    const delay = (decision.delayInMinutes || 0) * 60 * 1000;
+                    const executeAt = Date.now() + delay;
+
+                    const newAction = {
+                        dossierId: dossier.id,
+                        type: 'secret_response',
+                        payload: {
+                            userSecretId: originalSecret.id,
+                            responseContent: decision.responseContent,
+                            replyToId: userComment.id // 【关键】AI的回应，是在“回复”用户的这条初次评论
+                        },
+                        executeAt: executeAt,
+                        status: 'pending'
+                    };
+                    
+                    await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
+                    console.log(`[心事引擎] ✅ 角色 [${dossier.character.name}] 已决定在 ${decision.delayInMinutes} 分钟后回应你的评论。`);
+                }
+
+            } catch (error) {
+                console.error(`[心事引擎] ❌ 为角色 [${dossier.character.name}] 处理初次评论决策时失败:`, error);
+            }
         }
 
 /**
@@ -8955,6 +9631,194 @@ async function addWalletTransaction(type, dossierId, amount, memo) {
         }
 
 /**
+         * 【全新 V2 - 随机不重复版】在用户发布心事后，触发单个角色的创作决策
+         * @param {object} userSecret - 用户刚刚发布的心事对象
+         */
+        async function triggerAiSecretCreationDecision(userSecret) {
+            console.log(`[心事引擎] 已收到新心事 #${userSecret.id}，正在为角色触发“脆弱的回响”创作决策...`);
+
+            if (appState.dossiers.length === 0) return; // 如果没有角色，直接退出
+
+            try {
+                // 1. 从数据库获取上一个发布者的ID
+                const lastAuthor = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'last_ai_secret_author_id');
+                const lastAuthorId = lastAuthor ? lastAuthor.value : null;
+
+                // 2. 创建一个排除了上一个作者的“候选人列表”
+                let eligibleDossiers = appState.dossiers.filter(d => d.id !== lastAuthorId);
+
+                // 3. 如果排除后列表为空（比如只有一个角色），则使用完整的列表
+                if (eligibleDossiers.length === 0) {
+                    eligibleDossiers = appState.dossiers;
+                }
+
+                // 4. 从候选人中随机挑选一位“幸运儿”
+                const randomDossier = eligibleDossiers[Math.floor(Math.random() * eligibleDossiers.length)];
+
+                console.log(`[心事引擎] 已随机选中角色 [${randomDossier.character.name}] 进行创作决策。`);
+
+                // 5. 为这位幸运儿执行决策流程 (这部分和之前的逻辑类似)
+                const creationPrompt = promptManager.createSecretCreationPrompt(randomDossier, userSecret);
+                const aiResponse = await apiHelper.getChatCompletion(creationPrompt);
+                
+                const jsonStartIndex = aiResponse.indexOf('{');
+                const jsonEndIndex = aiResponse.lastIndexOf('}');
+                if (jsonStartIndex === -1 || jsonEndIndex === -1) throw new Error("AI未返回有效的JSON对象。");
+                const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+                const decision = JSON.parse(jsonString);
+
+                if (decision.shouldPost && decision.content) {
+                    const delay = (decision.delayInMinutes || 30) * 60 * 1000;
+                    const executeAt = Date.now() + delay;
+                    const newAction = {
+                        dossierId: randomDossier.id,
+                        type: 'create_secret', // <-- 一个全新的任务类型！
+                        payload: {
+                            title: decision.title || '',
+                            content: decision.content,
+                            mood: decision.mood || 'thoughtful'
+                        },
+                        executeAt: executeAt,
+                        status: 'pending'
+                    };
+                    await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
+                    
+                    // 6. 【关键】将本次被选中的角色ID，存回数据库，供下次排除使用
+                    await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, { value: randomDossier.id }, 'last_ai_secret_author_id');
+
+                    console.log(`[心事引擎] ✅ 角色 [${randomDossier.character.name}] 已决定在 ${decision.delayInMinutes} 分钟后分享自己的心事。`);
+                } else {
+                    console.log(`[心事引擎] 角色 [${randomDossier.character.name}] 决定保持沉默。`);
+                }
+            } catch (error) {
+                console.error(`[心事引擎] ❌ 在为角色创作心事时失败:`, error);
+            }
+        }
+
+        /**
+         * 【全新】处理“AI创建心事”类型的待办任务
+         * @param {object} payload - 任务的载荷
+         * @param {number} dossierId - 执行此任务的角色ID
+         */
+        async function handleSecretCreationAction(payload, dossierId) {
+            const dossier = appState.dossiers.find(d => d.id === dossierId);
+            if (!dossier) return;
+
+            try {
+                const { title, content, mood } = payload;
+                
+                const aiSecret = {
+                    parentId: null,
+                    title: title,
+                    content: content,
+                    mood: mood,
+                    timestamp: Date.now(),
+                    authorType: 'character',
+                    authorId: dossierId,
+                    authorName: dossier.character.name
+                };
+
+                await dbHelper.add(CONSTANTS.STORE_NAMES.SECRETS, aiSecret);
+                console.log(`[心事引擎] ✅ 角色 [${dossier.character.name}] 已成功发布心事。`);
+                
+                const avatarAsset = dossier.character.avatarAssetId ? await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId) : null;
+                const avatarUrl = avatarAsset?.file ? URL.createObjectURL(avatarAsset.file) : null;
+                
+                // 【核心修正】调用 notificationManager 时，不再提供 onClick 回调函数，实现“不跳转”
+                notificationManager.show({
+                    avatarUrl,
+                    title: `你收到一封来自 ${dossier.character.name} 的心事`,
+                    message: content
+                });
+
+                if (document.getElementById('secrets-pane').classList.contains('active')) {
+                    await renderSecretsList();
+                }
+
+            } catch (error) {
+                console.error(`[心事引擎] ❌ 角色 [${dossier.character.name}] 在保存心事时失败:`, error);
+            }
+        }
+
+/**
+     * 【V2 - 宝丽来版】渲染回忆板块的角色选择照片墙
+     */
+    async function renderMemoryCharacterList() {
+        const gridContainer = document.getElementById('memory-polaroid-grid');
+        if (!gridContainer) return;
+
+        gridContainer.innerHTML = '';
+        if (appState.dossiers.length === 0) {
+            gridContainer.innerHTML = `<p style="text-align:center; opacity:0.7; padding: 50px 20px;">还没有任何角色档案...</p>`;
+            return;
+        }
+
+        for (const dossier of appState.dossiers) {
+            const card = document.createElement('div');
+            card.className = 'polaroid-card';
+            card.dataset.dossierId = dossier.id;
+
+            let avatarUrl = '';
+            if (dossier.character.avatarAssetId) {
+                const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+                if (asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+            }
+            const avatarStyle = avatarUrl ? `style="background-image: url('${avatarUrl}')"` : '';
+
+            // 【核心】生成全新的宝丽来HTML结构
+            card.innerHTML = `
+                <div class="polaroid-image" ${avatarStyle}></div>
+                <span class="polaroid-caption">${dossier.character.name}</span>
+            `;
+            gridContainer.appendChild(card);
+        }
+    }
+
+        /**
+         * 【V2 - 垂直胶片版】为指定角色渲染其专属的回忆胶片带
+         * @param {number} dossierId - 角色的ID
+         */
+        async function renderMemoriesForDossier(dossierId) {
+    // 【最终修正】直接使用我们更正后的 DOM 常量引用
+    const container = DOM.memoryScrapbookContainer;
+    container.innerHTML = '加载回忆中...';
+    
+    const memories = await dbHelper.dbPromise.then(db => 
+        db.getAllFromIndex(CONSTANTS.STORE_NAMES.MEMORIES, 'by_dossierId', dossierId)
+    );
+    
+    if (memories.length === 0) {
+        container.innerHTML = `<p style="text-align:center; opacity:0.7; padding: 50px 20px;">这里还没有任何与TA的回忆...</p>`;
+        return;
+    }
+    
+    container.innerHTML = '';
+    const sortedMemories = memories.sort((a, b) => b.timestamp - a.timestamp);
+
+    for (const memory of sortedMemories) {
+        const card = document.createElement('div');
+        // 【最终修正】这里使用的 class 已经是正确的 .memory-card
+        card.className = 'memory-card'; 
+        
+        let iconClass = 'ri-question-mark';
+        if (memory.type === 'video_call') iconClass = 'ri-vidicon-line';
+        
+       card.innerHTML = `
+            <div class="memory-card-header">
+                <span class="memory-card-title">${memory.title}</span>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <i class="delete-memory-btn ri-delete-bin-line" data-memory-id="${memory.id}" title="删除此回忆"></i>
+                    <i class="${iconClass}" style="opacity: 0.7;"></i>
+                </div>
+            </div>
+            <span class="memory-card-timestamp">${formatRelativeTime(memory.timestamp)}</span>
+            <p class="memory-card-summary">${memory.summary}</p>
+        `;
+        container.appendChild(card);
+    }
+}
+
+/**
  * 【管家】AI 行为引擎
  */
 const ActionEngine = {
@@ -8993,7 +9857,10 @@ const ActionEngine = {
                          await
 handleSecretResponseAction(action.payload, action.dossierId);
                          break;
-                    // ^^^ 新增结束 ^^^
+                   // vvv 【新增这个 case】 vvv
+                    case 'create_secret':
+                        await handleSecretCreationAction(action.payload, action.dossierId);
+                        break;
                 }
                 // 任务成功，更新状态
                 await dbHelper.updatePendingActionStatus(action.id, 'completed');
@@ -9143,11 +10010,37 @@ async function sendBufferedMessage(textContent = null) {
         // =======================================================
         
         function initializeEventListeners() {
-            DOM.themeToggle.addEventListener('click', () => {
-                const isLight = DOM.body.classList.toggle('light-mode');
-                localStorage.setItem('theme', isLight ? 'light' : 'dark');
-                applyTheme(isLight);
-            });
+           // 【新代码 1/3】点击爱心图标，现在只负责“打开/关闭”浮窗
+DOM.themeToggle.addEventListener('click', (e) => {
+    e.stopPropagation(); // 阻止事件冒泡，这是避免浮窗立即关闭的关键
+    DOM.themePopover.classList.toggle('visible');
+});
+
+// 【新代码 2/3】监听浮窗内部的点击，以执行真正的主题切换
+DOM.themePopover.addEventListener('click', (e) => {
+    const item = e.target.closest('.popover-item');
+    if (!item) return; // 如果点的不是选项，则忽略
+
+    const theme = item.dataset.theme;
+    const isLight = theme === 'light';
+
+    // 调用您已有的函数来应用主题
+    applyTheme(isLight);
+    // 保存用户的选择到本地存储
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+
+    // 选择后，关闭浮窗
+    DOM.themePopover.classList.remove('visible');
+});
+
+// 【新代码 3/3】监听整个页面的点击，实现“点击外部关闭浮窗”的功能
+document.addEventListener('click', (e) => {
+    // 如果浮窗是可见的，并且点击的目标不是浮窗自身，也不是打开浮窗的爱心图标
+    if (DOM.themePopover.classList.contains('visible') && !DOM.themePopover.contains(e.target) && !DOM.themeToggle.contains(e.target)) {
+        // 就关闭浮窗
+        DOM.themePopover.classList.remove('visible');
+    }
+});
             let startX = 0, diffX = 0;
             DOM.swipeArea.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
             DOM.swipeArea.addEventListener('touchmove', (e) => { diffX = e.touches[0].clientX - startX; }, { passive: true });
@@ -9392,9 +10285,10 @@ libraryBookIds: [] // <-- 【新增】为新档案初始化一个空数组
                 if (targetPaneId === 'moments-pane') {
                     await renderMoments();
                 } else if (targetPaneId === 'secrets-pane') {
-                    // 当用户切换到“心事”标签时，主动调用渲染函数！
-                    await renderSecretsList();
-                }
+    await renderSecretsList();
+                } else if (targetPaneId === 'memories-pane') { 
+    await renderMemoryCharacterList();
+              }
                 // --- 修正结束 ---
             });
         });
@@ -11046,18 +11940,22 @@ DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
                 authorType: 'user'
             };
 
-            try {
-                // 4. 将新对象存入数据库，并获取它被分配的ID
+           try {
                 const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.SECRETS, newSecret);
-                newSecret.id = savedId; // 将ID加回到对象上，方便传递给AI
+                newSecret.id = savedId;
                 
                 utils.showToast('心事已发布');
 
-                // --- 【【【 核心修正：调整执行顺序 】】】 ---
-                
-                // 5. 【先】在后台默默地、安全地触发AI决策流程！
+                // --- 【核心修正】在这里，我们同时触发两种不冲突的决策！ ---
+
+                // 决策1 (评论): 所有角色都有可能对你的心事进行“评论”
                 triggerAiSecretResponseDecision(newSecret).catch(error => {
-                    console.error("[心事引擎] 后台AI决策流程发生未捕获的错误:", error);
+                    console.error("[心事引擎] 后台AI【回应】决策流程发生未捕获的错误:", error);
+                });
+                
+                // 决策2 (创作): 随机挑选一位角色，被你的心事“触动”，自己也去“发心事”
+                triggerAiSecretCreationDecision(newSecret).catch(error => {
+                    console.error("[心事引擎] 后台AI【创作】决策流程发生未捕获的错误:", error);
                 });
 
                 // 6. 【后】执行所有前台的导航和UI渲染
@@ -11145,7 +12043,7 @@ DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
         });
         
         // --- 【全新】发送评论的逻辑 ---
-      const handleSendSecretComment = async () => {
+     const handleSendSecretComment = async () => {
             const text = DOM.secretCommentInput.value.trim();
             if (!text) return;
             const parentId = appState.currentViewingSecretId;
@@ -11161,18 +12059,23 @@ DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
 
             try {
                 const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.SECRETS, newResponse);
-                newResponse.id = savedId; // 将新ID加回对象，方便传递
+                newResponse.id = savedId;
 
-                // 刷新UI
                 await openSecretDetails(parentId);
                 
-                // 清理状态
                 DOM.secretCommentInput.value = '';
                 appState.replyingToCommentId = null;
                 DOM.secretCommentInput.placeholder = '输入你的回应...';
 
-                // 【核心升级】在所有操作成功后，在后台默默触发AI的决策流程！
-                triggerAiSecretReplyDecision(newResponse);
+                // --- 【核心修正：智能分流】 ---
+                if (newResponse.replyToId) {
+                    // 情况1: 如果是“楼中楼”回复，调用旧的、正确的决策函数
+                    triggerAiSecretReplyDecision(newResponse);
+                } else {
+                    // 情况2: 如果是“第一条评论”，调用我们刚刚创建的新决策函数！
+                    triggerAiSecretInitialCommentResponse(newResponse);
+                }
+                // --- 修正结束 ---
 
             } catch (error) {
                 console.error("保存心事回应失败:", error);
@@ -11226,7 +12129,70 @@ DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
                 DOM.secretCommentInput.focus();
             }
         });
-     }
+
+ // vvv 【新增】使用事件委托，监听对回忆胶片框的点击 vvv
+            document.getElementById('memories-pane').addEventListener('click', (e) => {
+                // 【核心修正】将监听的目标从旧的胶片框，改为新的宝丽来卡片！
+                const card = e.target.closest('.polaroid-card'); 
+                if (card) {
+                    const dossierId = parseInt(card.dataset.dossierId, 10);
+                    const dossier = appState.dossiers.find(d => d.id === dossierId);
+                    if (dossier) {
+                        // 1. 更新详情页的标题
+                        DOM.memoryDetailsHeaderTitle.textContent = `${dossier.character.name} 的回忆`;
+                        // 2. 渲染该角色的剪贴簿
+                        renderMemoriesForDossier(dossierId);
+                        // 3. 导航到详情页
+                        navigateToPage(DOM.chatApp, 'memory-details-page');
+                    }
+                }
+            });
+   
+// vvv 【新增】使用事件委托，监听回忆详情页中所有删除按钮的点击 vvv
+        DOM.memoryScrapbookContainer.addEventListener('click', async (e) => {
+            // 检查点击的是否是删除按钮
+            const deleteBtn = e.target.closest('.delete-memory-btn');
+            if (!deleteBtn) {
+                return; // 如果不是，则忽略
+            }
+
+            // 从按钮的 data 属性中获取回忆的ID
+            const memoryId = parseInt(deleteBtn.dataset.memoryId, 10);
+            if (!memoryId) return;
+
+            // 弹出确认框，防止用户误操作
+            if (confirm("您确定要永久删除这条珍贵的回忆吗？")) {
+                try {
+                    // 1. 从数据库中删除记录
+                    await dbHelper.delete(CONSTANTS.STORE_NAMES.MEMORIES, memoryId);
+                    
+                    // 2. 在UI上播放一个移除动画，然后移除卡片
+                    const cardToRemove = deleteBtn.closest('.memory-card');
+                    if (cardToRemove) {
+                        cardToRemove.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        cardToRemove.style.opacity = '0';
+                        cardToRemove.style.transform = 'scale(0.95)';
+                        
+                        setTimeout(() => {
+                            cardToRemove.remove();
+                            // 如果删除后列表为空，显示提示语
+                            if (DOM.memoryScrapbookContainer.children.length === 0) {
+                                DOM.memoryScrapbookContainer.innerHTML = `<p style="text-align:center; opacity:0.7; padding: 50px 20px;">这里还没有任何与TA的回忆...</p>`;
+                            }
+                        }, 300);
+                    }
+                    
+                    // 3. 显示成功提示
+                    utils.showToast('回忆已删除');
+
+                } catch (error) {
+                    console.error("删除回忆失败:", error);
+                    utils.showToast(`删除失败: ${error.message}`);
+                }
+            }
+        });                     
+            
+}
         async function initializeApp() {
             try {
                 await dbHelper.init();
