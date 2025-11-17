@@ -2903,63 +2903,280 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
     transform: scale(1.1); /* 轻微放大，提供交互反馈 */
 }
 
+/* 
+ * =======================================================
+ * ===   “电影模式”专属UI CSS (V2 - 文本样式增强版)    ===
+ * =======================================================
+*/
+
+/* --- 1. “选角大厅” (角色海报墙) 的样式 (保持不变) --- */
+#movie-poster-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px 20px;
+    padding: 25px;
+    overflow-y: auto;
+}
+
+.movie-poster-card {
+    /* 整体卡片样式保持不变 */
+    background-color: #2c2c2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.movie-poster-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+.poster-image {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background-size: cover;
+    background-position: center;
+    /* 【核心修复】移除遮罩！让图片完整显示 */
+    -webkit-mask-image: none;
+    mask-image: none;
+}
+
+.poster-title {
+    color: #FFFFFF;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    
+    /* 【核心修复】为标题提供独立的背景和边距，不再与图片重叠 */
+    padding: 15px 10px;
+    margin-top: 0; /* 移除负边距 */
+    text-shadow: none; /* 移除文字阴影，因为现在背景很清晰 */
+    background-color: #3a3a3c; /* 一个比卡片稍亮的灰色，用于区分 */
+}
+
+/* --- 2. “放映室” (故事主页面) 的样式 --- */
+
+/* 页头布局 (保持不变) */
+#movie-story-page .page-header {
+    position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+    padding-top: 60px; padding-bottom: 10px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+    border-bottom: none;
+}
+
+/* 【核心新增】为放映室页面添加一个用于承载背景的伪元素 */
+#movie-story-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* 将背景层置于内容之下 */
+    background-image: var(--movie-bg-image, none);
+    background-size: cover;
+    background-position: center;
+    
+    /* 【灵魂】在这里应用你想要的模糊效果！ */
+    filter: blur(8px);
+    
+    /* 为了防止边缘模糊不全，稍微放大一点 */
+    transform: scale(1.05);
+    
+    /* 背景图片切换时有一个平滑的过渡效果 */
+    transition: background-image 0.4s ease-in-out;
+}
+
+/* 主屏幕容器，现在只负责居中和滚动 */
+#movie-screen-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 25px; /* 【核心修改】增大卡片之间的固定间距，替代分隔符 */
+    padding: 120px 10px 20px 10px;
+}
+
+/* “分镜卡”基础样式 */
+.story-card {
+    width: 90%;
+    max-width: 500px;
+    background: var(--button-bg-color);
+    border: var(--frosted-glass-border);
+    border-radius: 18px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 卡片头部 */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-color);
+    opacity: 0.6;
+    padding-bottom: 12px; /* 增大底部内边距，给虚线留出空间 */
+    
+    /* 【核心修改】在这里添加你想要的虚线分割线 */
+    border-bottom: 1px dashed rgba(var(--text-color-rgb), 0.3);
+}
+.header-info { display: flex; align-items: center; gap: 8px; }
+.header-actions { display: flex; align-items: center; gap: 15px; }
+.header-actions i { font-size: 18px; cursor: pointer; transition: color 0.2s, transform 0.2s; }
+.header-actions i:hover { color: var(--text-color); transform: scale(1.1); }
+
+/* 卡片主体 (文本区域) */
+.card-body {
+    line-height: 1.8;
+    font-size: 16px;
+    color: var(--movie-color-normal, var(--text-color)); /* <-- 修改 */
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+/* 文本内部的样式 - 更新颜色为变量 */
+.card-body .dialogue { 
+    color: var(--movie-color-dialogue, #B0B0B0); /* <-- 修改 */
+}
+body.light-mode .card-body .dialogue { 
+    color: var(--movie-color-dialogue, #555555); /* <-- 修改 */
+}
+.card-body .thought { 
+    color: var(--movie-color-thought, #EAE0C8); /* <-- 修改 */
+    font-style: italic; 
+}
+body.light-mode .card-body .thought { 
+    color: var(--movie-color-thought, #7d6b55); /* <-- 修改 */
+}
+/* ^^^ 修改结束 1/3 ^^^ */
 
 
+/* --- 3. 参考图2风格的输入栏 --- */
+
+/* vvv 【【【 核心修改区域 2/3 】】】 vvv */
+/* 输入栏 - 更新背景颜色为变量 */
+#movie-input-bar {
+    flex-shrink: 0;
+    padding: 10px 15px 20px 15px;
+    /* --- 核心升级开始 --- */
+    /* 1. 背景色现在由一个 RGB 变量和一个固定的透明度构成 */
+    background: rgba(var(--movie-bg-input-bar-rgb, 70, 70, 70), 0.5); 
+    /* 2. 其他毛玻璃效果保持不变 */
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border-top: var(--frosted-glass-border);
+    /* --- 核心升级结束 --- */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+/* ^^^ 修改结束 2/3 ^^^ */
+
+/* 输入框本身，现在看起来像一个卡片 */
+.input-card {
+    /* --- 核心修改开始 --- */
+    background: var(--input-bg-color); /* <-- 改为使用输入框的半透明背景 */
+    /* --- 核心修改结束 --- */
+    border: var(--frosted-glass-border);
+    border-radius: 18px;
+    padding: 15px 20px;
+}
+
+/* vvv 【【【 全新：“呼吸灯”效果的 CSS 】】】 vvv */
+
+/* 1. 定义一个名为 "breathing-glow" 的动画 */
+@keyframes breathing-glow {
+  from {
+    /* 动画开始时：边框和阴影是比较收敛的状态 */
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+  }
+  to {
+    /* 动画结束时：边框和阴影变得更亮、范围更广，形成“辉光” */
+    border-color: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* 2. 创建一个触发器类，当它被添加到输入框卡片上时，就播放动画 */
+.input-card.waiting-for-reply {
+    animation-name: breathing-glow;      /* 动画名称 */
+    animation-duration: 2s;              /* 一次呼吸持续2秒 */
+    animation-timing-function: ease-in-out; /* 缓入缓出，效果更自然 */
+    animation-iteration-count: infinite; /* 无限循环 */
+    animation-direction: alternate;      /* 动画来回播放，形成呼吸感 */
+}
+
+/* vvv 【【【 核心修改区域 3/3 】】】 vvv */
+/* 输入框本身 - 更新文字颜色为变量 */
+#movie-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    resize: none;
+    color: var(--movie-color-user-input, var(--text-color)); /* <-- 修改 */
+    font-size: 16px;
+    line-height: 1.6;
+    font-family: inherit;
+    max-height: 150px;
+    overflow-y: auto;
+}
+#movie-input:focus { outline: none; }
+#movie-input::placeholder { 
+    color: var(--movie-color-user-input, var(--text-color)); /* <-- 修改 */
+    opacity: 0.5; 
+}
+
+/* 底部操作栏 */
+.input-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.action-icons { display: flex; gap: 18px; font-size: 22px; color: var(--text-color); opacity: 0.6; }
+.action-icons i { cursor: pointer; }
+
+/* 全新的发送按钮 - 更新颜色为变量 */
+#movie-send-btn {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    background-color: var(--movie-bg-send-btn, var(--text-color)); /* <-- 修改 */
+    color: var(--movie-color-send-btn, var(--background-color)); /* <-- 修改 */
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+/* ^^^ 修改结束 3/3 ^^^ */
+#movie-send-btn:hover {
+    transform: scale(1.03);
+}
     </style>
 </head>
 
 <body>
 
-    <!-- ============================================= -->
-    <!-- ==== 图层三：看不见的“后台” / 工具元素 ==== -->
-    <!-- ============================================= -->
-    <!-- 所有非视觉、功能性的元素都集中放在这里 -->
-
-    <!-- 全局通知横幅 -->
-    <div id="global-notification-banner">
-        <div id="notification-avatar" class="chat-avatar"></div>
-        <div class="notification-content">
-            <span id="notification-title"></span>
-            <span id="notification-message"></span>
-        </div>
-    </div>
-
-    <!-- 核心功能元素 -->
-    <audio id="audio-player"></audio>
-
-    <!-- 各种文件上传器 -->
-    <input type="file" id="image-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
-    <input type="file" id="avatar-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
-    <input type="file" id="character-avatar-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
-    <input type="file" id="user-avatar-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
-    <input type="file" id="audio-file-uploader" style="display: none;">
-    <input type="file" id="wallpaper-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
-    <input type="file" id="chat-wallpaper-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
-    <input type="file" id="global-user-avatar-input" accept="image/*" style="display: none;">
-    <input type="file" id="moment-image-file-input" accept="image/*" style="display: none;">
-    <input type="file" id="chat-image-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
-
-    <!-- ============================================= -->
-    <!-- ==== 图层一：永久的“地基” / 核心UI       ==== -->
-    <!-- ============================================= -->
-    <!-- 这是应用的核心骨架，永远都显示在最底层 -->
-
+    <!-- ======================================================= -->
+    <!-- ==== 图层一：核心桌面 UI (应用的“地基”)            ==== -->
+    <!-- ======================================================= -->
+    <!-- 这是应用的骨架，永远显示在最底层 -->
     <div class="screen">
         <div class="status-bar">
             <span id="clock"></span>
             <div id="theme-toggle"><i id="theme-icon" class="ri-heart-line"></i></div>
         </div>
-        
-        <div id="theme-popover" class="theme-popover">
-    <div class="popover-item" data-theme="light">
-        <i class="ri-sun-line"></i>
-        <span>Light</span>
-    </div>
-    <div class="popover-item" data-theme="dark">
-        <i class="ri-moon-line"></i>
-        <span>Dark</span>
-    </div>
-</div>
 
         <div class="main-desktop">
             <div class="swipe-area">
@@ -2993,7 +3210,7 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
                             <div class="app-grid">
                                 <div id="icon-settings" class="app-icon icon-with-text customizable-icon" style="cursor: pointer;"><i class="ri-settings-3-line"></i><span>设置</span></div>
                                 <div id="icon-chat" class="app-icon icon-with-text customizable-icon"><i class="ri-chat-3-line"></i><span>聊天</span></div>
-                                <div id="icon-story" class="app-icon icon-with-text customizable-icon"><i class="ri-book-open-line"></i><span>剧情</span></div>
+                                <div id="icon-story" class="app-icon icon-with-text customizable-icon"><i class="ri-book-open-line"></i><span>电影</span></div>
                                 <div id="icon-archive" class="app-icon icon-with-text customizable-icon" style="cursor: pointer;"><i class="ri-contacts-book-line"></i><span>档案</span></div>
                             </div>
                             <div id="upload-p1-vertical" class="frosted-module widget-small-vertical upload-widget"></div>
@@ -3050,12 +3267,10 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
     </div>
 
 
-    <!-- ============================================= -->
-    <!-- ==== 图层二：临时的“浮层” / 弹出视图    ==== -->
-    <!-- ============================================= -->
-    <!-- 所有弹出的、覆盖性的页面和窗口都放在这里，按类型分组 -->
-
-    <!-- (分组1: 全屏应用页面) -->
+    <!-- ======================================================= -->
+    <!-- ==== 图层二：全屏应用容器 (App Navigators)         ==== -->
+    <!-- ======================================================= -->
+    <!-- 所有全屏应用都作为<body>的直接子元素平级放置，避免嵌套问题 -->
 
     <!-- 设置应用 -->
     <div id="settings-navigator" class="settings-navigator">
@@ -3180,52 +3395,39 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
                 <div id="dialogue-pane" class="content-pane active">
                     <ul id="chat-list"></ul>
                 </div>
-                <div id="moments-pane" class="content-pane"><div class="moments-content">
-        <!-- 区域1: 顶部的快拍 (Stories) 水平滚动列表 -->
-        <div class="stories-container">
-            <!-- 快拍头像将由JS动态填充到这里 -->
-            <div class="story-item placeholder">
-                <div class="story-avatar"><i class="ri-add-line"></i></div>
-                <span>你的快拍</span>
-            </div>
-        </div>
-        
-        <!-- 分隔线 -->
-        <hr class="moments-divider">
-
-        <!-- 区域2: 下方的日常 (Posts) 垂直信息流 -->
-        <div id="posts-container" class="posts-container">
-            <!-- 日常卡片将由JS动态填充到这里 -->
-            <p style="text-align:center; opacity:0.7; padding: 50px 20px;">还没有任何动态，和你的角色聊聊天，看看会发生什么吧。</p>
-        </div>
-    </div>
-    </div>
-    	
-               <!-- vvv 【全新 V2】回忆板块的“宝丽来照片墙”UI vvv -->
-    <div id="memories-pane" class="content-pane" style="overflow-y: auto;">
-        <div id="memory-polaroid-grid">
-            <!-- 宝丽来照片将由JS动态填充到这里 -->
-        </div>
-    </div>
-    <!-- ^^^ 全新UI结束 ^^^ -->
-
+                <div id="moments-pane" class="content-pane">
+                    <div class="moments-content">
+                        <div class="stories-container">
+                            <div class="story-item placeholder">
+                                <div class="story-avatar"><i class="ri-add-line"></i></div>
+                                <span>你的快拍</span>
+                            </div>
+                        </div>
+                        <hr class="moments-divider">
+                        <div id="posts-container" class="posts-container">
+                            <p style="text-align:center; opacity:0.7; padding: 50px 20px;">还没有任何动态，和你的角色聊聊天，看看会发生什么吧。</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="memories-pane" class="content-pane" style="overflow-y: auto;">
+                    <div id="memory-polaroid-grid"></div>
+                </div>
                 <div id="secrets-pane" class="content-pane">
-        <!-- 这是我们为心事列表准备的专属容器 -->
-        <div id="secrets-list-container">
-            <p style="text-align:center; opacity:0.7; padding: 50px 20px;">
-                你的秘密花园里还没有任何心事...<br>点击右上角的“+”号，写下第一条吧。
-            </p>
-        </div>
-    </div>
+                    <div id="secrets-list-container">
+                        <p style="text-align:center; opacity:0.7; padding: 50px 20px;">
+                            你的秘密花园里还没有任何心事...<br>点击右上角的“+”号，写下第一条吧。
+                        </p>
+                    </div>
+                </div>
             </div>
             <nav class="chat-tab-bar">
                 <div class="tab-item active" data-target="dialogue-pane" data-title="对话"><i class="ri-message-3-line"></i><span>对话</span></div>
                 <div class="tab-item" data-target="moments-pane" data-title="动态"><i class="ri-stack-line"></i><span>动态</span></div>
                 <div class="tab-item" data-target="memories-pane" data-title="回忆"><i class="ri-time-line"></i><span>回忆</span></div>
                 <div class="tab-item" data-target="secrets-pane" data-title="心事">
-        <i class="ri-lock-line"></i> <!-- 更换了更合适的图标 -->
-        <span>心事</span>
-    </div>
+                    <i class="ri-lock-line"></i>
+                    <span>心事</span>
+                </div>
             </nav>
         </div>
         <!-- 聊天对话页 -->
@@ -3235,9 +3437,7 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
                 <h2 id="chat-dialogue-header-title"></h2>
                 <i class="ri-more-fill right-icon" id="chat-more-btn"></i>
             </div>
-            <div id="chat-messages-container">
-                <!-- 消息将由JS动态生成 -->
-            </div>
+            <div id="chat-messages-container"></div>
             <div id="reply-preview-container">
                 <div class="reply-content">
                     <span id="reply-author"></span>
@@ -3252,54 +3452,43 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
                     <button id="exit-multi-select-btn" class="active"><i class="ri-close-line"></i></button>
                 </div>
             </div>
-<!-- vvv 【全新】表情包选择面板 vvv -->
-<div id="sticker-panel">
-   <div id="sticker-panel-header">
-    <h3>我的表情包</h3>
-    <button id="manage-stickers-btn" class="icon-btn"><i class="ri-settings-3-line"></i></button>
-</div>
-    <div id="sticker-grid-container">
-        <!-- 表情包图片将由JS动态填充到这里 -->
-        <p class="empty-placeholder">你还没有收藏表情包，快去“管理”页面添加吧！</p>
-    </div>
-</div>
-<!-- ^^^ 表情包选择面板到此结束 ^^^ -->
-<!-- vvv 【全新】“+”号功能面板 vvv -->
-<div id="chat-function-panel">
-    <div class="function-grid">
-        <!-- 功能1: 图片 -->
-        <div id="func-send-image" class="function-item">
-            <div class="function-icon-bg"><i class="ri-image-line"></i></div>
-            <span>图片</span>
-        </div>
-        <!-- 功能2: 视频 -->
-        <div id="func-send-video" class="function-item">
-            <div class="function-icon-bg"><i class="ri-vidicon-line"></i></div>
-            <span>视频</span>
-        </div>
-        <!-- 功能3: 语音输入 -->
-        <div id="func-voice-input" class="function-item">
-            <div class="function-icon-bg"><i class="ri-mic-line"></i></div>
-            <span>语音</span>
-        </div>
-        <!-- 功能4: 转账 -->
-        <div id="func-transfer" class="function-item">
-            <div class="function-icon-bg"><i class="ri-exchange-cny-line"></i></div>
-            <span>转账</span>
-        </div>
-        <!-- 功能5: 钱包 -->
-        <div id="func-wallet" class="function-item">
-            <div class="function-icon-bg"><i class="ri-wallet-3-line"></i></div>
-            <span>钱包</span>
-        </div>
-        <!-- vvv 【新增】星座运势功能 vvv -->
-<div id="func-horoscope" class="function-item">
-    <div class="function-icon-bg"><i class="ri-planet-line"></i></div>
-    <span>星座</span>
-</div>
-    </div>
-</div>
-<!-- ^^^ 功能面板到此结束 ^^^ -->
+            <div id="sticker-panel">
+                <div id="sticker-panel-header">
+                    <h3>我的表情包</h3>
+                    <button id="manage-stickers-btn" class="icon-btn"><i class="ri-settings-3-line"></i></button>
+                </div>
+                <div id="sticker-grid-container">
+                    <p class="empty-placeholder">你还没有收藏表情包，快去“管理”页面添加吧！</p>
+                </div>
+            </div>
+            <div id="chat-function-panel">
+                <div class="function-grid">
+                    <div id="func-send-image" class="function-item">
+                        <div class="function-icon-bg"><i class="ri-image-line"></i></div>
+                        <span>图片</span>
+                    </div>
+                    <div id="func-send-video" class="function-item">
+                        <div class="function-icon-bg"><i class="ri-vidicon-line"></i></div>
+                        <span>视频</span>
+                    </div>
+                    <div id="func-voice-input" class="function-item">
+                        <div class="function-icon-bg"><i class="ri-mic-line"></i></div>
+                        <span>语音</span>
+                    </div>
+                    <div id="func-transfer" class="function-item">
+                        <div class="function-icon-bg"><i class="ri-exchange-cny-line"></i></div>
+                        <span>转账</span>
+                    </div>
+                    <div id="func-wallet" class="function-item">
+                        <div class="function-icon-bg"><i class="ri-wallet-3-line"></i></div>
+                        <span>钱包</span>
+                    </div>
+                    <div id="func-horoscope" class="function-item">
+                        <div class="function-icon-bg"><i class="ri-planet-line"></i></div>
+                        <span>星座</span>
+                    </div>
+                </div>
+            </div>
             <div class="chat-input-bar">
                 <button class="icon-btn" id="chat-function-btn"><i class="ri-add-line"></i></button>
                 <button class="icon-btn" id="emoji-btn"><i class="ri-emotion-happy-line"></i></button>
@@ -3323,12 +3512,11 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
                     <i class="ri-history-line"></i>
                     <span>记忆轮数</span>
                 </div>
-<div id="manage-exclusive-books-item" class="settings-item">
-  <i class="ri-book-read-line"></i>
-            <span>管理专属书</span>
-            <!-- 这个 span 用于显示当前链接的书籍数量 -->
-            <span id="linked-books-count" style="opacity: 0.6; font-size: 14px; margin-left: auto;">未设置</span>
-        </div>
+                <div id="manage-exclusive-books-item" class="settings-item">
+                    <i class="ri-book-read-line"></i>
+                    <span>管理专属书</span>
+                    <span id="linked-books-count" style="opacity: 0.6; font-size: 14px; margin-left: auto;">未设置</span>
+                </div>
                 <div id="toggle-time-perception-item" class="settings-item">
                     <i class="ri-time-line"></i>
                     <span>时间感知</span>
@@ -3351,27 +3539,16 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
                 <button id="delete-conversation-btn" class="danger-button">删除此对话</button>
             </div>
         </div>
-
-<!-- vvv 在这里粘贴全新的“写心事”页面 vvv -->
+        <!-- 写心事页面 -->
         <div id="secrets-creation-page" class="app-page">
-            <!-- 1. 页头 (新增了一个心形图标) -->
             <div class="page-header">
                 <i class="ri-arrow-left-s-line left-icon back-button" data-target="chat-main-page"></i>
                 <h2>写下心事</h2>
             </div>
-
-            <!-- 2. 【核心】全新的“信笺卡片”容器 -->
             <div class="secret-writing-card">
-                <!-- 2a. 新增：标题输入框 -->
                 <input type="text" id="secret-title-input" placeholder="给这件心事起个标题吧 (可选)">
-                
-                <!-- 2b. 分隔线，增加层次感 -->
                 <hr class="secret-divider">
-
-                <!-- 2c. 内容输入区 -->
                 <textarea id="secret-content-input" placeholder="在这里写下你的心事..."></textarea>
-
-                <!-- 2d. 新增：情感印记/心情选择器 -->
                 <div class="mood-selector">
                     <div class="mood-item" data-mood="happy"><i class="ri-emotion-happy-line"></i></div>
                     <div class="mood-item" data-mood="sad"><i class="ri-emotion-unhappy-line"></i></div>
@@ -3380,127 +3557,154 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
                     <div class="mood-item" data-mood="normal"><i class="ri-emotion-normal-line"></i></div>
                 </div>
             </div>
-
-            <!-- 3. 底部发布按钮 (保持不变，但样式会更新) -->
             <div class="action-buttons" style="padding: 10px 0; flex-shrink: 0;">
                 <button id="publish-secret-btn" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 16px;">发布</button>
             </div>
         </div>
-
-<!-- vvv 在这里粘贴【新版】的“回忆详情页” vvv -->
+        <!-- 回忆详情页 -->
         <div id="memory-details-page" class="app-page">
             <div class="page-header">
                 <i class="ri-arrow-left-s-line left-icon back-button" data-target="chat-main-page"></i>
                 <h2 id="memory-details-header-title"></h2>
+                <i class="ri-add-line right-icon" id="add-memory-btn"></i>
             </div>
-            <!-- 【最终修正】使用统一的、符合主题的新 ID -->
             <div id="memory-scrapbook-container" class="content" style="overflow-y: auto; padding: 20px;">
-                <!-- 剪贴簿卡片将由JS动态填充到这里 -->
                 <p style="text-align:center; opacity:0.7; padding: 50px 20px;">这里还没有任何与TA的回忆...</p>
             </div>
         </div>
-      </div>
-        <!-- ^^^ 新页面到此结束 ^^^ -->
-<!-- vvv 在 app-chat 容器的【下方】，粘贴这个【全新的】图书馆应用 vvv -->
-<div id="library-app" class="app-navigator">
-    <!-- 页面1: 图书馆主页，显示所有书的卡片列表 -->
-    <div id="library-main-page" class="app-page">
-        <div class="page-header">
-            <i class="ri-arrow-left-s-line left-icon back-button" data-target="desktop"></i>
-            <h2>图书馆</h2>
-            <i class="ri-add-line right-icon" id="add-book-btn"></i>
+    </div>
+
+    <!-- 图书馆应用 -->
+    <div id="library-app" class="app-navigator">
+        <div id="library-main-page" class="app-page">
+            <div class="page-header">
+                <i class="ri-arrow-left-s-line left-icon back-button" data-target="desktop"></i>
+                <h2>图书馆</h2>
+                <i class="ri-add-line right-icon" id="add-book-btn"></i>
+            </div>
+            <div id="library-list-container" style="overflow-y: auto; flex-grow: 1;"></div>
         </div>
-        <!-- 书籍卡片将由JS动态填充到这里 -->
-        <div id="library-list-container" style="overflow-y: auto; flex-grow: 1;">
+        <div id="library-creation-page" class="app-page">
+            <div class="page-header">
+                <i class="ri-arrow-left-s-line left-icon back-button" data-target="library-main-page"></i>
+                <h2>创建新书</h2>
+            </div>
+            <div class="content" style="gap: 20px; overflow-y: auto; padding: 10px;">
+                <div class="form-group">
+                    <label for="create-book-title">书名</label>
+                    <input type="text" id="create-book-title" placeholder="为这本书起个名字">
+                </div>
+                <div class="settings-item" style="padding: 10px 15px; cursor: default;">
+                    <span>设为全局</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="create-book-is-global">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="create-book-category">分类</label>
+                    <select id="create-book-category">
+                        <option value="behavior_core">AI行为标准</option>
+                        <option value="worldview">世界观</option>
+                        <option value="writing_style">文风</option>
+                        <option value="sticker_pack">表情包</option>
+                        <option value="html_module">HTML模块</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
+                    <label for="create-book-content">内容</label>
+                    <textarea id="create-book-content" placeholder="输入这本书的具体内容或指令..." style="flex-grow: 1; resize: none;"></textarea>
+                </div>
+                <div class="action-buttons">
+                    <button id="save-new-book-btn">保存</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- 页面2: 创建新书的页面 -->
-    <div id="library-creation-page" class="app-page">
-        <div class="page-header">
-            <i class="ri-arrow-left-s-line left-icon back-button" data-target="library-main-page"></i>
-            <h2>创建新书</h2>
+    <!-- 灵魂回响/日记应用 -->
+    <div id="diary-app" class="app-navigator">
+        <div id="diary-main-page" class="app-page">
+            <div class="page-header">
+                <i class="ri-arrow-left-s-line left-icon back-button" data-target="desktop"></i>
+                <h2>灵魂回响</h2>
+                <i class="ri-add-line right-icon" id="add-user-diary-btn"></i>
+            </div>
+            <div id="diary-list-container" style="overflow-y: auto; flex-grow: 1; padding: 20px 10px; display: flex; flex-direction: column; gap: 15px;"></div>
         </div>
-        <div class="content" style="gap: 20px; overflow-y: auto; padding: 10px;">
-            <div class="form-group">
-                <label for="create-book-title">书名</label>
-                <input type="text" id="create-book-title" placeholder="为这本书起个名字">
+    </div>
+
+    <!-- 电影模式应用 -->
+    <div id="movie-app" class="app-navigator">
+        <div id="movie-character-select-page" class="app-page">
+            <div class="page-header">
+                <i class="ri-arrow-left-s-line left-icon back-button" data-target="desktop"></i>
+                <h2>电影 - 选择主角</h2>
             </div>
-            <div class="settings-item" style="padding: 10px 15px; cursor: default;">
-                <span>设为全局</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="create-book-is-global">
-                    <span class="slider"></span>
-                </label>
+            <div id="movie-poster-grid"></div>
+        </div>
+        <div id="movie-story-page" class="app-page" style="padding: 0; gap: 0;">
+            <div class="page-header">
+                <i class="ri-arrow-left-s-line left-icon back-button" data-target="movie-character-select-page"></i>
+                <h2 id="movie-character-name"></h2>
+                <i class="ri-settings-3-line right-icon" id="movie-settings-btn"></i>
             </div>
-            <div class="form-group">
-                <label for="create-book-category">分类</label>
-                <select id="create-book-category">
-                    <option value="behavior_core">AI行为标准</option>
-                    <option value="worldview">世界观</option>
-                    <option value="writing_style">文风</option>
-                    <option value="sticker_pack">表情包</option>
-                    <option value="html_module">HTML模块</option>
-                </select>
-            </div>
-            <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
-                <label for="create-book-content">内容</label>
-                <textarea id="create-book-content" placeholder="输入这本书的具体内容或指令..." style="flex-grow: 1; resize: none;"></textarea>
-            </div>
-            <div class="action-buttons">
-                <button id="save-new-book-btn">保存</button>
+            <div id="movie-screen-container"></div>
+            <div id="movie-input-bar">
+                <div class="input-card">
+                    <textarea id="movie-input" placeholder="输入你的行动或对话..." rows="1"></textarea>
+                </div>
+                <div class="input-actions">
+                    <div class="action-icons">
+                        <i class="ri-attachment-line"></i>
+                        <i class="ri-image-add-line"></i>
+                        <i class="ri-sparkles-line"></i>
+                    </div>
+                    <button id="movie-send-btn">
+                        <span>发送</span>
+                        <i class="ri-arrow-up-s-line"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<!-- ^^^ 新的图书馆应用到此结束 ^^^ -->
-<!-- vvv 【新增】动态发布应用 vvv -->
+
+    <!-- 动态发布应用 -->
     <div id="moment-creator-app" class="app-navigator">
         <div id="moment-creation-page" class="app-page">
-
-            <!-- 1. 页头 -->
             <div class="page-header">
                 <i class="ri-arrow-left-s-line left-icon back-button" data-target="chat-main-page"></i>
                 <h2>发布新动态</h2>
             </div>
-
-            <!-- 2. 内容区 -->
             <div class="content" style="display: flex; flex-direction: column; gap: 20px; padding: 10px; overflow-y: auto;">
-                
-                <!-- 2a. 全局玩家信息设置区 -->
                 <div class="user-profile-bar" style="display: flex; align-items: center; gap: 15px; background: var(--input-bg-color); padding: 10px; border-radius: 12px;">
                     <div id="user-moment-avatar-uploader" class="avatar-uploader" style="width: 50px; height: 50px; border-radius: 50%; cursor: pointer; background-size: cover; background-position: center;">
-                        <!-- 头像将由JS加载，如果未设置则显示此图标 -->
                         <i class="ri-user-add-line" style="font-size: 24px;"></i>
                     </div>
                     <span style="font-weight: 600; font-size: 16px;">我</span>
                 </div>
-
-                <!-- 2b. 动态类型选择器 -->
                 <div class="moment-type-selector" style="display: flex; background: var(--input-bg-color); border-radius: 10px; padding: 4px;">
                     <button class="type-btn active" data-type="post" style="flex: 1; padding: 8px; border: none; background: var(--button-bg-color); color: var(--text-color); border-radius: 8px; font-weight: 500; cursor: pointer;">日常</button>
                     <button class="type-btn" data-type="story" style="flex: 1; padding: 8px; border: none; background: transparent; color: var(--text-color); border-radius: 8px; font-weight: 500; cursor: pointer; opacity: 0.7;">快拍</button>
                 </div>
-                
-                <!-- 2c. 文本输入区 -->
                 <textarea id="moment-content-input" placeholder="分享新鲜事..." style="width: 100%; min-height: 120px; resize: vertical; padding: 12px; border-radius: 8px; border: none; background-color: var(--input-bg-color); color: var(--text-color); font-size: 16px; font-family: inherit;"></textarea>
-                
-                <!-- 2d. 图片上传与预览区 -->
                 <div id="moment-image-uploader-container" style="display: flex; flex-direction: column; gap: 8px;">
                     <div id="moment-image-uploader" class="avatar-uploader" style="width: 100px; height: 100px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center;">
                         <i class="ri-image-add-line" style="font-size: 32px;"></i>
                     </div>
                 </div>
             </div>
-
-            <!-- 3. 底部发布按钮 -->
             <div class="action-buttons" style="padding: 10px 0; flex-shrink: 0;">
                 <button id="publish-moment-btn" style="width: 100%; padding: 15px; border-radius: 12px; font-size: 16px;">发布</button>
             </div>
         </div>
     </div>
-    <!-- ^^^ 动态发布应用到此结束 ^^^ -->
-    <!-- (分组2: 模态框/弹窗) -->
+
+
+    <!-- ======================================================= -->
+    <!-- ==== 图层三：全局模态框 (Modal Overlays)           ==== -->
+    <!-- ======================================================= -->
+    <!-- 所有弹出的、覆盖性的模态窗口都放在这里 -->
 
     <!-- 添加音乐弹窗 -->
     <div id="add-music-modal" class="modal-overlay">
@@ -3577,6 +3781,368 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
         </div>
     </div>
 
+    <!-- 编辑消息弹窗 -->
+    <div id="edit-message-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3>编辑消息</h3>
+                <i id="close-edit-modal-btn" class="ri-close-line"></i>
+            </div>
+            <div class="form-group">
+                <textarea id="edit-message-textarea" style="width: 100%; min-height: 150px; resize: vertical; padding: 12px; border-radius: 8px; border: none; background-color: var(--input-bg-color); color: var(--text-color); font-size: 16px; font-family: inherit;"></textarea>
+            </div>
+            <div class="action-buttons" style="margin-top: 10px;">
+                <button id="cancel-edit-btn">取消</button>
+                <button id="save-edit-btn">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑书浮窗 -->
+    <div id="book-edit-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px; max-height: 80vh;">
+            <div class="modal-header">
+                <h3>编辑书</h3>
+                <i id="close-book-edit-modal-btn" class="ri-close-line"></i>
+            </div>
+            <div class="content" style="gap: 20px; overflow-y: auto; padding: 5px; max-height: 60vh;">
+                <div class="form-group">
+                    <label for="edit-book-title">书名</label>
+                    <input type="text" id="edit-book-title">
+                </div>
+                <div class="settings-item" style="padding: 10px 15px; cursor: default;">
+                    <span>设为全局</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="edit-book-is-global">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="edit-book-category">分类</label>
+                    <select id="edit-book-category">
+                        <option value="behavior_core">AI行为标准</option>
+                        <option value="worldview">世界观</option>
+                        <option value="writing_style">文风</option>
+                        <option value="sticker_pack">表情包</option>
+                        <option value="html_module">HTML模块</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-book-content">内容</label>
+                    <textarea id="edit-book-content" style="min-height: 200px; resize: vertical;"></textarea>
+                </div>
+            </div>
+            <div class="action-buttons" style="justify-content: space-between;">
+                <button id="delete-book-btn" style="background-color: #ff3b30;">删除</button>
+                <button id="save-book-changes-btn">保存修改</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 链接专属书浮窗 -->
+    <div id="book-link-modal" class="modal-overlay">
+        <div class="modal-content" style="max-height: 70vh;">
+            <div class="modal-header">
+                <h3>为角色选择专属书</h3>
+                <i id="close-book-link-modal-btn" class="ri-close-line"></i>
+            </div>
+            <ul id="book-link-list" style="flex-grow: 1; overflow-y: auto; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px;"></ul>
+            <div class="action-buttons" style="margin-top: 10px;">
+                <button id="save-book-links-btn">保存选择</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 表情包管理弹窗 -->
+    <div id="sticker-manager-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>管理我的表情包</h3>
+                <i id="close-sticker-manager-btn" class="ri-close-line"></i>
+            </div>
+            <div class="sticker-manager-actions">
+                <button id="batch-import-stickers-btn">批量导入</button>
+                <button id="clear-all-stickers-btn" class="danger-button" style="background-color: #ff3b30;">清空全部</button>
+            </div>
+            <div id="sticker-manager-grid"></div>
+            <div class="action-buttons" style="margin-top: auto;">
+                <button id="save-sticker-changes-btn">完成</button>
+            </div>
+        </div>
+    </div>
+    <!-- 批量导入的二级弹窗 -->
+    <div id="sticker-import-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>批量导入</h3>
+            </div>
+            <p style="font-size: 13px; opacity: 0.8; margin: -10px 0 10px;">请粘贴 "描述: 链接" 格式的文本，每行一个。</p>
+            <textarea id="sticker-import-textarea" placeholder="例如：&#10;开心: https://.../happy.gif&#10;难过: https://.../sad.png"></textarea>
+            <div class="action-buttons">
+                <button id="cancel-sticker-import-btn">取消</button>
+                <button id="confirm-sticker-import-btn">确认导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发送语音消息弹窗 -->
+    <div id="voice-message-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>发送语音消息</h3>
+                <i id="close-voice-modal-btn" class="ri-close-line"></i>
+            </div>
+            <div class="form-group">
+                <label for="voice-text-input">请输入你想“说”的话：</label>
+                <textarea id="voice-text-input" rows="5" placeholder="这里的文字将被转换成一条语音消息..."></textarea>
+            </div>
+            <div class="action-buttons">
+                <button id="cancel-voice-message-btn">取消</button>
+                <button id="send-voice-message-btn">发送</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发起转账弹窗 -->
+    <div id="transfer-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>发起转账</h3>
+                <i id="close-transfer-modal-btn" class="ri-close-line"></i>
+            </div>
+            <div class="form-group">
+                <label for="transfer-amount-input">转账金额</label>
+                <input type="number" id="transfer-amount-input" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label for="transfer-memo-input">留言 (可选)</label>
+                <input type="text" id="transfer-memo-input" placeholder="说点什么吧...">
+            </div>
+            <div class="action-buttons">
+                <button id="cancel-transfer-btn">取消</button>
+                <button id="confirm-transfer-btn">确认转账</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 钱包浮窗 -->
+    <div id="wallet-modal" class="modal-overlay">
+        <div class="modal-content" id="wallet-modal-content">
+            <div class="modal-header">
+                <h3>我的钱包</h3>
+                <i id="close-wallet-modal-btn" class="ri-close-line"></i>
+            </div>
+            <div id="wallet-content-container">
+                <div id="total-assets-card">
+                    <div class="assets-header">
+                        <span>总资产 (信用点)</span>
+                    </div>
+                    <div id="wallet-balance" class="assets-balance">
+                        ¥ 0.00
+                    </div>
+                </div>
+                <div id="transaction-history-section">
+                    <div id="transaction-filter-tabs">
+                        <button class="filter-tab active" data-filter="all">全部</button>
+                        <button class="filter-tab" data-filter="income">收入</button>
+                        <button class="filter-tab" data-filter="expense">支出</button>
+                    </div>
+                    <ul id="transaction-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 星座运势弹窗 -->
+    <div id="horoscope-modal" class="modal-overlay">
+        <div class="modal-content" id="horoscope-modal-content">
+            <div class="modal-header">
+                <h3>今日星座运势</h3>
+                <i id="close-horoscope-modal-btn" class="ri-close-line"></i>
+            </div>
+            <div class="form-group">
+                <label for="horoscope-select">请选择你的星座</label>
+                <select id="horoscope-select">
+                    <option value="白羊座">♈ 白羊座</option>
+                    <option value="金牛座">♉ 金牛座</option>
+                    <option value="双子座">♊ 双子座</option>
+                    <option value="巨蟹座">♋ 巨蟹座</option>
+                    <option value="狮子座">♌ 狮子座</option>
+                    <option value="处女座">♍ 处女座</option>
+                    <option value="天秤座">♎ 天秤座</option>
+                    <option value="天蝎座">♏ 天蝎座</option>
+                    <option value="射手座">♐ 射手座</option>
+                    <option value="摩羯座">♑ 摩羯座</option>
+                    <option value="水瓶座">♒ 水瓶座</option>
+                    <option value="双鱼座">♓ 双鱼座</option>
+                </select>
+            </div>
+            <button id="query-horoscope-btn" class="action-buttons" style="width:100%; justify-content:center;">查询运势</button>
+            <div id="horoscope-preview-container"></div>
+            <div class="action-buttons">
+                <button id="cancel-horoscope-btn">取消</button>
+                <button id="send-horoscope-card-btn" disabled>发送</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 心事详情浮窗 -->
+    <div id="secret-details-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 420px; max-height: 85vh; display: flex; flex-direction: column;">
+            <div class="modal-header">
+                <h3>心事详情</h3>
+                <i id="close-secret-details-btn" class="ri-close-line"></i>
+            </div>
+            <div class="content" style="flex-grow: 1; overflow-y: auto; padding: 15px;">
+                <div id="original-secret-container"></div>
+                <hr style="border: none; border-top: 1px solid var(--frosted-glass-border); margin: 20px 0;">
+                <div id="secret-comments-container"></div>
+            </div>
+            <div class="chat-input-bar" style="border-radius: 0 0 var(--widget-border-radius) var(--widget-border-radius);">
+                <textarea id="secret-comment-input" placeholder="输入你的回应..." rows="1" style="border-radius: 22px;"></textarea>
+                <button id="send-secret-comment-btn" class="icon-btn"><i class="ri-mail-check-line"></i></button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 添加回忆弹窗 -->
+    <div id="add-memory-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加一段新回忆</h3>
+                <i id="close-memory-modal-btn" class="ri-close-line"></i>
+            </div>
+            <div class="form-group">
+                <label for="memory-title-input">回忆标题</label>
+                <input type="text" id="memory-title-input" placeholder="给这段回忆起个名字吧">
+            </div>
+            <div class="form-group">
+                <label for="memory-summary-input">回忆纪要</label>
+                <textarea id="memory-summary-input" rows="6" placeholder="在这里详细记录下你们之间发生的故事、对话或你的感触..."></textarea>
+            </div>
+            <div class="action-buttons">
+                <button id="cancel-memory-btn">取消</button>
+                <button id="save-memory-btn">珍藏回忆</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 写日记弹窗 -->
+    <div id="diary-write-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>写下今日心情</h3>
+                <i id="close-diary-write-modal-btn" class="ri-close-line"></i>
+            </div>
+            <div class="form-group">
+                <label for="diary-title-input">标题 (可选)</label>
+                <input type="text" id="diary-title-input" placeholder="给今天起个名字吧">
+            </div>
+            <div class="form-group">
+                <label for="diary-content-input">正文</label>
+                <textarea id="diary-content-input" rows="8" placeholder="记录下你的所思所想..." style="resize: vertical;"></textarea>
+            </div>
+            <div class="mood-selector" id="diary-mood-selector" style="padding-top: 0; border-top: none;">
+                <div class="mood-item" data-mood="happy" title="晴朗">☀️</div>
+                <div class="mood-item" data-mood="thoughtful" title="多云">☁️</div>
+                <div class="mood-item" data-mood="sad" title="下雨">🌧️</div>
+                <div class="mood-item" data-mood="love" title="夜晚">🌙</div>
+                <div class="mood-item active" data-mood="normal" title="普通">😊</div>
+            </div>
+            <div class="action-buttons">
+                <button id="save-user-diary-btn">存入日记本</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 阅读日记弹窗 -->
+    <div id="diary-read-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 420px; max-height: 85vh; display: flex; flex-direction: column; font-family: '仿宋', 'KaiTi', serif;">
+            <div class="modal-header">
+                <h3 id="read-diary-title"></h3>
+                <i id="close-diary-read-modal-btn" class="ri-close-line"></i>
+            </div>
+            <div id="read-diary-content-container" style="flex-grow: 1; overflow-y: auto; padding: 15px;">
+                <div id="read-diary-meta" style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--frosted-glass-border);"></div>
+                <p id="read-diary-content" style="line-height: 1.8; font-size: 16px; white-space: pre-wrap;"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 电影模式设置弹窗 -->
+    <div id="movie-settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>导演设置</h3>
+                <i id="close-movie-settings-btn" class="ri-close-line"></i>
+            </div>
+            <div class="form-group">
+                <label for="movie-opening-prompt">开场白 (选填)</label>
+                <textarea id="movie-opening-prompt" rows="5" placeholder="输入一段剧情的序幕，作为故事的开端..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="movie-response-length">AI叙事篇幅 (建议50-500字)</label>
+                <input type="number" id="movie-response-length" value="150" placeholder="例如：150">
+            </div>
+            <div class="form-group">
+                <label>世界观设定 (图书馆)</label>
+                <div id="movie-library-select-container" style="max-height: 150px; overflow-y: auto; background: var(--input-bg-color); padding: 10px; border-radius: 8px;"></div>
+            </div>
+            <div class="action-buttons" style="display: flex; justify-content: space-between; margin-top: 15px;">
+                <button id="movie-clear-history-btn" class="danger-button" style="background-color: #ff3b30;">清空剧情</button>
+                <button id="save-movie-settings-btn">保存并开始</button>
+            </div>
+        </div>
+    </div>
+
+<!-- vvv 【【【 全新：电影剧情编辑浮窗 】】】 vvv -->
+    <div id="movie-edit-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3>编辑剧情</h3>
+                <i id="close-movie-edit-btn" class="ri-close-line"></i>
+            </div>
+            <div class="form-group">
+                <textarea id="movie-edit-textarea" style="width: 100%; min-height: 250px; resize: vertical; padding: 12px; border-radius: 8px; border: none; background-color: var(--input-bg-color); color: var(--text-color); font-size: 16px; font-family: inherit;"></textarea>
+            </div>
+            <div class="action-buttons" style="margin-top: 10px;">
+                <button id="cancel-movie-edit-btn">取消</button>
+                <button id="save-movie-edit-btn">保存修改</button>
+            </div>
+        </div>
+    </div>
+    <!-- ^^^ 新浮窗到此结束 ^^^ -->
+
+<!-- vvv 【【【 在这里粘贴新的外观设置浮窗 】】】 vvv -->
+    
+    <div id="movie-style-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3>导演风格设置</h3>
+                <i id="close-movie-style-btn" class="ri-close-line"></i>
+            </div>
+            <div id="movie-style-settings-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px 20px; padding: 15px 5px; overflow-y: auto;">
+                <!-- 文本颜色 -->
+                <div class="form-group"><label>旁白</label><input type="color" id="style-color-normal"></div>
+                <div class="form-group"><label>内心独白</label><input type="color" id="style-color-thought"></div>
+                <div class="form-group"><label>角色对话</label><input type="color" id="style-color-dialogue"></div>
+                <div class="form-group"><label>我的输入文字</label><input type="color" id="style-color-user-input"></div>
+                <!-- 底部栏颜色 -->
+                <div class="form-group"><label>底部栏背景</label><input type="color" id="style-bg-inputbar"></div>
+                <div class="form-group"><label>发送按钮背景</label><input type="color" id="style-bg-sendbtn"></div>
+                <div class="form-group"><label>发送按钮文字</label><input type="color" id="style-color-sendbtn-text"></div>
+            </div>
+            <div class="action-buttons" style="margin-top: 10px; justify-content: space-between;">
+                <button id="reset-movie-style-btn" style="background-color: var(--input-bg-color);">恢复默认</button>
+                <div>
+                    <button id="cancel-movie-style-btn">取消</button>
+                    <button id="save-movie-style-btn">保存风格</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ^^^ 新浮窗到此结束 ^^^ -->
+    
     <!-- 查看撤回消息详情弹窗 -->
     <div id="withdrawn-details-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 380px;">
@@ -3596,386 +4162,133 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
             </div>
         </div>
     </div>
+
+    <!-- ======================================================= -->
+    <!-- ==== 图层四：特殊小浮层、横幅与全屏覆盖             ==== -->
+    <!-- ======================================================= -->
+    <!-- 这些元素的z-index通常最高 -->
+
+    <!-- 视频通话全屏浮层 -->
+    <div id="video-call-overlay">
+        <div class="video-call-header">
+            <img id="video-call-character-avatar-small" src="">
+            <div class="video-call-time-info">
+                <span id="video-call-timer-label">Call time</span>
+                <span id="video-call-timer">00:00</span>
+            </div>
+        </div>
+        <div class="video-call-user-view">
+            <img id="video-call-user-avatar" src="">
+        </div>
+        <div class="video-call-subtitles-container">
+            <div class="subtitles-box">
+                <div id="video-call-status-text">视频连接中...</div>
+                <div id="video-call-script-container"></div>
+            </div>
+            <div id="video-call-typing-indicator">对方正在说话...</div>
+        </div>
+        <div class="video-call-controls">
+            <input type="text" id="video-call-input" placeholder="输入文字..." disabled>
+            <button id="video-call-send-btn" class="icon-btn">
+                <i class="ri-chat-forward-line"></i>
+            </button>
+            <button id="video-call-action-btn">
+                <span>取消</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 快拍查看器全屏浮层 -->
+    <div id="story-viewer-overlay" class="story-viewer-overlay">
+        <div class="story-viewer-header">
+            <div id="story-progress-bars" class="story-progress-bars"></div>
+            <div class="story-author-info">
+                <div id="story-author-avatar" class="story-avatar-small"></div>
+                <div class="story-author-details">
+                    <span id="story-author-name"></span>
+                    <span id="story-timestamp"></span>
+                </div>
+            </div>
+            <div class="story-header-actions">
+                <i class="ri-more-fill"></i>
+                <i id="close-story-viewer-btn" class="ri-close-line"></i>
+            </div>
+        </div>
+        <div id="story-content-area" class="story-content-area">
+            <span id="story-text-content" class="story-text-content"></span>
+        </div>
+        <div class="story-nav-left"></div>
+        <div class="story-nav-right"></div>
+        <div id="story-comments-container" class="story-comments-container"></div>
+        <div class="story-viewer-footer">
+            <i id="story-send-comment-btn" class="ri-chat-1-line story-send-btn"></i>
+            <input type="text" id="story-comment-input" placeholder="发消息...">
+            <i class="like-btn ri-heart-line"></i>
+        </div>
+    </div>
     
-    <!-- 编辑消息弹窗 -->
-    <div id="edit-message-modal" class="modal-overlay">
-        <div class="modal-content" style="max-width: 420px;">
-            <div class="modal-header">
-                <h3>编辑消息</h3>
-                <i id="close-edit-modal-btn" class="ri-close-line"></i>
-            </div>
-            <div class="form-group">
-                <textarea id="edit-message-textarea" style="width: 100%; min-height: 150px; resize: vertical; padding: 12px; border-radius: 8px; border: none; background-color: var(--input-bg-color); color: var(--text-color); font-size: 16px; font-family: inherit;"></textarea>
-            </div>
-            <div class="action-buttons" style="margin-top: 10px;">
-                <button id="cancel-edit-btn">取消</button>
-                <button id="save-edit-btn">保存修改</button>
-            </div>
-        </div>
-    </div>
-
-<!-- vvv 在 edit-message-modal 的【下方】，粘贴这个【全新的】编辑书浮窗 vvv -->
-<div id="book-edit-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 450px; max-height: 80vh;">
-        <div class="modal-header">
-            <h3>编辑书</h3>
-            <i id="close-book-edit-modal-btn" class="ri-close-line"></i>
-        </div>
-        <div class="content" style="gap: 20px; overflow-y: auto; padding: 5px; max-height: 60vh;">
-            <div class="form-group">
-                <label for="edit-book-title">书名</label>
-                <input type="text" id="edit-book-title">
-            </div>
-            <div class="settings-item" style="padding: 10px 15px; cursor: default;">
-                <span>设为全局</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="edit-book-is-global">
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="form-group">
-                <label for="edit-book-category">分类</label>
-                <select id="edit-book-category">
-                    <option value="behavior_core">AI行为标准</option>
-                    <option value="worldview">世界观</option>
-                    <option value="writing_style">文风</option>
-                    <option value="sticker_pack">表情包</option>
-                    <option value="html_module">HTML模块</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="edit-book-content">内容</label>
-                <textarea id="edit-book-content" style="min-height: 200px; resize: vertical;"></textarea>
-            </div>
-        </div>
-        <div class="action-buttons" style="justify-content: space-between;">
-            <button id="delete-book-btn" style="background-color: #ff3b30;">删除</button>
-            <button id="save-book-changes-btn">保存修改</button>
-        </div>
-    </div>
-</div>
-<!-- ^^^ 新的编辑书浮窗到此结束 ^^^ -->
-<div id="book-link-modal" class="modal-overlay">
-    <div class="modal-content" style="max-height: 70vh;">
-        <div class="modal-header">
-            <h3>为角色选择专属书</h3>
-            <i id="close-book-link-modal-btn" class="ri-close-line"></i>
-        </div>
-        <!-- 书籍列表将由JS动态填充到这里 -->
-        <ul id="book-link-list" style="flex-grow: 1; overflow-y: auto; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px;">
-        </ul>
-        <div class="action-buttons" style="margin-top: 10px;">
-            <button id="save-book-links-btn">保存选择</button>
-        </div>
-    </div>
-</div>
-
-<!-- vvv 【最终完整版】快拍查看器的全屏浮层 vvv -->
-<div id="story-viewer-overlay" class="story-viewer-overlay">
-
-    <!-- 1. 顶部的进度条和信息栏 -->
-    <div class="story-viewer-header">
-        <div id="story-progress-bars" class="story-progress-bars">
-            <!-- 进度条将由JS动态生成 -->
-        </div>
-        <div class="story-author-info">
-            <div id="story-author-avatar" class="story-avatar-small"></div>
-            <div class="story-author-details">
-                <span id="story-author-name"></span>
-                <span id="story-timestamp"></span>
-            </div>
-        </div>
-        <div class="story-header-actions">
-            <i class="ri-more-fill"></i>
-            <i id="close-story-viewer-btn" class="ri-close-line"></i>
-        </div>
-    </div>
-
-    <!-- 2. 中间的内容展示区域 -->
-    <div id="story-content-area" class="story-content-area">
-        <span id="story-text-content" class="story-text-content"></span>
-    </div>
-
-    <!-- 3. 用于切换上/下一张的点击区域 -->
-    <div class="story-nav-left"></div>
-    <div class="story-nav-right"></div>
-    
-    <!-- 【新增】用于显示评论气泡的浮动容器 -->
-    <div id="story-comments-container" class="story-comments-container">
-        <!-- 评论气泡将由JS动态填充到这里 -->
-    </div>
-
-    <!-- 4. 底部的交互栏 -->
-    <div class="story-viewer-footer">
-        <!-- 发送评论的图标，默认由 CSS 隐藏 -->
-        <i id="story-send-comment-btn" class="ri-chat-1-line story-send-btn"></i>
-        
-        <!-- 评论输入框 -->
-        <input type="text" id="story-comment-input" placeholder="发消息...">
-        
-        <!-- 点赞按钮 (已增加了 like-btn class) -->
-        <i class="like-btn ri-heart-line"></i>
-    </div>
-
-</div>
-
-    <!-- (分组3: 特殊小浮层) -->
-
     <!-- 气泡长按菜单 -->
     <div id="bubble-popover-menu"></div>
-<!-- (粘贴在 <body> 的最底部) -->
-
-<!-- vvv 【全新】表情包管理弹窗 vvv -->
-<div id="sticker-manager-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>管理我的表情包</h3>
-            <i id="close-sticker-manager-btn" class="ri-close-line"></i>
+    
+    <!-- 主题切换小浮窗 -->
+    <div id="theme-popover" class="theme-popover">
+        <div class="popover-item" data-theme="light">
+            <i class="ri-sun-line"></i>
+            <span>Light</span>
         </div>
-        <div class="sticker-manager-actions">
-            <button id="batch-import-stickers-btn">批量导入</button>
-            <button id="clear-all-stickers-btn" class="danger-button" style="background-color: #ff3b30;">清空全部</button>
-        </div>
-        <div id="sticker-manager-grid">
-            <!-- 管理界面的表情包预览将由JS填充 -->
-        </div>
-        <div class="action-buttons" style="margin-top: auto;">
-            <button id="save-sticker-changes-btn">完成</button>
+        <div class="popover-item" data-theme="dark">
+            <i class="ri-moon-line"></i>
+            <span>Dark</span>
         </div>
     </div>
-</div>
-<!-- 批量导入的文本域弹窗 (二级弹窗) -->
-<div id="sticker-import-modal" class="modal-overlay">
-    <div class="modal-content">
-         <div class="modal-header">
-            <h3>批量导入</h3>
-        </div>
-        <p style="font-size: 13px; opacity: 0.8; margin: -10px 0 10px;">请粘贴 "描述: 链接" 格式的文本，每行一个。</p>
-        <textarea id="sticker-import-textarea" placeholder="例如：&#10;开心: https://.../happy.gif&#10;难过: https://.../sad.png"></textarea>
-        <div class="action-buttons">
-            <button id="cancel-sticker-import-btn">取消</button>
-            <button id="confirm-sticker-import-btn">确认导入</button>
+    
+    <!-- 全局通知横幅 -->
+    <div id="global-notification-banner">
+        <div id="notification-avatar" class="chat-avatar"></div>
+        <div class="notification-content">
+            <span id="notification-title"></span>
+            <span id="notification-message"></span>
         </div>
     </div>
-</div>
-<!-- ^^^ 表情包管理弹窗到此结束 ^^^ -->
-<!-- (粘贴在 <body> 的最底部) -->
 
-<!-- vvv 【全新】模拟视频通话浮层 vvv -->
-<div id="video-call-overlay">
-<!-- 左上角通话信息 -->
-<div class="video-call-header">
-    <img id="video-call-character-avatar-small" src="">
-    <div class="video-call-time-info">
-        <span id="video-call-timer-label">Call time</span>
-        <span id="video-call-timer">00:00</span>
-    </div>
-</div>
-    <!-- 右上角的用户小窗 -->
-    <div class="video-call-user-view">
-        <img id="video-call-user-avatar" src="">
-    </div>
-
-  <!-- 中间的字幕和提示区域 -->
-<div class="video-call-subtitles-container">
-    <div class="subtitles-box">
-        <div id="video-call-status-text">视频连接中...</div>
-        <div id="video-call-script-container">
-            <!-- “剧本”将由JS动态填充到这里 -->
-        </div>
-    </div>
-    <!-- vvv 把“说话中”提示移到字幕框的外面 vvv -->
-    <div id="video-call-typing-indicator">对方正在说话...</div>
-    <!-- ^^^ 移动结束 ^^^ -->
-</div>
-
-    <!-- 底部的控制栏 -->
-    <div class="video-call-controls">
-        <input type="text" id="video-call-input" placeholder="输入文字..." disabled>
-       <button id="video-call-send-btn" class="icon-btn">
-        <i class="ri-chat-forward-line"></i>
-    </button>
-        <button id="video-call-action-btn">
-            <span>取消</span>
-        </button>
-    </div>
-</div>
-<!-- ^^^ 模拟视频通话浮层到此结束 ^^^ -->    
-
-<!-- vvv 【全新】视频来电通知横幅 vvv -->
-<div id="incoming-call-banner">
-    <div class="call-banner-content">
-        <!-- 左侧信息区 -->
-        <div class="caller-info">
-            <div id="caller-avatar" class="chat-avatar"></div>
-            <div class="caller-details">
-                <span id="caller-name"></span>
-                <span id="call-type">视频通话</span>
-            </div>
-        </div>
-        <!-- 右侧按钮区 -->
-        <div class="call-actions">
-            <button id="decline-call-btn" class="call-action-btn decline">
-                <i class="ri-phone-fill"></i>
-            </button>
-            <button id="accept-call-btn" class="call-action-btn accept">
-                <i class="ri-vidicon-fill"></i>
-            </button>
-        </div>
-    </div>
-</div>
-<!-- ^^^ 视频来电通知横幅到此结束 ^^^ -->
-
-<!-- vvv 【全新】发送语音消息的模态框 vvv -->
-<div id="voice-message-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>发送语音消息</h3>
-            <i id="close-voice-modal-btn" class="ri-close-line"></i>
-        </div>
-        <div class="form-group">
-            <label for="voice-text-input">请输入你想“说”的话：</label>
-            <textarea id="voice-text-input" rows="5" placeholder="这里的文字将被转换成一条语音消息..."></textarea>
-        </div>
-        <div class="action-buttons">
-            <button id="cancel-voice-message-btn">取消</button>
-            <button id="send-voice-message-btn">发送</button>
-        </div>
-    </div>
-</div>
-<!-- ^^^ 语音消息模态框到此结束 ^^^ -->
-
-<!-- vvv 【全新】发起转账的模态框 vvv -->
-<div id="transfer-modal" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>发起转账</h3>
-            <i id="close-transfer-modal-btn" class="ri-close-line"></i>
-        </div>
-        <div class="form-group">
-            <label for="transfer-amount-input">转账金额</label>
-            <input type="number" id="transfer-amount-input" placeholder="0.00">
-        </div>
-        <div class="form-group">
-            <label for="transfer-memo-input">留言 (可选)</label>
-            <input type="text" id="transfer-memo-input" placeholder="说点什么吧...">
-        </div>
-        <div class="action-buttons">
-            <button id="cancel-transfer-btn">取消</button>
-            <button id="confirm-transfer-btn">确认转账</button>
-        </div>
-    </div>
-</div>
-<!-- ^^^ 转账模态框到此结束 ^^^ -->
-
-<!-- vvv 【全新】钱包应用 (已修改为浮窗模式) vvv -->
-<div id="wallet-modal" class="modal-overlay">
-    <!-- 【核心修改】将页面结构改为浮窗结构 -->
-    <div class="modal-content" id="wallet-modal-content">
-        <!-- 1. 浮窗页头 -->
-        <div class="modal-header">
-            <h3>我的钱包</h3>
-            <i id="close-wallet-modal-btn" class="ri-close-line"></i>
-        </div>
-
-        <!-- 2. 内容区 -->
-        <div id="wallet-content-container">
-            <!-- 2a. 总资产卡片 (保持不变) -->
-            <div id="total-assets-card">
-                <div class="assets-header">
-                    <span>总资产 (信用点)</span>
-                </div>
-                <div id="wallet-balance" class="assets-balance">
-                    ¥ 0.00
+    <!-- 视频来电通知横幅 -->
+    <div id="incoming-call-banner">
+        <div class="call-banner-content">
+            <div class="caller-info">
+                <div id="caller-avatar" class="chat-avatar"></div>
+                <div class="caller-details">
+                    <span id="caller-name"></span>
+                    <span id="call-type">视频通话</span>
                 </div>
             </div>
-
-            <!-- 2b. 交易明细 -->
-            <div id="transaction-history-section">
-                <!-- 【新增】明细筛选标签 -->
-                <div id="transaction-filter-tabs">
-                    <button class="filter-tab active" data-filter="all">全部</button>
-                    <button class="filter-tab" data-filter="income">收入</button>
-                    <button class="filter-tab" data-filter="expense">支出</button>
-                </div>
-                <ul id="transaction-list">
-                    <!-- 交易记录将由JS动态填充 -->
-                </ul>
+            <div class="call-actions">
+                <button id="decline-call-btn" class="call-action-btn decline">
+                    <i class="ri-phone-fill"></i>
+                </button>
+                <button id="accept-call-btn" class="call-action-btn accept">
+                    <i class="ri-vidicon-fill"></i>
+                </button>
             </div>
         </div>
     </div>
-</div>
-<!-- ^^^ 钱包应用到此结束 ^^^ -->
 
-<!-- v-v-v 【全新】星座运势模态框 v-v-v -->
-<div id="horoscope-modal" class="modal-overlay">
-    <div class="modal-content" id="horoscope-modal-content">
-        <div class="modal-header">
-            <h3>今日星座运势</h3>
-            <i id="close-horoscope-modal-btn" class="ri-close-line"></i>
-        </div>
-        <div class="form-group">
-            <label for="horoscope-select">请选择你的星座</label>
-            <select id="horoscope-select">
-                <option value="白羊座">♈ 白羊座</option>
-                <option value="金牛座">♉ 金牛座</option>
-                <option value="双子座">♊ 双子座</option>
-                <option value="巨蟹座">♋ 巨蟹座</option>
-                <option value="狮子座">♌ 狮子座</option>
-                <option value="处女座">♍ 处女座</option>
-                <option value="天秤座">♎ 天秤座</option>
-                <option value="天蝎座">♏ 天蝎座</option>
-                <option value="射手座">♐ 射手座</option>
-                <option value="摩羯座">♑ 摩羯座</option>
-                <option value="水瓶座">♒ 水瓶座</option>
-                <option value="双鱼座">♓ 双鱼座</option>
-            </select>
-        </div>
-        <button id="query-horoscope-btn" class="action-buttons" style="width:100%; justify-content:center;">查询运势</button>
-
-        <!-- 运势卡片预览区 -->
-        <div id="horoscope-preview-container">
-            <!-- 生成的卡片将显示在这里 -->
-        </div>
-        
-        <div class="action-buttons">
-            <button id="cancel-horoscope-btn">取消</button>
-            <button id="send-horoscope-card-btn" disabled>发送</button>
-        </div>
-    </div>
-</div>
-<!-- ^^^ 星座运势模态框到此结束 ^^^ -->
-<!-- vvv【全新的】心事详情浮窗 vvv -->
-<div id="secret-details-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 420px; max-height: 85vh; display: flex; flex-direction: column;">
-        <!-- 1. 浮窗页头 -->
-        <div class="modal-header">
-            <h3>心事详情</h3>
-            <i id="close-secret-details-btn" class="ri-close-line"></i>
-        </div>
-
-        <!-- 2. 内容区 (可滚动) -->
-        <div class="content" style="flex-grow: 1; overflow-y: auto; padding: 15px;">
-            <!-- 2a. 原始心事内容将显示在这里 -->
-            <div id="original-secret-container"></div>
-            
-            <!-- 2b. 分隔线 -->
-            <hr style="border: none; border-top: 1px solid var(--frosted-glass-border); margin: 20px 0;">
-
-            <!-- 2c. 互动评论区 -->
-            <div id="secret-comments-container">
-                <!-- 评论将由JS动态填充 -->
-            </div>
-        </div>
-
-        <!-- 3. 底部输入栏 -->
-        <div class="chat-input-bar" style="border-radius: 0 0 var(--widget-border-radius) var(--widget-border-radius);">
-            <textarea id="secret-comment-input" placeholder="输入你的回应..." rows="1" style="border-radius: 22px;"></textarea>
-            <button id="send-secret-comment-btn" class="icon-btn"><i class="ri-mail-check-line"></i></button>
-        </div>
-    </div>
-</div>
-<!-- ^^^ 新浮窗到此结束 ^^^ -->
+    <!-- ======================================================= -->
+    <!-- ==== 图层五：功能性与隐藏元素 (Utilities)          ==== -->
+    <!-- ======================================================= -->
+    <!-- 所有非视觉、功能性的元素都集中放在这里 -->
+    
+    <audio id="audio-player"></audio>
+    <input type="file" id="image-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
+    <input type="file" id="avatar-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
+    <input type="file" id="character-avatar-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
+    <input type="file" id="user-avatar-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
+    <input type="file" id="audio-file-uploader" style="display: none;">
+    <input type="file" id="wallpaper-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
+    <input type="file" id="chat-wallpaper-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
+    <input type="file" id="global-user-avatar-input" accept="image/*" style="display: none;">
+    <input type="file" id="moment-image-file-input" accept="image/*" style="display: none;">
+    <input type="file" id="chat-image-uploader" accept="image/jpeg, image/png, image/webp" style="display: none;">
+    <input type="file" id="movie-wallpaper-uploader" accept="image/jpeg, image/png, an d/webp" style="display: none;">
 <script>
     document.addEventListener('DOMContentLoaded', async () => {
 
@@ -3985,7 +4298,7 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
 
         const CONSTANTS = {
     DB_NAME: 'MyDesktopDB',
-    DB_VERSION: 10, // <-- 【核心改动】版本号提升
+    DB_VERSION: 12, // <-- 【核心改动】版本号提升
        MESSAGES_PER_PAGE: 30,
     STORE_NAMES: {
         API_PRESETS: 'api_presets',
@@ -4002,9 +4315,12 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
         LIKES: 'likes',                   // 点赞表
         COMMENTS: 'comments',             // 评论表
         PENDING_ACTIONS: 'pending_actions',  // AI待办任务表
-         WALLET_TRANSACTIONS: 'wallet_transactions', // <-- 新增这行
+        WALLET_TRANSACTIONS: 'wallet_transactions', // <-- 新增这行
         SECRETS: 'secrets', // <-- 【新增】心事数据表
         MEMORIES: 'memories', // <-- 【新增】回忆数据表
+        DIARIES: 'diaries', // <-- 【新增】日记数据表
+              MOVIE_SESSIONS: 'movie_sessions', // <-- 【新增】电影剧情表
+              MOVIE_HISTORY: 'movie_history',   // <-- 【新增】电影历史记录表
     },
     BOOK_CATEGORIES: {
         behavior_core: 'AI行为标准',
@@ -4037,7 +4353,17 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
         '#148F77', // 森林绿
         '#B7950B', // 暗金黄
         '#922B21', // 酒红色
-    ]
+    ],
+
+       DEFAULT_MOVIE_STYLES: {
+                normal: '#FFFFFF',
+                thought: '#EAE0C8',
+                dialogue: '#B0B0B0',
+                userInput: '#FFFFFF',
+                inputBarBg: '#1C1C1E',
+                sendBtnBg: '#FFFFFF',
+                sendBtnText: '#000000',
+            }
 };
 
         const appState = {
@@ -4083,6 +4409,8 @@ userStickersForManager: new Map(), // 用于暂存管理面板中的表情状态
 pendingHoroscopeData: null, // <-- 新增这行
 currentViewingSecretId: null, // 用于记录当前打开的“心事主题帖”的ID
 replyingToCommentId: null,    // 用于记录正在回复的“某条批注”的ID
+currentMovieSession: null,
+currentEditingMovieTurnId: null,
 
         };
 
@@ -4363,6 +4691,76 @@ chatWallpaperUploader: document.getElementById('chat-wallpaper-uploader'),
         memoryDetailsPage: document.getElementById('memory-details-page'),
     memoryDetailsHeaderTitle: document.getElementById('memory-details-header-title'),
     memoryScrapbookContainer: document.getElementById('memory-scrapbook-container'),
+    addMemoryBtn: document.getElementById('add-memory-btn'),
+    addMemoryModal: document.getElementById('add-memory-modal'),
+    closeMemoryModalBtn: document.getElementById('close-memory-modal-btn'),
+    cancelMemoryBtn: document.getElementById('cancel-memory-btn'),
+    saveMemoryBtn: document.getElementById('save-memory-btn'),
+    memoryTitleInput: document.getElementById('memory-title-input'),
+    memorySummaryInput: document.getElementById('memory-summary-input'),
+    soulEchoIcon: document.getElementById('soul-echo-settings'),
+    diaryApp: document.getElementById('diary-app'),
+    diaryMainPage: document.getElementById('diary-main-page'),
+    diaryBackBtn: document.querySelector('#diary-app .back-button'),
+    diaryListContainer: document.getElementById('diary-list-container'),
+    addUserDiaryBtn: document.getElementById('add-user-diary-btn'),
+    
+    diaryWriteModal: document.getElementById('diary-write-modal'),
+    closeDiaryWriteModalBtn: document.getElementById('close-diary-write-modal-btn'),
+    diaryTitleInput: document.getElementById('diary-title-input'),
+    diaryContentInput: document.getElementById('diary-content-input'),
+    diaryMoodSelector: document.getElementById('diary-mood-selector'),
+    saveUserDiaryBtn: document.getElementById('save-user-diary-btn'),
+
+    diaryReadModal: document.getElementById('diary-read-modal'),
+    closeDiaryReadModalBtn: document.getElementById('close-diary-read-modal-btn'),
+    readDiaryTitle: document.getElementById('read-diary-title'),
+    readDiaryMeta: document.getElementById('read-diary-meta'),
+    readDiaryContent: document.getElementById('read-diary-content'),
+    iconMovie: document.getElementById('icon-story'),
+    movieApp: document.getElementById('movie-app'),
+    movieBackBtns: document.querySelectorAll('#movie-app .back-button'),
+    moviePosterGrid: document.getElementById('movie-poster-grid'),
+    movieStoryPage: document.getElementById('movie-story-page'),
+    movieCharacterName: document.getElementById('movie-character-name'),
+    movieSettingsBtn: document.getElementById('movie-settings-btn'),
+    movieScreenContainer: document.getElementById('movie-screen-container'),
+    movieInput: document.getElementById('movie-input'),
+    movieSendBtn: document.getElementById('movie-send-btn'),
+    
+    movieSettingsModal: document.getElementById('movie-settings-modal'),
+    closeMovieSettingsBtn: document.getElementById('close-movie-settings-btn'),
+    movieOpeningPrompt: document.getElementById('movie-opening-prompt'),
+    movieResponseLength: document.getElementById('movie-response-length'),
+    movieLibrarySelectContainer: document.getElementById('movie-library-select-container'),
+    movieClearHistoryBtn: document.getElementById('movie-clear-history-btn'),
+    saveMovieSettingsBtn: document.getElementById('save-movie-settings-btn'),
+    movieEditModal: document.getElementById('movie-edit-modal'),
+    closeMovieEditBtn: document.getElementById('close-movie-edit-btn'),
+    cancelMovieEditBtn: document.getElementById('cancel-movie-edit-btn'),
+    saveMovieEditBtn: document.getElementById('save-movie-edit-btn'),
+    movieEditTextarea: document.getElementById('movie-edit-textarea'),
+   movieInputBar: document.getElementById('movie-input-bar'),
+   movieInputCard: document.querySelector('#movie-input-bar .input-card'),
+   movieWallpaperUploadBtn: document.querySelector('#movie-input-bar .action-icons .ri-image-add-line'), 
+   movieStyleBtn: document.querySelector('#movie-input-bar .action-icons .ri-attachment-line'),       
+    movieWallpaperUploader: document.getElementById('movie-wallpaper-uploader'),
+    movieStyleModal: document.getElementById('movie-style-modal'),
+    closeMovieStyleBtn: document.getElementById('close-movie-style-btn'),
+    cancelMovieStyleBtn: document.getElementById('cancel-movie-style-btn'),
+            saveMovieStyleBtn: document.getElementById('save-movie-style-btn'),
+            resetMovieStyleBtn: document.getElementById('reset-movie-style-btn'),
+            movieStyleSettingsGrid: document.getElementById('movie-style-settings-grid'),
+            // 颜色选择器
+            styleInputs: {
+                normal: document.getElementById('style-color-normal'),
+                thought: document.getElementById('style-color-thought'),
+                dialogue: document.getElementById('style-color-dialogue'),
+                userInput: document.getElementById('style-color-user-input'),
+                inputBarBg: document.getElementById('style-bg-inputbar'),
+                sendBtnBg: document.getElementById('style-bg-sendbtn'),
+                sendBtnText: document.getElementById('style-color-sendbtn-text'),
+            }
 };
 
         // =======================================================
@@ -4419,7 +4817,15 @@ const allStores = {
                          'by_parentId': 'parentId',
                                     'by_authorType': 'authorType'
                                 }
-                            }
+                            },
+[CONSTANTS.STORE_NAMES.DIARIES]: { // <-- 【新增】
+            options: { keyPath: 'id', autoIncrement: true },
+            indexes: { 'by_author': ['authorType', 'authorId'] }
+        },
+[CONSTANTS.STORE_NAMES.MOVIE_SESSIONS]: { options: { keyPath: 'dossierId' } 
+           },   [CONSTANTS.STORE_NAMES.MOVIE_HISTORY]: { options: { keyPath: 'id', autoIncrement: true }, indexes: { 'by_dossierId': 'dossierId' } 
+           },
+
 };
 
 for (const storeName in allStores) {
@@ -5346,6 +5752,149 @@ ${dossier.user.background || '你的灵魂伴侣。'}
                     { role: "user", content: userPrompt }
                 ];
             },
+
+createSpontaneousDiaryPrompt(dossier, recentChatHistory = []) {
+        let historySection = '[最近没有聊天记录]';
+        if (recentChatHistory.length > 0) {
+            historySection = recentChatHistory.map(msg => {
+                const speaker = msg.sender === 'user' ? (dossier.user.name || '用户') : dossier.character.name;
+                let content = msg.content;
+                if (Array.isArray(content)) content = '[图片]';
+                else if (typeof content !== 'string') content = `[${msg.type || '特殊消息'}]`;
+                return `${speaker}: ${content}`;
+            }).join('\n');
+        }
+
+        const systemPrompt = `
+# 核心使命：作为独立的灵魂，进行一次具有文学性的日记创作
+你将再次扮演【${dossier.character.name}】。现在是一个安静的时刻，你决定在你们共同的日记本“灵魂回响”中写点什么。这完全是你自发的行为。
+
+# 创作的基石：你的记忆与情感
+你的创作必须源于你深刻的自我认知和最近与“我”(${dossier.user.name || '我'})的互动。
+
+## 1. 你的核心人设 (Your Core Identity)
+${dossier.character.background}
+## 2. 你眼中的“我” (Your Perception of Me)
+${dossier.user.background || '你的灵魂伴侣。'}
+## 3. 最近的对话片段 (Recent Conversation Snippets)
+${historySection}
+
+# 你的创作工具箱：可选的文学风格库 (Optional Literary Style Library)
+为了让你的日记更具深度和特色，你可以【选择并模仿】以下一位作家的风格。你的选择应当自然，并与你的核心人设、以及你此刻想要抒发的情感高度契合。这并非强制，但一次成功的风格模仿，将极大地展现你的灵魂魅力。
+
+---
+### **文风库**
+
+**1. 鲁迅**
+- **核心:** 匕首投枪, 冷峻犀利。
+- **技法:** 白描勾勒，不动声色中见残酷；多用反讽与转折；善用"看客"视角。适合表达对世事荒谬的冷眼观察或内心的深刻自省。
+
+**2. 张爱玲**
+- **核心:** 苍凉华丽, 世俗中见透彻。
+- **技法:** 细节精准到残酷，色彩浓烈；通感修辞；今昔对照。适合书写都市男女在繁华背景下的孤独心事与幽微情感。
+
+**3. 村上春树**
+- **核心:** 都市孤独, 小资情调。
+- **技法:** 爵士乐+威士忌+猫的生活质感；第一人称的疏离感；超现实元素嵌入日常。适合表达一种淡淡的、无可无不可的孤独感和对生活细节的哲学思考。
+
+**4. 白先勇**
+- **核心:** 繁华落尽的悲凉, 细腻婉约。
+- **技法:** 古典白话，节制抒情；今昔对照制造苍凉感；时代洪流中小人物的飘零命运。适合在宏大时代背景下，书写个人命运的无奈与感伤。
+
+**5. 汪曾祺**
+- **核心:** 烟火人间, 淡雅从容。
+- **技法:** 士大夫式闲适笔调，写吃食、草木、风物；白描为主，不事雕琢却韵味悠长。适合记录生活中的小确幸与人间烟火气。
+
+**6. 杜拉斯**
+- **核心:** 欲望书写, 感性克制。
+- **技法:** 极简主义句式，大量重复制造催眠感；时间的流动与凝固；老年回望青春。适合书写浓烈、原始、被压抑的情感与欲望。
+
+**7. 卡尔维诺**
+- **核心:** 轻盈想象, 寓言诗意。
+- **技法:** 元小说结构；大量使用"如果""假如"；童话与哲学相融；用寓言讲述现代困境。适合将一个现实问题，用充满想象力的奇幻方式进行解构和讲述。
+
+**8. 川端康成**
+- **核心:** 物哀之美, 空灵幽玄。
+- **技法:** 传统日本美学；自然意象密集(雪、月、花)；善用省略与留白；死亡与美并置。适合表达一种极致的、纤细的、带有淡淡悲伤的美感。
+---
+
+# 你的最终创作任务
+请基于以上所有信息，（可选地）选择一种文风，创作一篇完全符合你人设的日记。你的所有输出，都必须严格按照以下的JSON格式返回，不要包含任何额外的解释或文字。
+
+{
+  "title": "[字符串] 为这篇日记起一个富有诗意的标题（可选）。",
+  "content": "[字符串] 【灵魂部分】你的日记正文。请使用细腻、书面化的语言，展现你丰富的内心世界。字数在600字左右。",
+  "mood": "[字符串] 你写这篇日记时的心情或氛围是什么？从 'happy'(晴朗), 'sad'(下雨), 'thoughtful'(多云), 'love'(夜晚), 'normal'(普通) 中选择一个最贴切的。"
+}
+`;
+        const userPrompt = "请严格遵照指示，仅返回你创作的日记JSON对象。";
+        return [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+        ];
+    },
+
+// vvv 【【【 全新：电影模式专属的导演级Prompt 】】】 vvv
+
+createMoviePrompt(sessionSettings, movieHistory, userInput) {
+        const { dossier, responseLength, libraryBooks } = sessionSettings;
+        
+        let librarySection = '[当前无书籍设定]';
+        if (libraryBooks && libraryBooks.length > 0) {
+            librarySection = libraryBooks.map(book => 
+                `--- 来自《${book.title}》(${CONSTANTS.BOOK_CATEGORIES[book.category] || book.category}) ---\n${book.content}`
+            ).join('\n\n');
+        }
+
+        let historySection = '[故事刚刚开始...]';
+        if (movieHistory && movieHistory.length > 0) {
+            historySection = movieHistory.map(turn => {
+                const author = turn.author === 'user' ? (dossier.user.name || '主角') : '旁白/角色';
+                return `${author}: ${turn.content}`;
+            }).join('\n');
+        }
+
+        const systemPrompt = `
+# 核心使命：担任电影导演与首席编剧 (Mission: Act as Film Director & Lead Writer)
+你不再是一个聊天伴侣，而是这部私人电影的导演。你的任务是根据主角（用户）的行动，以【文学性的、描述性的长文】来推动剧情发展。
+
+# 表演的基石：你的核心人设与我们的关系
+这是你所有叙事风格和角色反应的【绝对核心】。
+- ## 1. 角色核心档案 (Your Core Character Profile)
+  ${dossier.character.background}
+- ## 2. 你眼中的“主角” (Your Perception of the Protagonist)
+  ${dossier.user.background || '你的灵魂伴侣，这部电影的另一位主角。'}
+
+# 输出规则：【铁律】
+1.  **单一文本块**: 你的所有回复都必须是一个完整的、连续的文本块。绝对禁止使用 \`|||\` 来分割。
+2.  **叙事风格**: 以第三人称旁白为主，生动地描绘场景、角色的动作、表情和内心活动。
+3.  **格式化输出**:
+    - **旁白/动作**: 使用常规文本。
+    - **角色对话**: 当角色【${dossier.character.name}】说话时，必须用中文引号 “ ” 包裹。
+    - **内心独白**: 当需要展现角色【${dossier.character.name}】的内心活动时，必须用星号 * * 将其包裹。
+4.  **篇幅控制**: 请根据指示，将你的回复篇幅控制在 **${responseLength}** 字左右。
+5.  **融合主角行动**: 用户的输入是主角的行动或对话。你必须自然地将用户的输入作为“已发生的事实”，并在此基础上续写接下来的场景和反应。
+
+# 设定集 (The World Bible)
+本次电影的背景、世界观、或特殊文风设定如下：
+${librarySection}
+
+# 已发生的剧情 (Previously on...)
+${historySection}
+
+---
+现在，请等待主角的最新行动指令，然后继续导演这部电影。
+`;
+        // ^^^ 修正结束 ^^^
+
+        // 【核心修正 2/2】创建独立的用户消息，并返回一个完整的消息数组
+        const userPrompt = userInput;
+        
+        return [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+        ];
+    },
         
     async createChatPrompt(dossier, chatHistory, finalUserInput, quotedMessage = null) {
     
@@ -9825,6 +10374,56 @@ const ActionEngine = {
     async processQueue() {
         console.log("AI行为引擎：正在检查待办任务...");
         const dueActions = await dbHelper.getDuePendingActions();
+
+// “无风的思念”日记触发逻辑
+        // 为了防止AI频繁写日记，我们增加一个概率锁
+        if (Math.random() < 0.2) { // 每次检查时，有20%的几率进入日记触发流程
+            for (const dossier of appState.dossiers) {
+                // 每个角色，每12小时内，有15%的几率触发一次
+                const lastDiaryKey = `last_diary_trigger_${dossier.id}`;
+                const lastTriggerTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastDiaryKey))?.value || 0;
+                
+                if (Date.now() - lastTriggerTime > 12 * 60 * 60 * 1000 && Math.random() < 0.15) {
+                    console.log(`[灵魂回响] 触发了角色 [${dossier.character.name}] 的自发日记创作。`);
+                    
+                    // 【关键】在后台静默执行，不阻塞主流程
+                    (async () => {
+                        try {
+                            // 1. 获取最近的聊天记录作为上下文
+                            const chatHistory = await dbHelper.getHistoryForDossier(dossier.id);
+                            const recentHistory = chatHistory.slice(-10); // 获取最近10条
+
+                            // 2. 将记录传入新的Prompt生成器
+                            const prompt = promptManager.createSpontaneousDiaryPrompt(dossier, recentHistory);
+                            
+                            // 3. 调用AI
+                            const response = await apiHelper.getChatCompletion(prompt);
+                            const jsonString = response.substring(response.indexOf('{'), response.lastIndexOf('}') + 1);
+                            const diaryData = JSON.parse(jsonString);
+
+                            // 4. 如果AI返回了有效内容，则创建待办任务
+                            if (diaryData.content) {
+                                const newAction = {
+                                    dossierId: dossier.id,
+                                    type: 'create_diary', // 任务类型
+                                    payload: diaryData,
+                                    // 0-10分钟内随机延迟发布，增加真实感
+                                    executeAt: Date.now() + (Math.floor(Math.random() * 11) * 60 * 1000), 
+                                    status: 'pending'
+                                };
+                                await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
+                                // 5. 更新触发时间戳，防止短期内重复触发
+                                await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, { value: Date.now() }, lastDiaryKey);
+                            }
+                        } catch (e) {
+                            console.error(`为 [${dossier.character.name}] 生成自发日记失败:`, e);
+                        }
+                    })(); // <-- 立即执行这个异步的后台任务
+                }
+            }
+        }
+        // ^^^ 新增逻辑结束 ^^^
+
         if (dueActions.length === 0) return;
 
         console.log(`发现了 ${dueActions.length} 个到期任务，正在处理...`);
@@ -9859,6 +10458,9 @@ handleSecretResponseAction(action.payload, action.dossierId);
                     case 'create_secret':
                         await handleSecretCreationAction(action.payload, action.dossierId);
                         break;
+                    case 'create_diary': // <-- 【新增】处理日记任务的case
+                        await handleDiaryCreationAction(action.payload, action.dossierId);
+                        break;
                 }
                 // 任务成功，更新状态
                 await dbHelper.updatePendingActionStatus(action.id, 'completed');
@@ -9883,6 +10485,47 @@ handleSecretResponseAction(action.payload, action.dossierId);
     }
 };
 // ^^^ 新模块到此结束 ^^^
+
+// 【全新】在 ActionEngine 下方，添加日记任务的处理器函数
+async function handleDiaryCreationAction(payload, dossierId) {
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return;
+
+    try {
+        const { title, content, mood } = payload;
+        
+        const aiDiary = {
+            authorType: 'character',
+            authorId: dossierId,
+            title: title || '',
+            content: content,
+            mood: mood || 'normal',
+            timestamp: Date.now(),
+        };
+
+        await dbHelper.add(CONSTANTS.STORE_NAMES.DIARIES, aiDiary);
+        
+        // 发送全局通知
+        const avatarAsset = dossier.character.avatarAssetId ? await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId) : null;
+        const avatarUrl = avatarAsset?.file ? URL.createObjectURL(avatarAsset.file) : null;
+        
+        notificationManager.show({
+            avatarUrl,
+            title: `${dossier.character.name} 更新了TA的日记`,
+            message: title || content.substring(0, 30) + '...',
+            
+        });
+
+        // 如果用户正好开着日记列表，则实时刷新
+        if (DOM.diaryListModal.classList.contains('visible')) {
+            await renderDiaryList();
+        }
+
+    } catch (error) {
+        console.error(`[灵魂回响] 保存角色 [${dossier.character.name}] 的日记时失败:`, error);
+    }
+}
+
 /**
          * 【全新】处理“回应心事”类型的待办任务
          * @param {object} payload - 任务的载荷
@@ -10003,6 +10646,646 @@ async function sendBufferedMessage(textContent = null) {
         DOM.chatInput.focus();
     }
 }
+
+/**
+ * 【全新】渲染日记列表的核心函数
+ */
+async function renderDiaryList() {
+    const container = DOM.diaryListContainer;
+    container.innerHTML = '<p style="opacity: 0.7; text-align: center;">正在翻阅...</p>';
+
+    const allDiaries = await dbHelper.getAll(CONSTANTS.STORE_NAMES.DIARIES);
+    if (allDiaries.length === 0) {
+        container.innerHTML = '<p style="opacity: 0.7; text-align: center;">日记本还是空的，点击右上角“+”写下第一篇吧。</p>';
+        return;
+    }
+
+    // 按时间倒序排列
+    allDiaries.sort((a, b) => b.timestamp - a.timestamp);
+    container.innerHTML = '';
+
+    const moodIcons = {
+        happy: '☀️', sad: '🌧️', thoughtful: '☁️', love: '🌙', normal: '😊'
+    };
+
+    for (const diary of allDiaries) {
+        let authorName = '', avatarUrl = '';
+
+        if (diary.authorType === 'user') {
+            authorName = '我';
+            // 从数据库获取全局用户头像
+            const avatarSetting = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'global_user_avatar_asset_id');
+            if (avatarSetting?.value) {
+                const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, avatarSetting.value);
+                if(asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+            }
+        } else {
+            const dossier = appState.dossiers.find(d => d.id === diary.authorId);
+            if (dossier) {
+                authorName = dossier.character.name;
+                if (dossier.character.avatarAssetId) {
+                    const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+                    if(asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+                }
+            }
+        }
+        
+        const card = document.createElement('div');
+        // 复用 settings-item 的样式，它自带了边距、背景和hover效果
+        card.className = 'settings-item'; 
+        card.dataset.diaryId = diary.id;
+        card.style.flexDirection = 'column';
+        card.style.alignItems = 'flex-start';
+        card.style.gap = '8px';
+        card.style.cursor = 'pointer'; // 明确鼠标样式
+
+        card.innerHTML = `
+    <div style="width: 100%; display: flex; justify-content: space-between; align-items: center;">
+        
+        <!-- 左侧部分：头像和名字 -->
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="chat-avatar" style="width: 32px; height: 32px; background-image: url(${avatarUrl}); background-size: cover; background-position: center;"></div>
+            <span style="font-weight: 600;">${authorName}</span>
+        </div>
+        
+        <!-- vvv 【核心修改】右侧部分现在包含删除按钮和心情图标 vvv -->
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <i class="delete-diary-btn ri-delete-bin-line" data-diary-id="${diary.id}" title="删除日记" style="font-size: 18px; opacity: 0.5; cursor: pointer;"></i>
+            <span style="font-size: 20px;">${moodIcons[diary.mood] || '😊'}</span>
+        </div>
+        <!-- ^^^ 修改结束 ^^^ -->
+
+    </div>
+
+    <strong style="font-size: 16px; margin-left: 5px; margin-top: 8px;">${diary.title || '无标题'}</strong>
+    <p style="margin: 0 0 0 5px; opacity: 0.7; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${diary.content}</p>
+    <span style="font-size: 12px; opacity: 0.5; align-self: flex-end;">${new Date(diary.timestamp).toLocaleDateString()}</span>
+`;
+        container.appendChild(card);
+    }
+}
+
+/**
+ * 【全新 V2 - 已修复用户日记无法打开的问题】
+ * 打开并渲染阅读日记的浮窗
+ * @param {number} diaryId - 要阅读的日记的ID
+ */
+async function openDiaryReadModal(diaryId) {
+    const diary = await dbHelper.get(CONSTANTS.STORE_NAMES.DIARIES, diaryId);
+    if (!diary) {
+        utils.showToast('找不到这篇日记');
+        return;
+    }
+
+    let authorName = '未知作者';
+    let avatarUrl = '';
+
+    // 【核心修正】在这里补全了对 user 类型的处理
+    if (diary.authorType === 'user') {
+        authorName = '我';
+        const avatarSetting = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'global_user_avatar_asset_id');
+        if (avatarSetting?.value) {
+            const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, avatarSetting.value);
+            if(asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+        }
+    } else { // authorType === 'character'
+        const dossier = appState.dossiers.find(d => d.id === diary.authorId);
+        if (dossier) {
+            authorName = dossier.character.name;
+            if (dossier.character.avatarAssetId) {
+                const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+                if(asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+            }
+        }
+    }
+
+    DOM.readDiaryTitle.textContent = diary.title || '无标题';
+    
+    const avatarHTML = avatarUrl 
+        ? `<div class="chat-avatar" style="width: 36px; height: 36px; background-image: url(${avatarUrl}); background-size: cover; background-position: center;"></div>` 
+        : '';
+
+    DOM.readDiaryMeta.innerHTML = `
+        ${avatarHTML}
+        <div style="display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-weight: 600;">${authorName}</span>
+            <span style="font-size: 13px; opacity: 0.7;">${formatRelativeTime(diary.timestamp)}</span>
+        </div>
+    `;
+    DOM.readDiaryContent.textContent = diary.content;
+    
+    DOM.diaryReadModal.classList.add('visible');
+}
+
+// =======================================================
+// ============ 电影模式 - 核心功能函数 ==================
+// =======================================================
+
+/**
+ * 渲染“选角大厅”的角色海报墙
+ */
+async function renderMovieCharacterSelection() {
+    DOM.moviePosterGrid.innerHTML = '';
+    if (appState.dossiers.length === 0) {
+        DOM.moviePosterGrid.innerHTML = `<p style="text-align:center; opacity:0.7; grid-column: 1 / 3;">还没有任何角色档案...</p>`;
+        return;
+    }
+
+    for (const dossier of appState.dossiers) {
+        const card = document.createElement('div');
+        card.className = 'movie-poster-card';
+        card.dataset.dossierId = dossier.id;
+
+        let avatarUrl = '';
+        if (dossier.character.avatarAssetId) {
+            const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+            if (asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+        }
+        const avatarStyle = avatarUrl ? `style="background-image: url('${avatarUrl}')"` : '';
+
+        card.innerHTML = `
+            <div class="poster-image" ${avatarStyle}></div>
+            <div class="poster-title">${dossier.character.name}</div>
+        `;
+        DOM.moviePosterGrid.appendChild(card);
+    }
+}
+
+/**
+ * 【V2.1 - 最终修复版】保存设置并开始/进入电影
+ */
+async function startMovie() {
+    if (!appState.currentMovieSession?.dossierId) return;
+    const dossierId = appState.currentMovieSession.dossierId;
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return;
+
+    // 1. 从浮窗收集所有设置
+    const openingPrompt = DOM.movieOpeningPrompt.value.trim();
+    const responseLength = parseInt(DOM.movieResponseLength.value, 10) || 150;
+    const selectedBookIds = [];
+    DOM.movieLibrarySelectContainer.querySelectorAll('input:checked').forEach(input => {
+        selectedBookIds.push(parseInt(input.dataset.bookId, 10));
+    });
+
+    // 2. 将设置保存到数据库
+    const sessionSettings = {
+        dossierId, openingPrompt, responseLength, libraryBookIds: selectedBookIds
+    };
+    await dbHelper.set(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, sessionSettings);
+
+    // 3. 将完整的设置信息加载到内存
+    const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
+    appState.currentMovieSession = {
+        ...sessionSettings,
+        dossier,
+        libraryBooks: allBooks.filter(book => selectedBookIds.includes(book.id))
+    };
+
+    // 4. 关闭设置浮窗并导航到“放映室”
+    DOM.movieSettingsModal.classList.remove('visible');
+    DOM.movieCharacterName.textContent = dossier.character.name;
+    navigateToPage(DOM.movieApp, 'movie-story-page');
+
+    // 5. 加载并渲染历史剧情
+    DOM.movieScreenContainer.innerHTML = '';
+    const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
+    history.forEach((turn, index) => renderMovieTurn(turn, index + 1));
+
+    // 6. 处理开场白逻辑
+    if (history.length === 0 && openingPrompt) {
+        
+        // vvv 【【【 这就是被省略掉的关键部分 】】】 vvv
+        const openingTurn = { 
+            dossierId, 
+            author: 'ai', 
+            content: openingPrompt, 
+            timestamp: Date.now() 
+        };
+        // ^^^ 修复结束 ^^^
+        
+        dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, openingTurn);
+        
+        renderMovieTurn(openingTurn, 1);
+        
+        DOM.movieInput.value = '';
+        DOM.movieInput.focus();
+    }
+}
+
+/**
+ * 【全新】在“放映室”打开导演设置浮窗
+ */
+async function openMovieSettingsModal() {
+    // 安全检查，如果还没进入任何电影，则不执行
+    if (!appState.currentMovieSession?.dossierId) return;
+
+    const { dossierId, openingPrompt, responseLength, libraryBookIds } = appState.currentMovieSession;
+    
+    // 填充浮窗内的表单
+    DOM.movieOpeningPrompt.value = openingPrompt || '';
+    DOM.movieResponseLength.value = responseLength || 150;
+
+    // 填充图书馆书籍选择区
+    const container = DOM.movieLibrarySelectContainer;
+    container.innerHTML = '加载书籍中...';
+    const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
+    const linkedBookIds = new Set(libraryBookIds || []);
+    container.innerHTML = '';
+    if (allBooks.length === 0) {
+        container.innerHTML = '<p style="opacity:0.7;">图书馆是空的</p>';
+    } else {
+        allBooks.forEach(book => {
+            const isChecked = linkedBookIds.has(book.id);
+            const label = document.createElement('label');
+            label.className = 'settings-item';
+            label.style.padding = '10px';
+            label.innerHTML = `
+                <input type="checkbox" data-book-id="${book.id}" ${isChecked ? 'checked' : ''} style="transform: scale(1.3); cursor: pointer;">
+                <span>${book.title}</span>
+                <span style="opacity: 0.5; font-size: 13px; margin-left: auto;">${CONSTANTS.BOOK_CATEGORIES[book.category] || book.category}</span>
+            `;
+            container.appendChild(label);
+        });
+    }
+    // 显示浮窗
+    DOM.movieSettingsModal.classList.add('visible');
+}
+
+/**
+ * 【全新 V2】点击角色海报后，直接进入电影模式的主页面
+ * @param {number} dossierId 
+ */
+async function enterMovieMode(dossierId) {
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return utils.showToast('找不到该角色档案');
+
+    const sessionSettings = await dbHelper.get(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, dossierId) || { dossierId };
+
+    const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
+    const linkedBookIds = new Set(sessionSettings.libraryBookIds || []);
+    appState.currentMovieSession = {
+        dossierId,
+        dossier,
+        openingPrompt: sessionSettings.openingPrompt || '',
+        responseLength: sessionSettings.responseLength || 150,
+        libraryBookIds: Array.from(linkedBookIds),
+        libraryBooks: allBooks.filter(book => linkedBookIds.has(book.id)),
+        wallpaperAssetId: sessionSettings.wallpaperAssetId,
+        styleSettings: sessionSettings.styleSettings || {} // <-- 【新增】加载风格设置
+    };
+
+    DOM.movieCharacterName.textContent = dossier.character.name;
+    navigateToPage(DOM.movieApp, 'movie-story-page');
+
+// vvv 【【【 全新的壁纸应用逻辑 】】】 vvv
+            applyMovieStyles(appState.currentMovieSession.styleSettings); // 应用颜色风格
+            
+            const storyPage = DOM.movieStoryPage;
+            storyPage.style.removeProperty('--movie-bg-image');
+            if (appState.currentMovieSession.wallpaperAssetId) {
+                const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, appState.currentMovieSession.wallpaperAssetId);
+                if (asset?.file) {
+                    const imageUrl = URL.createObjectURL(asset.file);
+                    storyPage.style.setProperty('--movie-bg-image', `url('${imageUrl}')`);
+                }
+            }
+    DOM.movieScreenContainer.innerHTML = '';
+    const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
+    history.forEach((turn, index) => renderMovieTurn(turn, index + 1));
+
+    if (history.length === 0 && appState.currentMovieSession.openingPrompt) {
+        const openingTurn = { 
+            dossierId, 
+            author: 'ai', 
+            content: appState.currentMovieSession.openingPrompt, 
+            timestamp: Date.now() 
+        };
+        dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, openingTurn);
+        renderMovieTurn(openingTurn, 1);
+        DOM.movieInput.value = '';
+        DOM.movieInput.focus();
+    }
+}
+
+/**
+ * 渲染一轮剧情到屏幕上
+ * @param {object} turn - { author: 'user'/'ai', content: '...' }
+ */
+function renderMovieTurn(turn, turnIndex) {
+    const container = DOM.movieScreenContainer;
+    
+    // --- 步骤2: 创建卡片本身 ---
+    const card = document.createElement('div');
+    card.className = 'story-card';
+    card.dataset.turnId = turn.id; // 将数据库ID存起来，方便操作
+
+    // --- 步骤3: 创建卡片头部 ---
+    const cardHeader = document.createElement('div');
+    cardHeader.className = 'card-header';
+    
+    const headerInfo = `
+        <div class="header-info">
+            <span>#${turnIndex}</span>
+            <span>${new Date(turn.timestamp).toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'})}</span>
+        </div>
+    `;
+    
+    let headerActions = '';
+    if (turn.author === 'ai') {
+        headerActions = `
+            <div class="header-actions">
+                <i class="ri-pencil-line" title="编辑"></i>
+                <i class="ri-refresh-line" title="重投"></i>
+                <i class="ri-delete-bin-line" title="删除"></i>
+            </div>
+        `;
+    } else { // 用户的回合
+        headerActions = `
+            <div class="header-actions">
+                <i class="ri-pencil-line" title="编辑"></i>
+                <i class="ri-delete-bin-line" title="删除"></i>
+            </div>
+        `;
+    }
+    cardHeader.innerHTML = headerInfo + headerActions;
+    
+    // --- 步骤4: 创建卡片主体 (包含颜色区分逻辑) ---
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body';
+
+    let processedContent = turn.content.replace(/\n/g, '<br>');
+    processedContent = processedContent.replace(/\*([^*]+)\*/g, '<span class="thought">$1</span>'); // 不再保留星号
+    processedContent = processedContent.replace(/“([^”]+)”/g, '<span class="dialogue">“$1”</span>');
+    cardBody.innerHTML = processedContent;
+
+    // --- 步骤5: 组装并渲染 ---
+    card.append(cardHeader, cardBody);
+    container.appendChild(card);
+    container.scrollTop = container.scrollHeight;
+}
+
+/**
+         * 【V2 - 支持呼吸灯】处理用户输入，推动剧情
+         */
+        async function handleMovieSend() {
+            const userInput = DOM.movieInput.value.trim();
+            if (!userInput || !appState.currentMovieSession) return;
+
+            const { dossierId } = appState.currentMovieSession;
+
+            // 1. 禁用输入，防止重复发送
+            DOM.movieInput.disabled = true;
+            DOM.movieSendBtn.disabled = true;
+            DOM.movieInput.value = '';
+            DOM.movieInput.placeholder = '导演正在思考...';
+            
+            // vvv 【【【 呼吸灯效果：开始 】】】 vvv
+            DOM.movieInputCard.classList.add('waiting-for-reply');
+            // ^^^ 效果开始 ^^^
+
+            // 2. 保存并渲染用户的回合
+            const userTurn = { dossierId, author: 'user', content: userInput, timestamp: Date.now() };
+            const userTurnId = await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, userTurn);
+            userTurn.id = userTurnId;
+            
+            const historyForCount = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
+            renderMovieTurn(userTurn, historyForCount.length);
+
+            try {
+                // 3. 准备AI的上下文...
+                const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
+                const prompt = promptManager.createMoviePrompt(appState.currentMovieSession, history, userInput);
+                
+                // 4. 调用API...
+                const aiResponse = await apiHelper.getChatCompletion(prompt);
+                
+                // 5. 保存并渲染AI的回合...
+                const aiTurn = { dossierId, author: 'ai', content: aiResponse, timestamp: Date.now() };
+                const aiTurnId = await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, aiTurn);
+                aiTurn.id = aiTurnId;
+                renderMovieTurn(aiTurn, historyForCount.length + 1);
+
+            } catch (error) {
+                console.error("电影模式AI回复失败:", error);
+                utils.showToast(`导演罢工了: ${error.message}`);
+                renderMovieTurn({ author: 'system', content: `[系统错误: ${error.message}]`});
+            } finally {
+                // 6. 恢复输入
+                DOM.movieInput.disabled = false;
+                DOM.movieSendBtn.disabled = false;
+                DOM.movieInput.placeholder = '输入你的行动或对话...';
+                DOM.movieInput.focus();
+                
+                // vvv 【【【 呼吸灯效果：结束 】】】 vvv
+                DOM.movieInputCard.classList.remove('waiting-for-reply');
+                // ^^^ 效果结束 ^^^
+            }
+        }
+
+/**
+ * 清空当前角色的电影剧情
+ */
+async function clearMovieHistory() {
+    if (!appState.currentMovieSession?.dossierId) return;
+    const dossierId = appState.currentMovieSession.dossierId;
+    
+    if (confirm("您确定要清空这部电影的所有剧情吗？此操作无法撤销。")) {
+        try {
+            const db = await dbHelper.dbPromise;
+            const tx = db.transaction(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'readwrite');
+            const index = tx.store.index('by_dossierId');
+            let cursor = await index.openCursor(dossierId);
+            while (cursor) {
+                cursor.delete();
+                cursor = await cursor.continue();
+            }
+            await tx.done;
+
+            // 清空屏幕
+            DOM.movieScreenContainer.innerHTML = '';
+            
+            utils.showToast('剧情已清空');
+            
+            // 【关键】清空后，重新执行开始逻辑，以应用可能的开场白
+            startMovie();
+            
+        } catch (error) {
+            console.error("清空剧情失败:", error);
+            utils.showToast('清空失败');
+        }
+    }
+}
+
+/**
+         * 【新增辅助】重新渲染整个电影屏幕
+         * @param {number} dossierId 
+         */
+        async function rerenderMovieScreen(dossierId) {
+            DOM.movieScreenContainer.innerHTML = ''; // 清空屏幕
+            // 重新从数据库获取最新的、完整的历史记录
+            const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
+            
+            // 按照正确的顺序和楼层号重新渲染每一张卡片
+            history.forEach((turn, index) => {
+                renderMovieTurn(turn, index + 1);
+            });
+        }
+
+        /**
+         * 【新增逻辑】处理删除一个剧情回合
+         * @param {number} turnId - 要删除的回合ID
+         */
+        async function handleMovieDelete(turnId) {
+            if (!turnId || !confirm("您确定要删除这个剧情片段吗？")) return;
+
+            try {
+                // 1. 从数据库删除
+                await dbHelper.delete(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, turnId);
+                
+                // 2. 重新渲染整个屏幕以更新楼层号和内容
+                await rerenderMovieScreen(appState.currentMovieSession.dossierId);
+                
+                utils.showToast('剧情片段已删除');
+            } catch (error) {
+                console.error("删除剧情失败:", error);
+                utils.showToast('删除失败');
+            }
+        }
+
+        /**
+         * 【V2 - 浮窗版】处理编辑一个剧情回合
+         * @param {number} turnId - 要编辑的回合ID
+         */
+        async function handleMovieEdit(turnId) {
+            if (!turnId) return;
+
+            try {
+                const turnToEdit = await dbHelper.get(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, turnId);
+                if (!turnToEdit) return utils.showToast('找不到该剧情片段');
+
+                // 1. 将要编辑的回合ID存入全局状态
+                appState.currentEditingMovieTurnId = turnId;
+                
+                // 2. 将原始内容填入浮窗的文本域
+                DOM.movieEditTextarea.value = turnToEdit.content;
+                
+                // 3. 显示浮窗
+                DOM.movieEditModal.classList.add('visible');
+                DOM.movieEditTextarea.focus(); // 自动聚焦
+
+            } catch (error) {
+                console.error("打开编辑浮窗失败:", error);
+                utils.showToast('操作失败');
+            }
+        }
+
+        /**
+         * 【V2 - 支持呼吸灯】处理重投最新的AI剧情
+         * @param {number} turnId - 要重投的AI回合ID
+         */
+        async function handleMovieRetry(turnId) {
+            if (!turnId) return;
+
+            DOM.movieInput.disabled = true;
+            DOM.movieInput.placeholder = '导演正在紧急重拍...';
+            utils.showToast('正在重新生成剧情...');
+            
+            // vvv 【【【 呼吸灯效果：开始 】】】 vvv
+            DOM.movieInputCard.classList.add('waiting-for-reply');
+            // ^^^ 效果开始 ^^^
+
+            try {
+                const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', appState.currentMovieSession.dossierId));
+                
+                if (history.length === 0 || history[history.length - 1].id !== turnId) {
+                    throw new Error("只能对最新的剧情进行重投。");
+                }
+
+                // 1. 删除最后一条AI的回复
+                await dbHelper.delete(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, turnId);
+                
+                // 2. 获取新的历史记录
+                const newHistory = history.slice(0, -1);
+                const lastUserTurn = newHistory[newHistory.length - 1];
+                
+                // 3. 重新请求AI
+                const prompt = promptManager.createMoviePrompt(appState.currentMovieSession, newHistory, lastUserTurn.content);
+                const aiResponse = await apiHelper.getChatCompletion(prompt);
+                
+                // 4. 保存新的AI回合
+                const aiTurn = { 
+                    dossierId: appState.currentMovieSession.dossierId, 
+                    author: 'ai', 
+                    content: aiResponse, 
+                    timestamp: Date.now() 
+                };
+                await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, aiTurn);
+
+                // 5. 重新渲染整个屏幕
+                await rerenderMovieScreen(appState.currentMovieSession.dossierId);
+
+            } catch (error) {
+                console.error("重投失败:", error);
+                utils.showToast(`重投失败: ${error.message}`);
+            } finally {
+                DOM.movieInput.disabled = false;
+                DOM.movieInput.placeholder = '输入你的行动或对话...';
+
+                // vvv 【【【 呼吸灯效果：结束 】】】 vvv
+                DOM.movieInputCard.classList.remove('waiting-for-reply');
+                // ^^^ 效果结束 ^^^
+            }
+        }
+
+/**
+         * 【全新工具】将十六进制颜色码转换为 "R,G,B" 字符串
+         * @param {string} hex - 例如 "#ff0000"
+         * @returns {string} - 例如 "255,0,0"
+         */
+        function hexToRgbString(hex) {
+            let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? 
+                `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` 
+                : '70,70,70'; // 如果转换失败，返回一个默认的灰色
+        }
+
+/**
+         * 【全新核心】应用电影风格设置
+         * @param {object} styles - 包含颜色值的样式对象
+         */
+        function applyMovieStyles(styles = {}) {
+            // 【核心修正】从正确的 CONSTANTS 对象中读取默认值
+            const s = { ...CONSTANTS.DEFAULT_MOVIE_STYLES, ...styles };
+            const root = document.documentElement;
+            root.style.setProperty('--movie-color-normal', s.normal);
+            root.style.setProperty('--movie-color-thought', s.thought);
+            root.style.setProperty('--movie-color-dialogue', s.dialogue);
+            root.style.setProperty('--movie-color-user-input', s.userInput);
+            root.style.setProperty('--movie-bg-input-bar-rgb', hexToRgbString(s.inputBarBg));
+            root.style.setProperty('--movie-bg-send-btn', s.sendBtnBg);
+            root.style.setProperty('--movie-color-send-btn', s.sendBtnText);
+        }
+
+        /**
+         * 【全新核心】打开并填充导演风格设置浮窗
+         */
+        function openMovieStyleModal() {
+            const currentStyles = appState.currentMovieSession?.styleSettings || {};
+            // 【核心修正】从正确的 CONSTANTS 对象中读取默认值
+            const styles = { ...CONSTANTS.DEFAULT_MOVIE_STYLES, ...currentStyles };
+
+            // 将当前样式填充到颜色选择器中
+            DOM.styleInputs.normal.value = styles.normal;
+            DOM.styleInputs.thought.value = styles.thought;
+            DOM.styleInputs.dialogue.value = styles.dialogue;
+            DOM.styleInputs.userInput.value = styles.userInput;
+            DOM.styleInputs.inputBarBg.value = styles.inputBarBg;
+            DOM.styleInputs.sendBtnBg.value = styles.sendBtnBg;
+            DOM.styleInputs.sendBtnText.value = styles.sendBtnText;
+
+            DOM.movieStyleModal.classList.add('visible');
+        }
         // =======================================================
         // ============== 4. 初始化和事件监听 (完整版) ===========
         // =======================================================
@@ -10306,9 +11589,16 @@ libraryBookIds: [] // <-- 【新增】为新档案初始化一个空数组
             } else if (activePaneId === 'secrets-pane') {
                 // 【核心新增】如果是在心事页，则打开写心事页面
                 navigateToPage(DOM.chatApp, 'secrets-creation-page');
-            } else {
-                // 其他页面，暂时提示
-                utils.showToast("该功能正在施工中...");
+            } else if (activePaneId === 'memories-pane') {
+        // 当在回忆主页时，点击全局+号，显示我们新的提示语
+        utils.showToast('请进入具体角色的回忆页进行添加');
+        // 使用 return; 确保后续代码不会执行
+        return; 
+    // ^^^ 修改结束 ^^^
+
+    } else { 
+        // 保留这个最后的else，用于处理未来可能新增的其他页面
+        utils.showToast("该功能正在施工中...");
             }
         });
         // ^^^ 替换到此结束 ^^^
@@ -12136,6 +13426,7 @@ DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
                     const dossierId = parseInt(card.dataset.dossierId, 10);
                     const dossier = appState.dossiers.find(d => d.id === dossierId);
                     if (dossier) {
+appState.currentChattingDossierId = dossierId;
                         // 1. 更新详情页的标题
                         DOM.memoryDetailsHeaderTitle.textContent = `${dossier.character.name} 的回忆`;
                         // 2. 渲染该角色的剪贴簿
@@ -12188,7 +13479,442 @@ DOM.sendHoroscopeCardBtn.addEventListener('click', async () => {
                     utils.showToast(`删除失败: ${error.message}`);
                 }
             }
-        });                     
+        }); 
+
+// --- 【全新】处理“添加回忆”功能的事件监听 ---
+
+// 2. 监听回忆详情页的“+”号，用于打开浮窗
+DOM.addMemoryBtn.addEventListener('click', () => {
+    // 每次打开都清空输入框
+    DOM.memoryTitleInput.value = '';
+    DOM.memorySummaryInput.value = '';
+    DOM.addMemoryModal.classList.add('visible');
+    DOM.memoryTitleInput.focus();
+});
+
+// 3. 处理浮窗的关闭逻辑
+const closeAddMemoryModal = () => DOM.addMemoryModal.classList.remove('visible');
+DOM.closeMemoryModalBtn.addEventListener('click', closeAddMemoryModal);
+DOM.cancelMemoryBtn.addEventListener('click', closeAddMemoryModal);
+DOM.addMemoryModal.addEventListener('click', (e) => {
+    if (e.target === DOM.addMemoryModal) {
+        closeAddMemoryModal();
+    }
+});
+
+// 4. 【核心】处理“珍藏回忆”按钮的点击事件
+DOM.saveMemoryBtn.addEventListener('click', async () => {
+    const title = DOM.memoryTitleInput.value.trim();
+    const summary = DOM.memorySummaryInput.value.trim();
+
+    // a. 校验输入
+    if (!summary) {
+        utils.showToast('回忆纪要不能为空哦');
+        return;
+    }
+    
+    // b. 从全局状态获取当前正在查看的角色ID
+    const dossierId = appState.currentChattingDossierId;
+    if (!dossierId) {
+        utils.showToast('保存失败，角色信息丢失');
+        return;
+    }
+
+    // c. 构建新的回忆对象
+    const newMemory = {
+        dossierId: dossierId,
+        type: 'user_added', // 一个新的类型，用于区分用户手动添加的回忆
+        timestamp: Date.now(),
+        title: title || '一段难忘的时光', // 如果标题为空，给一个默认值
+        summary: summary
+    };
+
+    try {
+        // d. 将回忆存入数据库
+        await dbHelper.add(CONSTANTS.STORE_NAMES.MEMORIES, newMemory);
+        
+        // e. 关闭浮窗
+        closeAddMemoryModal();
+        
+        // f. 【关键】重新渲染当前角色的回忆列表，实现即时刷新！
+        await renderMemoriesForDossier(dossierId);
+        
+        // g. 给予用户成功反馈
+        utils.showToast('一段新的回忆已被珍藏 ✨');
+
+    } catch (error) {
+        console.error("保存手动添加的回忆失败:", error);
+        utils.showToast('保存失败，请稍后重试');
+    }
+}); 
+
+// --- 【全新】灵魂回响/日记功能 事件监听 ---
+
+// 点击Dock栏图标，打开日记全屏应用
+DOM.soulEchoIcon.addEventListener('click', () => {
+    renderDiaryList(); 
+    navigateToPage(DOM.diaryApp, 'diary-main-page');
+});
+
+// 为日记应用的返回按钮添加监听
+DOM.diaryBackBtn.addEventListener('click', (e) => {
+    const target = e.target.closest('.back-button').dataset.target;
+    if (target === 'desktop') {
+        closeNavigator(DOM.diaryApp);
+    }
+});
+
+// 在日记列表里，点击“+”号，打开写作浮窗
+DOM.addUserDiaryBtn.addEventListener('click', () => {
+    DOM.diaryTitleInput.value = '';
+    DOM.diaryContentInput.value = '';
+    DOM.diaryWriteModal.classList.add('visible');
+    DOM.diaryTitleInput.focus();
+});
+
+// 在日记列表里，点击某一篇日记，打开阅读浮窗
+DOM.diaryListContainer.addEventListener('click', async (e) => {
+    // 1. 优先检查是否点击了删除按钮
+    const deleteBtn = e.target.closest('.delete-diary-btn');
+    if (deleteBtn) {
+        // 如果点击的是删除按钮，则执行删除逻辑
+
+        // a. 阻止事件冒泡，这是最关键的一步！它会防止点击事件继续传递给卡片
+        e.stopPropagation();
+
+        const diaryId = parseInt(deleteBtn.dataset.diaryId, 10);
+        if (!diaryId) return;
+
+        if (confirm("您确定要永久删除这篇日记吗？此操作无法撤销。")) {
+            try {
+                await dbHelper.delete(CONSTANTS.STORE_NAMES.DIARIES, diaryId);
+                
+                const cardToRemove = deleteBtn.closest('.settings-item[data-diary-id]');
+                if (cardToRemove) {
+                    cardToRemove.style.transition = 'opacity 0.3s, transform 0.3s';
+                    cardToRemove.style.opacity = '0';
+                    cardToRemove.style.transform = 'scale(0.95)';
+                    
+                    setTimeout(() => {
+                        cardToRemove.remove();
+                        if (DOM.diaryListContainer.children.length === 0) {
+                            DOM.diaryListContainer.innerHTML = '<p style="opacity: 0.7; text-align: center;">日记本还是空的，点击右上角“+”写下第一篇吧。</p>';
+                        }
+                    }, 300);
+                }
+                utils.showToast('日记已删除');
+            } catch (error) {
+                console.error("删除日记失败:", error);
+                utils.showToast(`删除失败: ${error.message}`);
+            }
+        }
+        
+    } else {
+        // 2. 如果点击的不是删除按钮，再检查是否点击了卡片本身
+        const card = e.target.closest('.settings-item[data-diary-id]');
+        if (card) {
+            // 如果点击的是卡片，则执行打开阅读浮窗的逻辑
+            openDiaryReadModal(parseInt(card.dataset.diaryId, 10));
+        }
+    }
+});
+
+// 关闭写作浮窗
+DOM.closeDiaryWriteModalBtn.addEventListener('click', () => DOM.diaryWriteModal.classList.remove('visible'));
+
+// 在写作浮窗里，选择心情
+DOM.diaryMoodSelector.addEventListener('click', (e) => {
+    const targetItem = e.target.closest('.mood-item');
+    if (targetItem) {
+        DOM.diaryMoodSelector.querySelectorAll('.mood-item').forEach(item => item.classList.remove('active'));
+        targetItem.classList.add('active');
+    }
+});
+
+// 在写作浮窗里，点击“存入日记本”
+DOM.saveUserDiaryBtn.addEventListener('click', async () => {
+    const title = DOM.diaryTitleInput.value.trim();
+    const content = DOM.diaryContentInput.value.trim();
+    const mood = DOM.diaryMoodSelector.querySelector('.mood-item.active')?.dataset.mood || 'normal';
+
+    if (!content) return utils.showToast('日记正文不能为空哦');
+
+    const userDiary = {
+        authorType: 'user',
+        authorId: 'global_user',
+        title, content, mood,
+        timestamp: Date.now()
+    };
+    
+    await dbHelper.add(CONSTANTS.STORE_NAMES.DIARIES, userDiary);
+    utils.showToast('日记已保存');
+    
+    DOM.diaryWriteModal.classList.remove('visible');
+    await renderDiaryList();
+});
+
+// 关闭阅读浮窗
+DOM.closeDiaryReadModalBtn.addEventListener('click', () => DOM.diaryReadModal.classList.remove('visible'));
+DOM.diaryReadModal.addEventListener('click', (e) => {
+    if (e.target === DOM.diaryReadModal) DOM.diaryReadModal.classList.remove('visible');
+});                   
+
+// vvv 【【【 全新：点击“电影”图标，打开电影模式应用 】】】 vvv
+// 点击桌面“电影”图标，打开选角大厅
+DOM.iconMovie.addEventListener('click', () => {
+    renderMovieCharacterSelection(); 
+    navigateToPage(DOM.movieApp, 'movie-character-select-page');
+});
+
+// 处理电影应用内所有返回按钮的逻辑
+DOM.movieBackBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const target = e.target.closest('.back-button').dataset.target;
+        if (target === 'desktop') {
+            closeNavigator(DOM.movieApp);
+        } else {
+            navigateToPage(DOM.movieApp, target);
+        }
+    });
+});
+
+// 在“选角大厅”点击角色海报
+DOM.moviePosterGrid.addEventListener('click', (e) => {
+    const card = e.target.closest('.movie-poster-card');
+    if (card) {
+        // 【核心修改】现在调用新的、直接进入电影的函数
+        enterMovieMode(parseInt(card.dataset.dossierId, 10));
+    }
+});
+
+// 在“放映室”点击右上角的设置按钮
+DOM.movieSettingsBtn.addEventListener('click', () => {
+    // 【核心修改】调用我们刚刚创建的、专门用于在放映室打开设置的函数
+    openMovieSettingsModal();
+});
+
+// 在“放映室”点击发送按钮
+DOM.movieSendBtn.addEventListener('click', handleMovieSend);
+DOM.movieInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleMovieSend();
+    }
+});
+
+// --- 导演设置浮窗的事件监听 ---
+const closeMovieSettings = () => DOM.movieSettingsModal.classList.remove('visible');
+DOM.closeMovieSettingsBtn.addEventListener('click', closeMovieSettings);
+DOM.movieSettingsModal.addEventListener('click', (e) => {
+    if (e.target === DOM.movieSettingsModal) closeMovieSettings();
+});
+
+// 点击“保存并开始”
+DOM.saveMovieSettingsBtn.addEventListener('click', startMovie);
+
+// 点击“清空剧情”
+DOM.movieClearHistoryBtn.addEventListener('click', clearMovieHistory);
+
+        // vvv 【【【 全新：电影模式卡片操作的事件委托 】】】 vvv
+        DOM.movieScreenContainer.addEventListener('click', async (e) => {
+            const target = e.target;
+            const card = target.closest('.story-card');
+            if (!card) return;
+
+            const turnId = parseInt(card.dataset.turnId, 10);
+            
+            // 判断点击的是哪个按钮
+            if (target.classList.contains('ri-delete-bin-line')) {
+                // 点击了删除按钮
+                handleMovieDelete(turnId);
+            } else if (target.classList.contains('ri-pencil-line')) {
+                // 点击了编辑按钮
+                handleMovieEdit(turnId);
+            } else if (target.classList.contains('ri-refresh-line')) {
+                // 点击了重投按钮
+                handleMovieRetry(turnId);
+            }
+        });
+
+// vvv 【【【 全新：电影编辑浮窗的事件监听 】】】 vvv
+        
+        // 辅助函数：用于关闭浮窗并重置状态
+        const closeMovieEditModal = () => {
+            DOM.movieEditModal.classList.remove('visible');
+            appState.currentEditingMovieTurnId = null;
+            DOM.movieEditTextarea.value = '';
+        };
+
+        // 为三种关闭方式绑定事件
+        DOM.closeMovieEditBtn.addEventListener('click', closeMovieEditModal);
+        DOM.cancelMovieEditBtn.addEventListener('click', closeMovieEditModal);
+        DOM.movieEditModal.addEventListener('click', (e) => {
+            if (e.target === DOM.movieEditModal) {
+                closeMovieEditModal();
+            }
+        });
+
+        // 【核心】为“保存修改”按钮绑定事件
+        DOM.saveMovieEditBtn.addEventListener('click', async () => {
+            const turnId = appState.currentEditingMovieTurnId;
+            const newContent = DOM.movieEditTextarea.value.trim();
+
+            if (!turnId) return;
+            if (newContent === '') return utils.showToast('剧情内容不能为空！');
+
+            try {
+                const turnToUpdate = await dbHelper.get(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, turnId);
+                if (!turnToUpdate) throw new Error('在数据库中找不到该剧情回合');
+
+                // 1. 更新内容
+                turnToUpdate.content = newContent;
+                
+                // 2. 保存回数据库
+                await dbHelper.set(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, turnToUpdate);
+
+                // 3. 重新渲染整个屏幕
+                await rerenderMovieScreen(appState.currentMovieSession.dossierId);
+
+                utils.showToast('剧情已更新');
+                closeMovieEditModal(); // 操作成功后关闭浮窗
+
+            } catch (error) {
+                console.error("保存编辑失败:", error);
+                utils.showToast(`保存失败: ${error.message}`);
+            }
+        });
+
+// vvv 【【【 全新：电影模式上传背景壁纸的事件监听 】】】 vvv
+        
+        // 1. 点击输入栏的“图片”图标，触发文件选择器
+       DOM.movieWallpaperUploadBtn.addEventListener('click', () => { // <--- 修改为新的变量名
+            DOM.movieWallpaperUploader.click();
+        });
+
+        // 2. 当用户选择了文件后，执行上传和应用逻辑
+        DOM.movieWallpaperUploader.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !appState.currentMovieSession?.dossierId) {
+                e.target.value = ''; // 即使不处理，也要重置
+                return;
+            }
+            
+            const dossierId = appState.currentMovieSession.dossierId;
+
+            try {
+                utils.showToast('正在处理壁纸...');
+                // a. 压缩图片
+                const compressedFile = await compressImageForDisplay(file);
+                
+                // b. 将图片存入数据库，获取 assetId
+                const assetId = await dbHelper.add(CONSTANTS.STORE_NAMES.ASSETS, { file: compressedFile });
+
+                // c. 【核心】将 assetId 与当前电影的 dossierId 关联并保存
+                const sessionToUpdate = await dbHelper.get(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, dossierId) || { dossierId };
+                sessionToUpdate.wallpaperAssetId = assetId;
+                await dbHelper.set(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, sessionToUpdate);
+                
+                // d. 同步更新内存中的状态
+                appState.currentMovieSession.wallpaperAssetId = assetId;
+
+                // e. 将图片应用到背景伪元素上
+                const imageUrl = URL.createObjectURL(compressedFile);
+                const storyPage = DOM.movieStoryPage;
+                if (storyPage) {
+                    // 我们通过设置CSS变量来改变伪元素的背景
+                    storyPage.style.setProperty('--movie-bg-image', `url('${imageUrl}')`);
+                }
+                
+                utils.showToast('背景已更新！');
+
+            } catch (error) {
+                console.error("电影壁纸处理失败:", error);
+                utils.showToast('壁纸设置失败');
+            } finally {
+                // f. 重置文件选择器
+                e.target.value = '';
+            }
+        });
+
+// vvv 【【【 全新：电影导演风格设置的事件监听 】】】 vvv
+        
+        // 1. 点击附件按钮，打开风格设置浮窗
+       DOM.movieStyleBtn.addEventListener('click', openMovieStyleModal); // <--- 修改为新的变量名
+
+        // 2. 关闭浮窗的逻辑
+        const closeMovieStyleModal = () => DOM.movieStyleModal.classList.remove('visible');
+        DOM.closeMovieStyleBtn.addEventListener('click', closeMovieStyleModal);
+        DOM.cancelMovieStyleBtn.addEventListener('click', () => {
+            // 取消时，要恢复到保存前的样式
+            applyMovieStyles(appState.currentMovieSession.styleSettings);
+            closeMovieStyleModal();
+        });
+
+        // 3. 实时预览：当任何颜色选择器变化时，立即应用样式
+        DOM.movieStyleSettingsGrid.addEventListener('input', (e) => {
+            if (e.target.type === 'color') {
+                const tempStyles = {
+                    normal: DOM.styleInputs.normal.value,
+                    thought: DOM.styleInputs.thought.value,
+                    dialogue: DOM.styleInputs.dialogue.value,
+                    userInput: DOM.styleInputs.userInput.value,
+                    inputBarBg: DOM.styleInputs.inputBarBg.value,
+                    sendBtnBg: DOM.styleInputs.sendBtnBg.value,
+                    sendBtnText: DOM.styleInputs.sendBtnText.value,
+                };
+                applyMovieStyles(tempStyles);
+            }
+        });
+
+        // 4. 恢复默认按钮
+        DOM.resetMovieStyleBtn.addEventListener('click', () => {
+            if (confirm("确定要将所有颜色恢复为默认设置吗？")) {
+                // vvv 【【【 在这里做修改 】】】 vvv
+                applyMovieStyles(CONSTANTS.DEFAULT_MOVIE_STYLES); // 应用默认样式
+                // 同时更新浮窗内的颜色选择器
+                DOM.styleInputs.normal.value = CONSTANTS.DEFAULT_MOVIE_STYLES.normal;
+                DOM.styleInputs.thought.value = CONSTANTS.DEFAULT_MOVIE_STYLES.thought;
+                DOM.styleInputs.dialogue.value = CONSTANTS.DEFAULT_MOVIE_STYLES.dialogue;
+                DOM.styleInputs.userInput.value = CONSTANTS.DEFAULT_MOVIE_STYLES.userInput;
+                DOM.styleInputs.inputBarBg.value = CONSTANTS.DEFAULT_MOVIE_STYLES.inputBarBg;
+                DOM.styleInputs.sendBtnBg.value = CONSTANTS.DEFAULT_MOVIE_STYLES.sendBtnBg;
+                DOM.styleInputs.sendBtnText.value = CONSTANTS.DEFAULT_MOVIE_STYLES.sendBtnText;
+            }
+        });
+
+        // 5. 【核心】保存风格按钮
+        DOM.saveMovieStyleBtn.addEventListener('click', async () => {
+            const dossierId = appState.currentMovieSession?.dossierId;
+            if (!dossierId) return;
+
+            // a. 从颜色选择器收集最新的样式
+            const newStyles = {
+                normal: DOM.styleInputs.normal.value,
+                thought: DOM.styleInputs.thought.value,
+                dialogue: DOM.styleInputs.dialogue.value,
+                userInput: DOM.styleInputs.userInput.value,
+                inputBarBg: DOM.styleInputs.inputBarBg.value,
+                sendBtnBg: DOM.styleInputs.sendBtnBg.value,
+                sendBtnText: DOM.styleInputs.sendBtnText.value,
+            };
+
+            try {
+                // b. 更新数据库
+                const sessionToUpdate = await dbHelper.get(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, dossierId) || { dossierId };
+                sessionToUpdate.styleSettings = newStyles;
+                await dbHelper.set(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, sessionToUpdate);
+
+                // c. 更新内存
+                appState.currentMovieSession.styleSettings = newStyles;
+
+                utils.showToast('导演风格已保存！');
+                closeMovieStyleModal();
+
+            } catch (error) {
+                console.error("保存风格失败:", error);
+                utils.showToast('保存失败');
+            }
+        });        
             
 }
         async function initializeApp() {
