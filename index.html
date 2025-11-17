@@ -3163,6 +3163,57 @@ body.light-mode .card-body .thought {
 #movie-send-btn:hover {
     transform: scale(1.03);
 }
+
+/* --- 新增：电影模式-书籍选择UI优化 --- */
+#movie-library-select-container {
+    /* 移除旧的背景和内边距，让它成为一个纯粹的flex容器 */
+    background: none;
+    padding: 0;
+    
+    /* 核心：使用flex布局，并允许换行 */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* 控制书籍标签之间的间距 */
+}
+
+.book-chip {
+    padding: 8px 15px;
+    border-radius: 20px; /* 圆润的胶囊形状 */
+    background-color: var(--input-bg-color);
+    border: 1.5px solid transparent; /* 预留边框位置 */
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 14px;
+    cursor: pointer;
+    
+    /* 让图标和文字垂直居中 */
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    transition: all 0.2s ease;
+}
+
+.book-chip:hover {
+    opacity: 1;
+    background-color: var(--button-bg-color);
+}
+
+.book-chip.selected {
+    opacity: 1;
+    background-color: #799181; /* 使用一个雅致的绿色作为高亮色 */
+    color: #FFFFFF; /* 选中时文字变白，更清晰 */
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 选中时，在文字前显示一个小小的对勾图标 */
+.book-chip .selection-icon {
+    font-size: 18px;
+    display: none; /* 默认不显示 */
+}
+.book-chip.selected .selection-icon {
+    display: inline-block; /* 选中时显示 */
+}
     </style>
 </head>
 
@@ -10815,102 +10866,105 @@ async function renderMovieCharacterSelection() {
  * 【V2.1 - 最终修复版】保存设置并开始/进入电影
  */
 async function startMovie() {
-    if (!appState.currentMovieSession?.dossierId) return;
-    const dossierId = appState.currentMovieSession.dossierId;
-    const dossier = appState.dossiers.find(d => d.id === dossierId);
-    if (!dossier) return;
+            if (!appState.currentMovieSession?.dossierId) return;
+            const dossierId = appState.currentMovieSession.dossierId;
+            const dossier = appState.dossiers.find(d => d.id === dossierId);
+            if (!dossier) return;
 
-    // 1. 从浮窗收集所有设置
-    const openingPrompt = DOM.movieOpeningPrompt.value.trim();
-    const responseLength = parseInt(DOM.movieResponseLength.value, 10) || 150;
-    const selectedBookIds = [];
-    DOM.movieLibrarySelectContainer.querySelectorAll('input:checked').forEach(input => {
-        selectedBookIds.push(parseInt(input.dataset.bookId, 10));
-    });
+            // 从浮窗收集设置
+            const openingPrompt = DOM.movieOpeningPrompt.value.trim();
+            const responseLength = parseInt(DOM.movieResponseLength.value, 10) || 150;
+            const selectedBookIds = [];
+            
+            // 【核心修改】从查找checkbox改为查找带有.selected类的chip
+            DOM.movieLibrarySelectContainer.querySelectorAll('.book-chip.selected').forEach(chip => {
+                selectedBookIds.push(parseInt(chip.dataset.bookId, 10));
+            });
 
-    // 2. 将设置保存到数据库
-    const sessionSettings = {
-        dossierId, openingPrompt, responseLength, libraryBookIds: selectedBookIds
-    };
-    await dbHelper.set(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, sessionSettings);
+            // 将设置保存到数据库
+            const sessionSettings = {
+                dossierId, openingPrompt, responseLength, libraryBookIds: selectedBookIds
+            };
+            await dbHelper.set(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, sessionSettings);
 
-    // 3. 将完整的设置信息加载到内存
-    const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
-    appState.currentMovieSession = {
-        ...sessionSettings,
-        dossier,
-        libraryBooks: allBooks.filter(book => selectedBookIds.includes(book.id))
-    };
+            // 将完整的设置信息加载到内存
+            const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
+            appState.currentMovieSession = {
+                ...sessionSettings,
+                dossier,
+                libraryBooks: allBooks.filter(book => selectedBookIds.includes(book.id))
+            };
 
-    // 4. 关闭设置浮窗并导航到“放映室”
-    DOM.movieSettingsModal.classList.remove('visible');
-    DOM.movieCharacterName.textContent = dossier.character.name;
-    navigateToPage(DOM.movieApp, 'movie-story-page');
+            // 关闭浮窗并导航到“放映室”
+            DOM.movieSettingsModal.classList.remove('visible');
+            DOM.movieCharacterName.textContent = dossier.character.name;
+            navigateToPage(DOM.movieApp, 'movie-story-page');
 
-    // 5. 加载并渲染历史剧情
-    DOM.movieScreenContainer.innerHTML = '';
-    const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
-    history.forEach((turn, index) => renderMovieTurn(turn, index + 1));
+            // 加载并渲染历史剧情
+            DOM.movieScreenContainer.innerHTML = '';
+            const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
+            history.forEach((turn, index) => renderMovieTurn(turn, index + 1));
 
-    // 6. 处理开场白逻辑
-    if (history.length === 0 && openingPrompt) {
-        
-        // vvv 【【【 这就是被省略掉的关键部分 】】】 vvv
-        const openingTurn = { 
-            dossierId, 
-            author: 'ai', 
-            content: openingPrompt, 
-            timestamp: Date.now() 
-        };
-        // ^^^ 修复结束 ^^^
-        
-        dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, openingTurn);
-        
-        renderMovieTurn(openingTurn, 1);
-        
-        DOM.movieInput.value = '';
-        DOM.movieInput.focus();
-    }
-}
+            // 处理开场白逻辑
+            if (history.length === 0 && openingPrompt) {
+                const openingTurn = { 
+                    dossierId, 
+                    author: 'ai', 
+                    content: openingPrompt, 
+                    timestamp: Date.now() 
+                };
+                dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, openingTurn);
+                renderMovieTurn(openingTurn, 1);
+                DOM.movieInput.value = '';
+                DOM.movieInput.focus();
+            }
+        }
 
 /**
  * 【全新】在“放映室”打开导演设置浮窗
  */
 async function openMovieSettingsModal() {
-    // 安全检查，如果还没进入任何电影，则不执行
-    if (!appState.currentMovieSession?.dossierId) return;
+            // 安全检查
+            if (!appState.currentMovieSession?.dossierId) return;
 
-    const { dossierId, openingPrompt, responseLength, libraryBookIds } = appState.currentMovieSession;
-    
-    // 填充浮窗内的表单
-    DOM.movieOpeningPrompt.value = openingPrompt || '';
-    DOM.movieResponseLength.value = responseLength || 150;
+            const { dossierId, openingPrompt, responseLength, libraryBookIds } = appState.currentMovieSession;
+            
+            // 填充表单
+            DOM.movieOpeningPrompt.value = openingPrompt || '';
+            DOM.movieResponseLength.value = responseLength || 150;
 
-    // 填充图书馆书籍选择区
-    const container = DOM.movieLibrarySelectContainer;
-    container.innerHTML = '加载书籍中...';
-    const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
-    const linkedBookIds = new Set(libraryBookIds || []);
-    container.innerHTML = '';
-    if (allBooks.length === 0) {
-        container.innerHTML = '<p style="opacity:0.7;">图书馆是空的</p>';
-    } else {
-        allBooks.forEach(book => {
-            const isChecked = linkedBookIds.has(book.id);
-            const label = document.createElement('label');
-            label.className = 'settings-item';
-            label.style.padding = '10px';
-            label.innerHTML = `
-                <input type="checkbox" data-book-id="${book.id}" ${isChecked ? 'checked' : ''} style="transform: scale(1.3); cursor: pointer;">
-                <span>${book.title}</span>
-                <span style="opacity: 0.5; font-size: 13px; margin-left: auto;">${CONSTANTS.BOOK_CATEGORIES[book.category] || book.category}</span>
-            `;
-            container.appendChild(label);
-        });
-    }
-    // 显示浮窗
-    DOM.movieSettingsModal.classList.add('visible');
-}
+            // 【核心修改区域】填充图书馆书籍选择区
+            const container = DOM.movieLibrarySelectContainer;
+            container.innerHTML = '加载书籍中...';
+            const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
+            const linkedBookIds = new Set(libraryBookIds || []);
+            container.innerHTML = '';
+
+            if (allBooks.length === 0) {
+                container.innerHTML = '<p style="opacity:0.7;">图书馆是空的</p>';
+            } else {
+                allBooks.forEach(book => {
+                    const isSelected = linkedBookIds.has(book.id);
+                    const chip = document.createElement('div');
+                    chip.className = 'book-chip';
+                    if (isSelected) {
+                        chip.classList.add('selected');
+                    }
+                    chip.dataset.bookId = book.id;
+                    
+                    const categoryName = CONSTANTS.BOOK_CATEGORIES[book.category] || book.category;
+                    chip.title = `分类: ${categoryName}`;
+
+                    chip.innerHTML = `
+                        <i class="ri-check-line selection-icon"></i>
+                        <span>${book.title}</span>
+                    `;
+                    container.appendChild(chip);
+                });
+            }
+            // 显示浮窗
+            DOM.movieSettingsModal.classList.add('visible');
+        }
 
 /**
  * 【全新 V2】点击角色海报后，直接进入电影模式的主页面
@@ -13708,6 +13762,14 @@ DOM.closeMovieSettingsBtn.addEventListener('click', closeMovieSettings);
 DOM.movieSettingsModal.addEventListener('click', (e) => {
     if (e.target === DOM.movieSettingsModal) closeMovieSettings();
 });
+
+// 为书籍选择容器添加点击事件委托
+        DOM.movieLibrarySelectContainer.addEventListener('click', (e) => {
+            const chip = e.target.closest('.book-chip');
+            if (chip) {
+                chip.classList.toggle('selected');
+            }
+        });
 
 // 点击“保存并开始”
 DOM.saveMovieSettingsBtn.addEventListener('click', startMovie);
