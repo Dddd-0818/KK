@@ -2918,31 +2918,31 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
     overflow-y: auto;
 }
 
+/* --- 优化后的新代码 --- */
+
 .movie-poster-card {
-    /* 整体卡片样式保持不变 */
     background-color: #2c2c2e;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     cursor: pointer;
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
+
+    /* [核心] 1. 将容器设为相对定位，作为标题定位的“锚点” */
+    position: relative; 
+    
+    /* [核心] 2. 将高宽比从图片移到卡片本身，确保整个卡片形状正确 */
+    aspect-ratio: 2 / 3; 
+
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.movie-poster-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
 }
 
 .poster-image {
+    /* [核心] 3. 让图片填满整个卡片容器 */
     width: 100%;
-    aspect-ratio: 2 / 3;
+    height: 100%; 
     background-size: cover;
     background-position: center;
-    /* 【核心修复】移除遮罩！让图片完整显示 */
-    -webkit-mask-image: none;
-    mask-image: none;
 }
 
 .poster-title {
@@ -2951,11 +2951,21 @@ body.light-mode { --text-color-rgb: 0, 0, 0; }
     font-size: 16px;
     font-weight: 600;
     
-    /* 【核心修复】为标题提供独立的背景和边距，不再与图片重叠 */
-    padding: 15px 10px;
-    margin-top: 0; /* 移除负边距 */
-    text-shadow: none; /* 移除文字阴影，因为现在背景很清晰 */
-    background-color: #3a3a3c; /* 一个比卡片稍亮的灰色，用于区分 */
+    /* [核心] 4. 使用绝对定位，将标题“钉”在卡片底部 */
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+
+    /* [核心] 5. 使用渐变背景，让文字更易读，过渡更自然 */
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 20%, transparent);
+
+    /* [核心] 6. 调整内边距，让文字在渐变区域内更美观 */
+    padding: 25px 10px 15px 10px;
+    box-sizing: border-box; /* 确保内边距不会撑开宽度 */
+
+    /* [核心] 7. 加上文字阴影，增强在复杂图片背景下的可读性 */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.6);
 }
 
 /* --- 2. “放映室” (故事主页面) 的样式 --- */
@@ -8144,7 +8154,7 @@ if (momentActionIndex !== -1) {
 
          } else if (chatContent) {
                 // 情况2：AI 发送的是普通聊天消息
-               const replies = chatContent.split('|||').filter(line => line.trim() !== '');
+              const replies = chatContent.trim().split('|||').filter(line => line.trim() !== '');
                 if (replies.length === 0) throw new Error("AI 返回了空内容。");
 
                 for (const reply of replies) {
