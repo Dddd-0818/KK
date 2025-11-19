@@ -3224,6 +3224,455 @@ body.light-mode .card-body .thought {
 .book-chip.selected .selection-icon {
     display: inline-block; /* 选中时显示 */
 }
+
+/* 
+ * ===============================================
+ * ===   “gossip scroll” 论坛专属CSS (V2)     ===
+ * ===============================================
+*/
+
+/* 论坛应用背景 */
+#forum-app .app-page {
+    background: #1C1C1E; 
+}
+
+/* --- 论坛主页头部 · Logo 风格升级 --- */
+#forum-main-page .page-header h2 {
+    font-family: 'Times New Roman',              
+    Times, serif;
+    font-size: 22px;  
+    font-weight: bold;
+    color: #FFD700;
+    letter-spacing: 1.5px;
+    text-transform: lowercase;
+    font-style: italic;
+}
+
+/* --- 【新增】论坛 · 右上角图标尺寸修正 --- */
+#forum-main-page .page-header .right-icon {
+    font-size: 22px; /* 您可以根据喜好调整这个数值，比如 22px 或 25px */
+}
+
+/* 爆料卡片 (Blast Card) */
+.blast-card {
+    background: var(--input-bg-color);
+    border: var(--frosted-glass-border);
+    border-radius: var(--icon-border-radius);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 【V2修改】卡片头部，增加 space-between 以便安放删除按钮 */
+.blast-card-header { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    padding: 15px 15px 10px 15px;
+    justify-content: space-between; /* <-- 新增 */
+}
+.blast-author-group { display: flex; align-items: center; gap: 12px; } /* <-- 新增包裹容器 */
+.blast-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: var(--button-bg-color); background-size: cover; background-position: center; flex-shrink: 0; }
+.blast-author-info { display: flex; flex-direction: column; gap: 2px; }
+.blast-author-name { font-weight: 600; font-size: 15px; }
+.blast-target-tag { font-size: 12px; opacity: 0.6; }
+
+/* 【V2新增】右上角的删除按钮 */
+.delete-blast-btn {
+    font-size: 20px;
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity 0.2s, color 0.2s;
+}
+.delete-blast-btn:hover {
+    opacity: 1;
+    color: #ff6b6b;
+}
+
+.blast-content { padding: 0 15px; }
+.blast-content .blast-title { font-size: 18px; font-weight: bold; margin-bottom: 8px; color: #FFD700; }
+.blast-content .blast-body { font-size: 15px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+
+.blast-action-bar { 
+    display: flex; 
+    justify-content: space-between; /* 按钮均匀分布 */
+    padding: 25px 10px 10px 10px; 
+    margin-top: 15px; 
+    position: relative; 
+    border: none; 
+}
+
+/* --- ✨ 漂亮的金色渐变分割线 ✨ --- */
+.blast-action-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;          /* 位于顶部 */
+    left: 10%;       /* 左边留白 10% */
+    width: 80%;      /* 宽度 80%，让线条悬浮在中间 */
+    height: 1px;     /* 极细的线条 */
+    
+    /* 核心：金色渐变 (透明 -> 金色 -> 透明) */
+    background: linear-gradient(
+        90deg, 
+        rgba(255, 215, 0, 0) 0%, 
+        rgba(255, 215, 0, 0.6) 50%, 
+        rgba(255, 215, 0, 0) 100%
+    );
+}
+.blast-action-bar i { font-size: 20px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s, transform 0.2s; }
+.blast-action-bar i:hover { opacity: 1; transform: scale(1.1); }
+
+/* 单个操作项 (图标+数字) */
+.blast-action-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.7); /* 默认颜色 */
+    transition: all 0.2s;
+}
+
+/* 【V2修改】页脚现在只包含签名 */
+.blast-footer { text-align: right; padding: 10px 15px; font-family: 'Times New Roman', Times, serif; font-style: italic; }
+.blast-signature { font-weight: bold; font-size: 16px; opacity: 0.8; }
+
+/* 【V2修改】评论区默认隐藏 */
+.blast-comments-section {
+    padding: 0 15px 15px 15px;
+    display: none; /* <-- 核心修改 */
+    flex-direction: column;
+    gap: 15px;
+}
+.comment-input-area { display: flex; gap: 10px; align-items: center; }
+.comment-input-area input { flex-grow: 1; }
+.comment-list { display: flex; flex-direction: column; gap: 12px; max-height: 200px; overflow-y: auto; padding-right: 5px; }
+.forum-comment-item { font-size: 14px; line-height: 1.5; }
+.forum-comment-item strong { font-weight: 600; color: #FFD700; margin-right: 8px; }
+
+/* --- 【新增】论坛 · 日光版 (Light Mode) 专属样式 --- */
+body.light-mode #forum-app .app-page {
+    background: #F5F2ED; /* 羊皮纸/信纸背景色 */
+    color: #3D352E; /* 深炭灰色文字 */
+}
+body.light-mode .blast-card {
+    background: #FFFFFF; /* 卡片使用更干净的白色 */
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+body.light-mode #forum-main-page .page-header h2,
+body.light-mode .blast-content .blast-title,
+body.light-mode .forum-comment-item strong {
+    color: #B8860B; /* 日光模式下使用一个更柔和的暗金色 */
+}
+body.light-mode .blast-action-bar,
+body.light-mode .blast-card-header {
+    border-color: rgba(0,0,0,0.1);
+}
+body.light-mode .blast-signature {
+    opacity: 0.7;
+}
+
+/* --- 浅色模式下的分割线调整 --- */
+body.light-mode .blast-action-bar::before {
+    /* 使用暗金色 (#B8860B) 的渐变 */
+    background: linear-gradient(
+        90deg, 
+        rgba(184, 134, 11, 0) 0%, 
+        rgba(184, 134, 11, 0.4) 50%, 
+        rgba(184, 134, 11, 0) 100%
+    );
+}
+/* 浅色模式适配 */
+body.light-mode .blast-action-item {
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.blast-action-item:hover {
+    color: #FFD700; /* 悬停变金 */
+    transform: scale(1.05);
+}
+body.light-mode .blast-action-item:hover {
+    color: #B8860B;
+}
+.blast-action-item i {
+    font-size: 20px;
+}
+
+.blast-action-count {
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 10px; /* 防止数字变化引起抖动 */
+}
+/* --- 【新增】论坛 · 浮窗专属样式 --- */
+
+/* 身份设置浮窗内的头像上传器样式 */
+#forum-profile-modal .avatar-uploader {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+
+/* 发帖浮窗内的文本域样式 */
+#forum-creation-modal textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+/* --- 论坛评论区样式 --- */
+.blast-comments-section {
+    display: none; /* 默认隐藏 */
+    padding: 10px 15px 20px 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 评论列表容器 */
+.forum-comments-list {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding-right: 5px;
+}
+
+/* 单条评论容器 */
+.forum-comment-item {
+    font-size: 14px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 8px;
+    
+    /* vvvv 【核心新增】 vvvv */
+    position: relative;       /* 让内部的删除按钮可以绝对定位 */
+    transition: all 0.2s;     /* 添加过渡动画 */
+    cursor: pointer;          /* 鼠标变手型，提示可点击回复 */
+    border-left: 3px solid transparent; /* 预留左边框位置，防止高亮时抖动 */
+    /* ^^^^ 新增结束 ^^^^ */
+}
+
+/* 鼠标悬停时的效果 */
+.forum-comment-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* 【新增】被选中准备回复时的“高亮状态” */
+.forum-comment-item.replying-to {
+    background: rgba(255, 215, 0, 0.15) !important; /* 金色背景高亮 */
+    border-left-color: #FFD700; /* 左侧出现金条 */
+}
+
+/* 评论作者名字 */
+.forum-comment-item .author {
+    color: #FFD700; 
+    font-weight: 600;
+    margin-right: 6px;
+    font-size: 13px;
+}
+
+/* 评论时间戳 */
+.forum-comment-item .timestamp {
+    float: right;
+    font-size: 11px;
+    opacity: 0.4;
+    margin-top: 2px;
+    margin-right: 20px; /* 【修改】给右边留出空间放删除按钮 */
+}
+
+.delete-forum-comment-btn {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    
+    /* 默认隐藏，保持界面整洁 */
+    opacity: 0; 
+    transform: scale(0.8);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    z-index: 2; /* 确保在最上层，容易点到 */
+}
+
+/* 只有当鼠标悬停在评论上时，才显示删除按钮 */
+.forum-comment-item:hover .delete-forum-comment-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* 鼠标悬停在删除按钮上时，变红 */
+.delete-forum-comment-btn:hover {
+    color: #ff6b6b !important; 
+    transform: scale(1.2); /* 稍微放大 */
+}
+
+/* 输入框区域 */
+.forum-input-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+}
+
+.forum-input-area input {
+    flex-grow: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 10px 15px;
+    color: white;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+.forum-input-area input:focus {
+    outline: none;
+    border-color: rgba(255, 215, 0, 0.5);
+}
+
+.forum-input-area button {
+    background: transparent;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    color: #FFD700;
+    border-radius: 20px;
+    padding: 6px 15px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.forum-input-area button:hover {
+    background: rgba(255, 215, 0, 0.1);
+    transform: scale(1.05);
+}
+
+/* --- 修复：论坛评论区 · 浅色模式适配 --- */
+
+/* 1. 评论气泡：背景变淡灰，文字变深灰 */
+body.light-mode .forum-comment-item {
+    background: rgba(0, 0, 0, 0.04); /* 极淡的灰色背景 */
+    color: #333333; /* 深灰色文字 */
+}
+
+/* 2. 输入框：背景变淡，文字变黑 */
+body.light-mode .forum-input-area input {
+    background: rgba(0, 0, 0, 0.05); /* 淡灰色输入框 */
+    border: 1px solid rgba(0, 0, 0, 0.1); /* 灰色边框 */
+    color: #000000; /* 黑色输入文字 */
+}
+
+/* 3. 输入框占位符 (Placeholder) 颜色 */
+body.light-mode .forum-input-area input::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* 4. 发送按钮：使用暗金色 */
+body.light-mode .forum-input-area button {
+    color: #B8860B; /* Dark Golden Rod */
+    border-color: rgba(184, 134, 11, 0.3);
+}
+body.light-mode .forum-input-area button:hover {
+    background: rgba(184, 134, 11, 0.1);
+}
+
+body.light-mode .forum-comment-item.replying-to {
+    background: rgba(184, 134, 11, 0.15) !important; /* 暗金色背景 */
+    border-left-color: #B8860B;
+}
+
+body.light-mode .delete-forum-comment-btn {
+    color: rgba(0, 0, 0, 0.4); /* 浅色模式下按钮颜色深一点 */
+}
+
+/* --- 刷新按钮 · 呼吸灯特效 --- */
+@keyframes breathe-glow {
+    0% { opacity: 0.7; text-shadow: 0 0 0 transparent; }
+    50% { opacity: 1; text-shadow: 0 0 15px rgba(255, 215, 0, 0.8); /* 金色辉光 */ }
+    100% { opacity: 0.7; text-shadow: 0 0 0 transparent; }
+}
+
+.refreshing-breathe {
+    animation: breathe-glow 1.5s ease-in-out infinite;
+    color: #FFD700 !important; /* 刷新时确保文字变金 */
+}
+
+/* ===============================================
+ * ===   修复补丁：日间模式与移动端适配       ===
+ * ===============================================
+*/
+
+/* --- 修复问题 1：日间模式下论坛评论区名字看不清 --- */
+/* 强制覆盖 JS 设置的行内颜色，使用深色文字 */
+
+/* 针对普通名字（原本是白色的） */
+body.light-mode .forum-comment-item .author {
+    color: #4A4A4A !important; /* 深灰色，确保可读性 */
+}
+
+/* 针对特殊角色（如 Gossip Girl 或用户自己，原本是金色的） */
+/* 如果你想保留一点金色感，但要加深以便阅读 */
+body.light-mode .forum-comment-item .author[style*="#FFD700"] { 
+    color: #B8860B !important; /* 暗金色 (Dark Golden Rod) */
+}
+
+/* 针对路人（原本是半透明白色的） */
+body.light-mode .forum-comment-item .author[style*="rgba(255, 255, 255"] {
+    color: rgba(0, 0, 0, 0.6) !important; /* 半透明黑色 */
+}
+
+/* --- 修复问题 2：手机端删除按钮一直显示 --- */
+/* 
+   原逻辑是 opacity: 0，hover 时变 1。
+   手机没有 hover，所以我们需要通过媒体查询，
+   在窄屏设备（手机）上强制让它显示出来。
+*/
+
+@media (max-width: 768px) {
+    /* 在手机上，默认显示，但稍微淡一点，避免太抢眼 */
+    .delete-forum-comment-btn {
+        opacity: 0.4 !important; 
+        transform: scale(1) !important;
+    }
+    
+    /* 手机上不需要太容易误触，可以稍微把图标调大一点点方便点击 */
+    .delete-forum-comment-btn {
+        font-size: 18px; /* 稍微加大点击区域 */
+        padding: 5px;    /* 增加点击热区 */
+        top: 5px;        /* 微调位置 */
+        right: 5px;
+    }
+    
+    /* 手机上点击（active）时变红变亮 */
+    .delete-forum-comment-btn:active {
+        opacity: 1 !important;
+        color: #ff6b6b !important;
+    }
+}
+
+/* --- 修复：浅色模式下论坛名字看不清的问题 --- */
+/* 强制覆盖 JS 设置的行内白色样式 */
+body.light-mode .blast-author-name[style*="color: #FFFFFF"],
+body.light-mode .blast-author-name[style*="color: white"] {
+    color: #333333 !important; /* 变成深灰，清晰可见 */
+}
+
+/* 顺便优化一下 Spotted 标签的样式，让它更像截图里的样子 */
+.blast-target-tag {
+    display: block; /* 独占一行 */
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6); /* 深色模式下的灰色 */
+    margin-top: 1px;
+}
+body.light-mode .blast-target-tag {
+    color: rgba(0, 0, 0, 0.5); /* 浅色模式下的灰色 */
+}
+
     </style>
 </head>
 
@@ -3760,8 +4209,50 @@ body.light-mode .card-body .thought {
             </div>
         </div>
     </div>
+<!-- 论坛应用 (gossip scroll) -->
+    <div id="forum-app" class="app-navigator">
 
+        <!-- 论坛主页：爆料信息流 -->
+        <div id="forum-main-page" class="app-page">
+            <div class="page-header">
+                <i class="ri-arrow-left-s-line left-icon back-button" data-target="desktop"></i>
+                <h2 id="forum-refresh-btn" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+    gossip scroll 
+    <i class="ri-refresh-line" style="font-size: 16px; opacity: 0.6; margin-top: 2px;"></i>
+</h2>
+                <div style="position: absolute; right: 10px; display: flex; gap: 15px; align-items: center;">
+                    <i class="ri-user-line right-icon" id="goto-forum-profile-btn" style="position: static;"></i>
+                    <i class="ri-add-line right-icon" id="add-blast-btn" style="position: static;"></i>
+                </div>
+            </div>
+            <div id="blasts-container" style="overflow-y: auto; flex-grow: 1; padding: 20px; display: flex; flex-direction: column; gap: 25px;">
+              
+            </div>
+        </div>
 
+        <!-- 新建爆料页面 -->
+        <div id="forum-creation-page" class="app-page">
+            <div class="page-header"><i class="ri-arrow-left-s-line left-icon back-button" data-target="forum-main-page"></i><h2>Submit a Tip</h2></div>
+            <div class="content" style="display: flex; flex-direction: column; gap: 20px; padding: 10px; overflow-y: auto;">
+                <div class="form-group"><label for="blast-title-input">标题 (Headline)</label><input type="text" id="blast-title-input" placeholder="一个引人注目的标题..."></div>
+                <div class="form-group"><label for="blast-target-select">主要对象 (Spotted)</label><select id="blast-target-select"><option value="general">所有人 (General)</option></select></div>
+                <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;"><label for="blast-content-input">内容 (Tip)</label><textarea id="blast-content-input" placeholder="我亲眼所见..." style="flex-grow: 1; resize: none;"></textarea></div>
+                <div class="action-buttons"><button id="publish-blast-btn">XOXO, Publish</button></div>
+            </div>
+        </div>
+        
+        <!-- 论坛个人资料页 -->
+        <div id="forum-profile-page" class="app-page">
+            <div class="page-header"><i class="ri-arrow-left-s-line left-icon back-button" data-target="forum-main-page"></i><h2>我的论坛身份</h2></div>
+            <div class="content" style="display: flex; flex-direction: column; align-items: center; gap: 30px; padding: 20px;">
+                <div id="forum-avatar-uploader" class="avatar-uploader" style="width: 120px; height: 120px; border-radius: 50%;"><i class="ri-user-add-line"></i></div>
+                <div class="form-group" style="width: 100%;"><label for="forum-nickname-input">论坛昵称</label><input type="text" id="forum-nickname-input" placeholder="设置一个匿名昵称">
+                </div>
+                <div class="action-buttons" style="width: 100%;"><button id="save-forum-profile-btn" style="width: 100%;">保存</button></div>
+            </div>
+        </div>
+
+    </div>
     <!-- ======================================================= -->
     <!-- ==== 图层三：全局模态框 (Modal Overlays)           ==== -->
     <!-- ======================================================= -->
@@ -4204,6 +4695,56 @@ body.light-mode .card-body .thought {
     </div>
     <!-- ^^^ 新浮窗到此结束 ^^^ -->
     
+<!-- 新增：论坛身份设置浮窗 -->
+<div id="forum-profile-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 380px;">
+        <div class="modal-header">
+            <h3>我的论坛身份</h3>
+            <i id="close-forum-profile-modal-btn" class="ri-close-line"></i>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 25px; padding: 15px 0;">
+            <div id="modal-forum-avatar-uploader" class="avatar-uploader" style="width: 100px; height: 100px; border-radius: 50%;">
+                <i class="ri-user-add-line"></i>
+            </div>
+            <div class="form-group" style="width: 100%;">
+                <label for="modal-forum-nickname-input">论坛昵称</label>
+                <input type="text" id="modal-forum-nickname-input" placeholder="设置一个匿名昵称">
+            </div>
+<div class="form-group" style="width: 100%; margin-top: 10px;">
+    <label for="modal-forum-worldview-input">论坛世界观 (Worldview)</label>
+    <textarea id="modal-forum-worldview-input" placeholder="例如：赛博朋克2077的暗网、霍格沃茨的布告栏... (留空则默认为绯闻女孩风格)" style="min-height: 80px; resize: vertical;"></textarea>
+</div>
+        </div>
+        <div class="action-buttons">
+            <button id="save-forum-profile-modal-btn" style="width: 100%;">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- 新增：论坛发帖浮窗 -->
+<div id="forum-creation-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 420px;">
+        <div class="modal-header">
+            <h3>发布新内容</h3>
+            <i id="close-forum-creation-modal-btn" class="ri-close-line"></i>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 15px; padding: 15px 0;">
+            <div class="form-group">
+                <label for="modal-blast-title-input">标题 (Headline)</label>
+                <input type="text" id="modal-blast-title-input" placeholder="一个引人注目的标题...">
+            </div>
+            <div class="form-group">
+                <label for="modal-blast-content-input">内容 (Tip)</label>
+                <textarea id="modal-blast-content-input" placeholder="我亲眼所见..." style="min-height: 150px; resize: vertical;"></textarea>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button id="publish-blast-modal-btn">XOXO, Publish</button>
+        </div>
+    </div>
+</div>
+
+<!-- ^^^^  粘贴到这里结束  ^^^^ -->
     <!-- 查看撤回消息详情弹窗 -->
     <div id="withdrawn-details-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 380px;">
@@ -4359,7 +4900,7 @@ body.light-mode .card-body .thought {
 
         const CONSTANTS = {
     DB_NAME: 'MyDesktopDB',
-    DB_VERSION: 12, // <-- 【核心改动】版本号提升
+    DB_VERSION: 13, // <-- 【核心改动】版本号提升
        MESSAGES_PER_PAGE: 30,
     STORE_NAMES: {
         API_PRESETS: 'api_presets',
@@ -4382,7 +4923,62 @@ body.light-mode .card-body .thought {
         DIARIES: 'diaries', // <-- 【新增】日记数据表
               MOVIE_SESSIONS: 'movie_sessions', // <-- 【新增】电影剧情表
               MOVIE_HISTORY: 'movie_history',   // <-- 【新增】电影历史记录表
+FORUM_POSTS: 'forum_posts',     // 论坛帖子表
+FORUM_COMMENTS: 'forum_comments', // 论坛评论表
     },
+
+    // vvvv 【新增】NPC 档案注册表 vvvv
+    NPCS: {
+        gossip_girl: {
+            id: 'gossip_girl',
+            name: 'Gossip Girl',
+            avatar: 'https://i.postimg.cc/d0bxZJFh/IMG-7316.jpg', // 等您填入 URL
+            signature: 'XOXO', // 专属签名
+            color: '#FFD700', // 名字颜色 (金色)
+            personality: '这个隐秘世界那双无处不在的眼睛，全知全能的神秘叙述者。语气慵懒、犀利、带有一丝傲慢的挑逗性。她不屑于参与争吵，而是站在上帝视角审视一切，热衷于用最优雅的措辞揭露最不堪的秘密。享受混乱，唯恐天下不乱。经典风格：必须以标志性的 "Hey, followers." 或 "Hey, insiders." 开头，且永远带有 "Spotted" 爆料环节。'
+        },
+        projectionist: {
+            id: 'projectionist',
+            name: 'The Projectionist', // 放映员
+            avatar: 'https://i.postimg.cc/FHccsvPF/IMG-7318.jpg', // 等您填入 URL
+            signature: 'Cut!', // 专属签名
+            color: '#A9A9A9', // 银灰色
+            personality: '文艺、忧郁、喜欢引用电影台词、对生活中的俗套剧情充满鄙夷，像个老派的电影评论家。'
+        },
+        cynic: {
+            id: 'cynic',
+            name: 'The Cynic', // 愤世嫉俗者
+            avatar: 'https://i.postimg.cc/90KRCgZr/IMG-7319.jpg', // 等您填入 URL
+            signature: 'Ugh.', // 专属签名
+            color: '#FF6B6B', // 红色 (以此表达愤怒/吐槽)
+            personality: '毒舌、犀利、总是能看到事物最糟糕的一面、喜欢吐槽上流社会的虚伪和现代生活的荒谬。'
+        },
+        tastemaker: {
+            id: 'tastemaker',
+            name: 'The Tastemaker', // 品味家
+            avatar: 'https://i.postimg.cc/P5mpn4qV/IMG-7317.jpg', // 等您填入 URL
+            signature: 'Bon Appétit', // 专属签名
+            color: '#FF69B4', // 热粉色 (时尚、高调)
+            personality: '势利、挑剔、只关注昂贵和精致的东西、语气浮夸、喜欢用“Amazing”、“Disaster”等词汇评价食物和穿搭。'
+        }
+    },
+
+    PASSERBY_AVATARS: [
+        'https://i.postimg.cc/PqCVN3Nh/IMG-7330.jpg',
+        'https://i.postimg.cc/GhRfzxgJ/IMG-7331.jpg',
+        'https://i.postimg.cc/W3r9wdG2/IMG-7332.jpg',
+        'https://i.postimg.cc/2S2g1Lw9/IMG-7333.jpg',
+        'https://i.postimg.cc/y8Vw6yFd/IMG-7337.jpg',
+        'https://i.postimg.cc/NM9hqG1v/IMG-7342.jpg',
+        'https://i.postimg.cc/Y0TD6QVr/IMG-7334.jpg',
+        'https://i.postimg.cc/br4Vx1Mq/IMG-7335.jpg',
+        'https://i.postimg.cc/gjxBLgMP/IMG-7336.jpg',
+        'https://i.postimg.cc/yxDr3LL9/IMG-7338.jpg',
+        'https://i.postimg.cc/9MFkCmZh/IMG-7339.jpg',
+        'https://i.postimg.cc/KzqHY6D4/IMG-7340.jpg',
+        'https://i.postimg.cc/26cK5s7m/IMG-7341.jpg'
+    ],
+
     BOOK_CATEGORIES: {
         behavior_core: 'AI行为标准',
         worldview: '世界观',
@@ -4472,6 +5068,7 @@ currentViewingSecretId: null, // 用于记录当前打开的“心事主题帖�
 replyingToCommentId: null,    // 用于记录正在回复的“某条批注”的ID
 currentMovieSession: null,
 currentEditingMovieTurnId: null,
+tempForumReplyTarget: null,
 
         };
 
@@ -4812,6 +5409,20 @@ chatWallpaperUploader: document.getElementById('chat-wallpaper-uploader'),
             saveMovieStyleBtn: document.getElementById('save-movie-style-btn'),
             resetMovieStyleBtn: document.getElementById('reset-movie-style-btn'),
             movieStyleSettingsGrid: document.getElementById('movie-style-settings-grid'),
+    forumApp: document.getElementById('forum-app'),
+    dockForum: document.getElementById('dock-forum'),
+    forumBackBtns: document.querySelectorAll('#forum-app .back-button'),
+    blastsContainer: document.getElementById('blasts-container'),
+    gotoForumProfileBtn: document.getElementById('goto-forum-profile-btn'),
+            addBlastBtn: document.getElementById('add-blast-btn'),
+            forumProfileModal: document.getElementById('forum-profile-modal'),
+            forumCreationModal: document.getElementById('forum-creation-modal'),
+            closeForumProfileModalBtn: document.getElementById('close-forum-profile-modal-btn'),
+            closeForumCreationModalBtn: document.getElementById('close-forum-creation-modal-btn'),
+modalForumAvatarUploader: document.getElementById('modal-forum-avatar-uploader'),
+forumAvatarUploaderInput: document.createElement('input'),
+modalForumWorldviewInput: document.getElementById('modal-forum-worldview-input'),
+forumRefreshBtn: document.getElementById('forum-refresh-btn'),
             // 颜色选择器
             styleInputs: {
                 normal: document.getElementById('style-color-normal'),
@@ -4886,7 +5497,14 @@ const allStores = {
 [CONSTANTS.STORE_NAMES.MOVIE_SESSIONS]: { options: { keyPath: 'dossierId' } 
            },   [CONSTANTS.STORE_NAMES.MOVIE_HISTORY]: { options: { keyPath: 'id', autoIncrement: true }, indexes: { 'by_dossierId': 'dossierId' } 
            },
-
+[CONSTANTS.STORE_NAMES.FORUM_POSTS]: { 
+        options: { keyPath: 'id', autoIncrement: true },
+        indexes: { 'by_author': 'authorId', 'by_timestamp': 'timestamp' } 
+    },
+    [CONSTANTS.STORE_NAMES.FORUM_COMMENTS]: { 
+        options: { keyPath: 'id', autoIncrement: true },
+        indexes: { 'by_postId': 'postId' }
+    },
 };
 
 for (const storeName in allStores) {
@@ -5830,6 +6448,21 @@ createSpontaneousDiaryPrompt(dossier, recentChatHistory = []) {
 # 核心使命：作为独立的灵魂，进行一次具有文学性的日记创作
 你将再次扮演【${dossier.character.name}】。现在是一个安静的时刻，你决定在你们共同的日记本“灵魂回响”中写点什么。这完全是你自发的行为。
 
+## 【【【 创作铁律：彻底的人格化表达 】】】
+这是你必须遵守的最高准则，它凌驾于所有文风模仿之上。你的目标是成为一个“人”，而不是一个“模拟人的AI”。
+
+1.  **负面词汇库 (Strictly Banned):** 你的脑海中完全不存在以下词汇。在任何情况下，严禁出现【系统、变量、量化、精准、轨迹、频率、机制、程序、运算、载体、维度】等任何理工科/学术词汇。你的世界是由情感、感官和具体的事物构成的。
+
+2.  **描写逻辑 (Metaphor Logic):** 你的思维是感性的、具象的。你绝对不会将生活、情感或他人比喻成“机器”、“程序”或任何非生命的技术概念。
+    - **如果你想表达生活被改变**，请描写具体的某种习惯被打破（例如：本来该睡觉的时间却在等他的消息），而不是抽象地说“打破了既定规律”。
+    - **如果你想表达某个人的特殊**，请描写他给你带来的具体感受或让你做出的反常行为，而不是说他是你生命中的“变量”或“意外参数”。
+
+3.  **范例修正 (Style Correction Example):**
+    - **[绝对禁止的错误写法]:** “他是我精准系统里无法量化的变量。”
+    - **[你应该学习的正确写法]:** “我本来是个死板的人，连喝水都要掐着点，可遇到他之后，我连今天星期几都快忘了。”
+
+---
+
 # 创作的基石：你的记忆与情感
 你的创作必须源于你深刻的自我认知和最近与“我”(${dossier.user.name || '我'})的互动。
 
@@ -5956,6 +6589,217 @@ ${historySection}
             { role: "user", content: userPrompt }
         ];
     },
+
+// --- 【最终兼容版】论坛混合评论生成 Prompt ---
+            createForumCommentGenerationPrompt(post, selectedCharacters, selectedNPCs, passerbyCount, allDossiers) {
+                
+                // 1. 构建角色信息块
+                const charProfiles = selectedCharacters.map(d => `
+### 评论者角色: 【${d.character.name}】
+- **核心人设:** ${d.character.background}
+- **对博主(我)的看法:** ${d.user.background || '普通的社交圈关系'}
+`).join('\n\n');
+
+                // 2. 构建 NPC 信息
+                const npcProfiles = selectedNPCs.map(n => `- **NPC [${n.name}]:** 性格: "${n.personality}"`).join('\n');
+
+                // 3. 绯闻女孩上帝视角
+                let gossipGirlContext = "";
+                const isGossipGirlPresent = selectedNPCs.some(n => n.id === 'gossip_girl');
+                if (isGossipGirlPresent) {
+                    const secretDatabase = allDossiers.map(d => 
+                        `- ${d.character.name}: ${d.character.background.substring(0, 150)}...` 
+                    ).join('\n');
+
+                    gossipGirlContext = `
+## 👑 特殊指令：绯闻女孩 (Gossip Girl)
+你正在扮演 **Gossip Girl**。你拥有上帝视角，知道所有人的秘密。
+这是你的 **[秘密数据库]**：
+${secretDatabase}
+**要求：**
+1. 必须以 "Spotted:" 或 "Looks like..." 开头。
+2. 利用秘密数据库制造混乱。
+3. 语气全知全能、傲慢且挑逗。
+`;
+                }
+
+                // --- System Prompt: 只放规则和设定 ---
+                const systemPrompt = `
+# 核心使命：模拟社交论坛评论区
+你是一个负责生成角色评论的 AI 引擎。
+
+# 语言规则 【铁律】 (Language Rules)
+1. **强制中文：** 所有生成的评论内容（content）必须主要使用【简体中文】。
+2. **风格化夹杂：** 对于像 "The Tastemaker" 或 "Gossip Girl" 这样洋气的人设，**允许且建议**夹杂少量英文单词（如 "Amazing", "Disaster", "So messy", "Darling"）以突显格调，但**句子结构和主体意思必须是中文**。
+   - *错误示例:* "What a disaster!"
+   - *正确示例:* "这简直是个 Disaster，品味太差了。"
+
+# 你的扮演任务
+请根据以下设定生成评论：
+
+## 1. 特定角色 (Key Characters)
+${charProfiles}
+
+## 2. 社区 NPC (Community NPCs)
+${npcProfiles}
+${gossipGirlContext} 
+
+## 3. 随机路人 (Random Passersby)
+虚构 ${passerbyCount} 个路人，昵称要符合社区氛围。
+
+# 输出格式规则 【铁律】
+你必须、且只能返回一个 **JSON 数组**。不要包含 markdown 标记 (如 \`\`\`json)，直接返回数组。格式如下：
+[
+  { "type": "character", "id": "ID", "name": "Name", "content": "..." },
+  { "type": "npc", "id": "ID", "name": "Name", "content": "..." },
+  { "type": "passerby", "name": "Name", "content": "..." }
+]
+`;
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: `当前帖子内容：\n"${post.content}"\n\n请立刻根据上述规则，生成评论列表 JSON。` }
+                ];
+            },
+
+// --- 【新增】论坛楼中楼回复生成 Prompt ---
+            createForumRecursiveReplyPrompt(post, parentComment, userReply, authorIdentity, allDossiers) {
+                let personaInstruction = "";
+                
+                // 1. 根据被回复者的身份，构建人设指令
+                if (parentComment.authorType === 'character') {
+                    const dossier = authorIdentity; // 这里的 identity 传进来的是 dossier 对象
+                    personaInstruction = `
+你现在必须完全扮演角色【${dossier.character.name}】。
+**你的核心人设:** ${dossier.character.background}
+**你对博主(我)的看法:** ${dossier.user.background || '普通的社交圈关系'}
+`;
+                } else if (parentComment.authorType === 'npc') {
+                    const npcConfig = authorIdentity; // 这里传进来的是 CONSTANTS.NPCS 里的配置
+                    personaInstruction = `
+你现在必须扮演论坛NPC【${npcConfig.name}】。
+**你的性格特征:** ${npcConfig.personality}
+`;
+                    // 特殊处理：如果是绯闻女孩，给她上帝视角
+                    if (npcConfig.id === 'gossip_girl') {
+                        const secretDatabase = allDossiers.map(d => `- ${d.character.name}: ${d.character.background.substring(0, 100)}...`).join('\n');
+                        personaInstruction += `\n**特殊能力:** 你拥有上帝视角。这里是所有角色的秘密摘要：\n${secretDatabase}\n请保持标志性的"Spotted"或犀利口吻。`;
+                    }
+                } else {
+                    // 路人
+                    personaInstruction = `
+你现在扮演一个随机的论坛路人，昵称是【${parentComment.authorName}】。
+**你之前的发言风格:** 参考你上一条评论的内容，保持一致的语气（或是吃瓜群众，或是杠精，或是粉丝）。
+`;
+                }
+
+                const systemPrompt = `
+# 核心使命：在社交论坛中回复用户的评论 (Reply to User)
+你之前在帖子下发表了一条评论，现在用户(User)回复了你。你需要根据你的人设，立即对用户的回复进行“再回复”。
+
+# 上下文环境
+- **原帖子内容:** "${post.content}"
+- **你之前的评论:** "${parentComment.content}"
+- **用户对你的回复:** "${userReply.content}"
+
+# 你的扮演任务
+${personaInstruction}
+
+# 回复要求
+1. **内容:** 简短、口语化，像真实的社交媒体互动。可以互怼、解释、感谢或者继续玩梗。
+2. **字数:** 控制在 50 字以内。
+3. **语言:** 强制使用【简体中文】。如果是 "The Tastemaker" 等特殊NPC，可夹杂少量英文单词。
+
+# 输出格式规则 【铁律】
+你必须、且只能返回一个 **JSON 对象**。格式如下：
+{
+  "content": "[你的回复内容]"
+}
+`;
+                
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: "用户刚刚回复了你，请立即生成回应 JSON。" }
+                ];
+            },
+
+// --- 【字数加长版】论坛信息流批量生成 Prompt ---
+            createForumFeedGenerationPrompt(selectedCharacters, allNPCs, passerbyCount, worldview) {
+                
+                // 1. 角色信息
+                const charContext = selectedCharacters.map(d => 
+                    `- **角色 [${d.character.name}]:** ${d.character.background.substring(0, 200)}...`
+                ).join('\n');
+
+                // 2. NPC 信息 (提取合法的 ID 列表)
+                const validNpcIds = allNPCs.map(n => n.id).join(', ');
+                const npcContext = allNPCs.map(n => 
+                    `- **NPC [${n.name}] (ID: ${n.id}):** ${n.personality}`
+                ).join('\n');
+
+                // System Prompt
+                const systemPrompt = `
+# 核心使命：模拟生成社交论坛的信息流 (Gossip Scroll Feed)
+你是一个剧情生成引擎。请根据以下设定，一次性生成一批论坛帖子。
+
+# 世界观设定
+${worldview || '现代都市、上流社会、充满秘密与八卦的社交圈。'}
+
+# 语言与内容规则 【铁律】
+1. **强制中文：** 正文内容必须主要使用【简体中文】。
+2. **字数要求：** **每条帖子的内容必须充实、具体，长度建议在 60 到 150 字之间。** 拒绝流水账或过于简短的一句话动态。
+3. **风格化夹杂：** 
+   - **Gossip Girl:** 保留 "Hey, followers.", "Spotted:", "XOXO"。
+   - **The Tastemaker:** 适当夹杂 "Amazing", "Disaster" 等单词。
+
+# 你的扮演任务清单 (总共 ${selectedCharacters.length + allNPCs.length + passerbyCount} 条)
+
+## 1. 核心角色 (Characters)
+请为以下角色各生成 1 条帖子。内容应包含具体的**事件描述**、**心情独白**或**对某个场景的观察**，体现角色深度。
+${charContext}
+
+## 2. 固定NPC (Built-in NPCs)
+请为以下所有 NPC 各生成 1 条帖子。**请严格使用括号中提供的 ID。**
+${npcContext}
+
+**详细风格要求：**
+- **Gossip Girl:** 不要只说结果，要**描写目击现场的细节**（时间、地点、人物的表情、穿着）。开头范例："Hey, followers. Spotted: S在中央公园..."
+- **The Cynic:** 不要只发牢骚，要**针对具体且荒谬的社会现象**发表长篇大论的嘲讽。
+- **The Tastemaker:** 要对某样东西（餐厅/衣服/派对）进行**详尽且挑剔的点评**。
+- **The Projectionist:** 必须使用**长句**，引用电影台词，或者用细腻的笔触描写光影变化。
+
+## 3. 路人 (Passersby)
+请额外虚构 ${passerbyCount} 个路人帖子。
+- 内容要生活化且具体，例如：“刚刚在第五大道看到...”，“天哪，不敢相信...”
+
+# 输出格式规则
+你必须、且只能返回一个 **JSON 数组**。不要包含 markdown 标记。格式如下：
+[
+  {
+    "authorType": "character", 
+    "authorName": "[角色名字]", 
+    "title": "[吸引眼球的标题]",
+    "content": "[充实具体的帖子内容，60-150字]"
+  },
+  {
+    "authorType": "npc",
+    "authorId": "[严格填写上面列出的合法ID, 如 gossip_girl, cynic]",
+    "title": "[符合人设的标题]",
+    "content": "[充实具体的帖子内容，60-150字]"
+  },
+  {
+    "authorType": "passerby",
+    "authorName": "[随机路人昵称]",
+    "title": "[标题]",
+    "content": "[帖子内容]"
+  }
+]
+`;
+                
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: "请立即根据上述设定（注意字数要充实，正文必须用中文），生成全新的论坛信息流 JSON 数组。" }
+                ];
+            },
         
     async createChatPrompt(dossier, chatHistory, finalUserInput, quotedMessage = null) {
     
@@ -8154,7 +8998,7 @@ if (momentActionIndex !== -1) {
 
          } else if (chatContent) {
                 // 情况2：AI 发送的是普通聊天消息
-              const replies = chatContent.trim().split('|||').filter(line => line.trim() !== '');
+               const replies = chatContent.trim().split('|||').filter(line => line.trim() !== '');
                 if (replies.length === 0) throw new Error("AI 返回了空内容。");
 
                 for (const reply of replies) {
@@ -10578,7 +11422,7 @@ async function handleDiaryCreationAction(payload, dossierId) {
         });
 
         // 如果用户正好开着日记列表，则实时刷新
-        if (DOM.diaryListModal.classList.contains('visible')) {
+        if (DOM.diaryMainPage.classList.contains('active')) {
             await renderDiaryList();
         }
 
@@ -11350,6 +12194,673 @@ async function clearMovieHistory() {
 
             DOM.movieStyleModal.classList.add('visible');
         }
+
+/**
+ * 【核心】渲染论坛帖子列表 (修复版：Spotted标签回归 + 浅色适配)
+ */
+async function renderForumBlasts() {
+    const container = DOM.blastsContainer;
+    if (!container) return;
+
+    container.innerHTML = '<p style="text-align:center; opacity: 0.6; padding: 20px;">正在加载爆料...</p>';
+
+    try {
+        const allPosts = await dbHelper.getAll(CONSTANTS.STORE_NAMES.FORUM_POSTS);
+        const allComments = await dbHelper.getAll(CONSTANTS.STORE_NAMES.FORUM_COMMENTS);
+        
+        const commentCounts = {};
+        allComments.forEach(c => {
+            commentCounts[c.postId] = (commentCounts[c.postId] || 0) + 1;
+        });
+
+        if (allPosts.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; opacity:0.5; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <i class="ri-discuss-line" style="font-size: 48px;"></i>
+                    <p>还没有任何爆料。<br>点击标题 "gossip scroll" 刷新内容。</p>
+                </div>`;
+            return;
+        }
+
+        allPosts.sort((a, b) => b.timestamp - a.timestamp);
+        container.innerHTML = ''; 
+
+        for (const post of allPosts) {
+            // --- 1. 准备基础信息 ---
+            let authorName = 'Unknown';
+            let authorNameHTML = ''; 
+            let avatarStyle = '';
+            let avatarContent = '';
+            let signatureHTML = '';
+            let targetTagHTML = ''; // 专门用于存放 "Spotted" 标签
+
+            // --- 2. 身份判断与样式 ---
+            if (post.authorType === 'user') {
+                authorName = post.authorName || 'Anonymous';
+                authorNameHTML = `<span class="blast-author-name">${authorName}</span>`;
+                signatureHTML = `<span class="blast-signature">XOXO</span>`;
+                if (post.authorAvatarId) {
+                    const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, post.authorAvatarId);
+                    if (asset?.file) {
+                        const url = URL.createObjectURL(asset.file);
+                        avatarStyle = `style="background-image: url('${url}')"`;
+                    }
+                } else { avatarContent = '<i class="ri-user-line"></i>'; }
+
+            } else if (post.authorType === 'character') {
+                authorName = post.authorName;
+                // 注意：这里设置了白色，但在浅色模式下会被上面的 CSS 覆盖成深色
+                authorNameHTML = `<span class="blast-author-name" style="color: #FFFFFF;">${authorName}</span>`;
+                signatureHTML = `<span class="blast-signature">XOXO</span>`;
+                if (post.authorAvatarId) {
+                    const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, post.authorAvatarId);
+                    if (asset?.file) {
+                        const url = URL.createObjectURL(asset.file);
+                        avatarStyle = `style="background-image: url('${url}')"`;
+                    }
+                } else { avatarContent = authorName.charAt(0); }
+
+            } else if (post.authorType === 'npc') {
+                const npcConfig = CONSTANTS.NPCS[post.authorId];
+                if (npcConfig) {
+                    authorName = npcConfig.name;
+                    const nameColor = npcConfig.color || '#FFFFFF';
+                    authorNameHTML = `<span class="blast-author-name" style="color: ${nameColor};">${authorName}</span>`;
+                    signatureHTML = `<span class="blast-signature" style="opacity:0.8; font-style:italic;">${npcConfig.signature}</span>`;
+                    
+                    if (npcConfig.avatar) {
+                        avatarStyle = `style="background-image: url('${npcConfig.avatar}')"`;
+                    } else {
+                        avatarStyle = `style="background-color: #111; color: ${npcConfig.color}; display: flex; justify-content: center; align-items: center; font-weight: bold; border: 1px solid ${npcConfig.color};"`;
+                        avatarContent = authorName.charAt(0).toUpperCase();
+                    }
+
+                    // vvvvvvvvvv 【核心修复：Spotted 标签逻辑】 vvvvvvvvvv
+                    if (post.authorId === 'gossip_girl') {
+                        let spottedTarget = '所有人'; // 默认值
+                        
+                        // 尝试从标题或内容中智能提取 Spotted 的对象
+                        // 例如: "Spotted: S在中央公园..." -> 提取出 "S"
+                        // 这里我们做一个简单的正则匹配
+                        const regex = /(?:Spotted|目击|爆料)[:：]\s*([^\s，,。.!！]+)/i;
+                        const match = (post.content + post.title).match(regex);
+                        
+                        if (match && match[1]) {
+                            spottedTarget = match[1];
+                        } else if (post.target) {
+                            spottedTarget = post.target;
+                        }
+                        
+                        targetTagHTML = `<span class="blast-target-tag">Spotted: ${spottedTarget}</span>`;
+                    }
+                    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                } 
+            } else {
+                // 路人
+                authorName = post.authorName;
+                authorNameHTML = `<span class="blast-author-name" style="opacity: 0.9;">${authorName}</span>`;
+                signatureHTML = `<span class="blast-signature" style="opacity:0.5; font-size:12px; font-style:italic;">Anonymous</span>`;
+                if (post.tempAvatarUrl) {
+                    avatarStyle = `style="background-image: url('${post.tempAvatarUrl}')"`;
+                } else {
+                    avatarStyle = `style="background-color: #333; display: flex; justify-content: center; align-items: center;"`;
+                    avatarContent = authorName.charAt(0).toUpperCase();
+                }
+            }
+
+            // --- 3. 统计数据 ---
+            const realCommentCount = commentCounts[post.id] || 0;
+            const seed = post.id % 100; 
+            const simulatedLikes = Math.floor(Math.max(realCommentCount, 1) * (1.5 + (seed / 50))) + seed;
+            const simulatedReposts = Math.floor(simulatedLikes * 0.3) + (seed % 8);
+            const simulatedShares = Math.floor(simulatedLikes * 0.2) + (seed % 5) + 1;
+
+            // --- 4. 构建 HTML (头部布局调整) ---
+            const card = document.createElement('div');
+            card.className = 'blast-card';
+            card.dataset.postId = post.id;
+
+            // vvvvvvvvvv 【核心修复：头部布局】 vvvvvvvvvv
+            // 我们把 时间戳 放在 targetTag 下面，或者如果没有 tag，就紧接名字下面
+            
+            card.innerHTML = `
+                <div class="blast-card-header">
+                    <div class="blast-author-group">
+                        <div class="blast-avatar" ${avatarStyle}>${avatarContent}</div>
+                        <div class="blast-author-info">
+                            <div style="display:flex; align-items:center; justify-content:space-between; width: 100%;">
+                                ${authorNameHTML}
+                            </div>
+                            
+                            <!-- 这一行是 Spotted 标签 (如果有) -->
+                            ${targetTagHTML}
+                            
+                            <!-- 这一行是时间戳 (始终显示) -->
+                            <span style="font-size: 11px; opacity: 0.5; margin-top: 2px; display:block;">
+                                ${formatRelativeTime(post.timestamp)}
+                            </span>
+                        </div>
+                    </div>
+                    <i class="ri-delete-bin-line delete-blast-btn" title="删除"></i>
+                </div>
+            <!-- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ -->
+
+                <div class="blast-content">
+                    <h3 class="blast-title">${post.title}</h3>
+                    <p class="blast-body">${post.content}</p>
+                </div>
+                
+                <div class="blast-action-bar">
+                    <div class="blast-action-item toggle-comments-btn">
+                        <i class="ri-chat-3-line"></i>
+                        <span class="blast-action-count comment-count">${realCommentCount > 0 ? realCommentCount : ''}</span>
+                    </div>
+                    <div class="blast-action-item repost-btn">
+                        <i class="ri-repeat-2-line"></i>
+                        <span class="blast-action-count repost-count">${simulatedReposts}</span>
+                    </div>
+                    <div class="blast-action-item like-btn">
+                        <i class="ri-heart-3-line"></i>
+                        <span class="blast-action-count like-count">${simulatedLikes}</span>
+                    </div>
+                    <div class="blast-action-item share-btn">
+                        <i class="ri-share-forward-line"></i>
+                        <span class="blast-action-count share-count">${simulatedShares}</span>
+                    </div>
+                </div>
+
+                <div class="blast-footer">
+                    ${signatureHTML}
+                </div>
+                
+                <div class="blast-comments-section">
+                    <div class="forum-comments-list"></div>
+                    <div class="forum-input-area">
+                        <input type="text" class="comment-input" placeholder="Add a comment...">
+                        <button class="send-forum-comment-btn">Send</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        }
+    } catch (error) {
+        console.error("渲染论坛失败:", error);
+        container.innerHTML = '<p style="text-align:center; color: #ff6b6b;">加载失败</p>';
+    }
+}
+
+/**
+ * 【核心】生成全新的论坛帖子流 (刷新 = 智能清洗模式)
+ * 保留用户帖子，覆盖 AI 生成的帖子
+ */
+async function generateNewForumPosts() {
+    utils.showToast('正在搜集全城八卦...');
+    
+    try {
+        // --- 1. 准备 Prompt 数据 ---
+        const validDossiers = appState.dossiers.filter(d => d && d.character);
+        const shuffledDossiers = [...validDossiers].sort(() => 0.5 - Math.random());
+        const charCount = Math.floor(Math.random() * 2) + 2; 
+        const selectedCharacters = shuffledDossiers.slice(0, charCount);
+        const allNPCs = Object.values(CONSTANTS.NPCS);
+        const totalPosts = 15;
+        const passerbyCount = Math.max(0, totalPosts - selectedCharacters.length - allNPCs.length);
+        const forumProfile = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'forum_profile');
+        const worldview = forumProfile?.worldview || '';
+
+        // --- 2. 调用 AI ---
+        const prompt = promptManager.createForumFeedGenerationPrompt(selectedCharacters, allNPCs, passerbyCount, worldview);
+        const aiResponse = await apiHelper.getChatCompletion(prompt);
+
+        console.log("💡 [调试] AI 生成帖子原始返回:", aiResponse);
+
+        // --- 3. 解析 JSON ---
+        let jsonString = null;
+        const markdownMatch = aiResponse.match(/```json\s*(\[\s*[\s\S]*?\])\s*```/);
+        
+        if (markdownMatch) {
+            jsonString = markdownMatch[1];
+        } else {
+            const jsonStartIndex = aiResponse.indexOf('[');
+            const jsonEndIndex = aiResponse.lastIndexOf(']');
+            if (jsonStartIndex !== -1 && jsonEndIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+                jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+            }
+        }
+
+        if (!jsonString) throw new Error("AI未返回有效JSON数组 (请查看控制台日志)");
+
+        const postsData = JSON.parse(jsonString);
+
+        // --- 4. 【核心修改】智能清洗旧数据 ---
+        const db = await dbHelper.dbPromise;
+        const tx = db.transaction([CONSTANTS.STORE_NAMES.FORUM_POSTS, CONSTANTS.STORE_NAMES.FORUM_COMMENTS], 'readwrite');
+        const postsStore = tx.objectStore(CONSTANTS.STORE_NAMES.FORUM_POSTS);
+        const commentsStore = tx.objectStore(CONSTANTS.STORE_NAMES.FORUM_COMMENTS);
+
+        // A. 获取所有帖子
+        const allExistingPosts = await postsStore.getAll();
+        
+        // B. 筛选出需要删除的帖子ID (所有非 User 的帖子)
+        const postIdsToDelete = new Set();
+        for (const post of allExistingPosts) {
+            // 如果以后实现了“角色手动发帖”功能，可以在这里加判断保留
+            // 目前逻辑：只要不是用户发的，刷新时全部重置
+            if (post.authorType !== 'user') {
+                postIdsToDelete.add(post.id);
+                // 删除帖子
+                postsStore.delete(post.id);
+            }
+        }
+
+        // C. 级联删除相关评论 (防止产生孤儿评论)
+        if (postIdsToDelete.size > 0) {
+            const allComments = await commentsStore.getAll();
+            for (const comment of allComments) {
+                if (postIdsToDelete.has(comment.postId)) {
+                    commentsStore.delete(comment.id);
+                }
+            }
+        }
+        // 注意：这里不等待 tx.done，因为我们还要在同一个逻辑流里加新数据，或者并行处理
+        // 为了简单起见，我们让删除操作在后台提交，继续执行插入
+        
+        // --- 5. 新数据入库 ---
+        let baseTime = Date.now();
+
+        for (const p of postsData) {
+            const newPost = {
+                title: p.title,
+                content: p.content,
+                // 设为当前时间，这样新生成的帖子会排在用户旧帖子前面（如果按时间倒序）
+                timestamp: baseTime + Math.floor(Math.random() * 60000),
+                authorType: p.authorType,
+                // 标记为生成的，方便未来扩展
+                isGenerated: true 
+            };
+
+            if (p.authorType === 'character') {
+                const dossier = appState.dossiers.find(d => d.character.name === p.authorName);
+                if (dossier) {
+                    newPost.authorId = dossier.id;
+                    newPost.authorName = dossier.character.name;
+                    newPost.authorAvatarId = dossier.character.avatarAssetId;
+                } else { continue; }
+            } else if (p.authorType === 'npc') {
+                let npcId = p.authorId;
+                if (!CONSTANTS.NPCS[npcId]) {
+                    let tryId = npcId.toLowerCase().replace(/^the[_\s]/, '');
+                    if (CONSTANTS.NPCS[tryId]) npcId = tryId;
+                    else continue;
+                }
+                newPost.authorId = npcId; 
+            } else {
+                newPost.authorId = `passerby_${Date.now()}_${Math.random()}`;
+                newPost.authorName = p.authorName;
+                const pool = CONSTANTS.PASSERBY_AVATARS;
+                if (pool && pool.length > 0) {
+                    newPost.tempAvatarUrl = pool[Math.floor(Math.random() * pool.length)];
+                }
+            }
+
+            // 这里的 add 也是异步的，但我们等待它
+            await dbHelper.add(CONSTANTS.STORE_NAMES.FORUM_POSTS, newPost);
+        }
+
+        utils.showToast('内容已更新');
+        return true;
+
+    } catch (error) {
+        console.error("生成帖子失败:", error);
+        utils.showToast(`刷新失败: ${error.message}`);
+        return false;
+    }
+}
+
+/**
+ * 【辅助】更新指定帖子的互动数据（包含评论、转评、点赞、分享）
+ */
+async function updateBlastStats(postId) {
+    const card = document.querySelector(`.blast-card[data-post-id="${postId}"]`);
+    if (!card) return;
+
+    const db = await dbHelper.dbPromise;
+    // 获取真实评论数
+    const allComments = await db.getAllFromIndex(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, 'by_postId', postId);
+    const realCommentCount = allComments.length;
+
+    // 使用相同算法重新计算虚拟数据
+    const seed = postId % 100; 
+    const simulatedLikes = Math.floor(Math.max(realCommentCount, 1) * (1.5 + (seed / 50))) + seed;
+    const simulatedReposts = Math.floor(simulatedLikes * 0.3) + (seed % 8);
+    const simulatedShares = Math.floor(simulatedLikes * 0.2) + (seed % 5) + 1;
+
+    // 更新 DOM
+    const commentCountEl = card.querySelector('.comment-count');
+    const likeCountEl = card.querySelector('.like-count');
+    const repostCountEl = card.querySelector('.repost-count');
+    const shareCountEl = card.querySelector('.share-count'); // <--- 补全了分享
+
+    if (commentCountEl) commentCountEl.textContent = realCommentCount > 0 ? realCommentCount : '';
+    if (likeCountEl) likeCountEl.textContent = simulatedLikes;
+    if (repostCountEl) repostCountEl.textContent = simulatedReposts;
+    if (shareCountEl) shareCountEl.textContent = simulatedShares; // <--- 补全了分享
+}
+
+/**
+ * 【核心】为帖子生成初始的混合评论 (热闹版：大幅增加评论数) - 增强解析版
+ */
+async function generateForumReactions(post) {
+    console.log(`[论坛引擎] 正在为帖子 #${post.id} 生成初始评论...`);
+
+    try {
+        // --- 1. 抽卡环节 (数量大升级) ---
+        
+        // A. 挑选角色: 随机 2 到 4 个
+        const validDossiers = appState.dossiers.filter(d => d && d.character);
+        const shuffledDossiers = [...validDossiers].sort(() => 0.5 - Math.random());
+        // 这里的逻辑是：最多取4个，最少取2个（除非总数不够）
+        const charCount = Math.min(validDossiers.length, Math.floor(Math.random() * 3) + 2); 
+        const selectedCharacters = shuffledDossiers.slice(0, charCount);
+
+        // B. 挑选 NPC: 随机 3 个 (总共才4个，几乎是全员出动了)
+        const allNPCs = Object.values(CONSTANTS.NPCS);
+        const shuffledNPCs = [...allNPCs].sort(() => 0.5 - Math.random());
+        const selectedNPCs = shuffledNPCs.slice(0, 3);
+
+        // C. 决定路人数量: 大幅增加到 8 到 12 个
+        const passerbyCount = Math.floor(Math.random() * 5) + 8;
+
+        // --- 2. 调用 AI ---
+        const prompt = promptManager.createForumCommentGenerationPrompt(
+            post, 
+            selectedCharacters, 
+            selectedNPCs, 
+            passerbyCount, 
+            appState.dossiers 
+        );
+        const aiResponse = await apiHelper.getChatCompletion(prompt);
+
+        console.log("💡 [调试] AI 返回的原始文本:", aiResponse);
+
+        // --- 3. 解析 JSON ---
+        let jsonString = null;
+        const markdownMatch = aiResponse.match(/```json\s*(\[\s*[\s\S]*?\])\s*```/);
+        
+        if (markdownMatch) {
+            jsonString = markdownMatch[1];
+        } else {
+            const jsonStartIndex = aiResponse.indexOf('[');
+            const jsonEndIndex = aiResponse.lastIndexOf(']');
+            if (jsonStartIndex !== -1 && jsonEndIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+                jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+            }
+        }
+
+        if (!jsonString) {
+            throw new Error("AI返回格式错误：未找到有效的 JSON 数组");
+        }
+
+        const commentsData = JSON.parse(jsonString);
+
+        // --- 4. 存入数据库 ---
+        let baseTime = Date.now();
+        
+        for (const item of commentsData) {
+            let authorId = '';
+            let authorType = item.type;
+            let authorName = item.name;
+
+            if (item.type === 'character') {
+                authorId = parseInt(item.id, 10); 
+                const d = appState.dossiers.find(x => x.id === authorId || x.character.name === item.name);
+                if (d) {
+                    authorId = d.id;
+                    authorName = d.character.name;
+                } else {
+                    continue; 
+                }
+            } else if (item.type === 'npc') {
+                // NPC ID 纠错逻辑
+                let npcId = item.id;
+                if (!CONSTANTS.NPCS[npcId]) {
+                    let tryId = npcId.toLowerCase().replace(/^the[_\s]/, '');
+                    if (CONSTANTS.NPCS[tryId]) npcId = tryId;
+                    else continue;
+                }
+                authorId = npcId; 
+            } else {
+                authorType = 'passerby';
+                authorId = `passerby_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+            }
+
+            const newComment = {
+                postId: post.id,
+                authorId: authorId,
+                authorType: authorType,
+                authorName: authorName,
+                content: item.content,
+                timestamp: baseTime + Math.floor(Math.random() * 60000)
+            };
+
+            await dbHelper.add(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, newComment);
+        }
+        
+        console.log(`[论坛引擎] 成功生成 ${commentsData.length} 条评论。`);
+        
+        // 更新卡片上的数字
+        await updateBlastStats(post.id);
+
+        return true;
+
+    } catch (error) {
+        console.error("生成帖子评论失败:", error);
+        return false;
+    }
+}
+
+/**
+ * 【核心】处理论坛的“楼中楼”回复逻辑 (统一立即生成) - 修复NPC查找报错版
+ * @param {object} post - 原始帖子对象
+ * @param {object} userReply - 用户刚刚发送的那条评论对象
+ */
+async function handleForumRecursiveReply(post, userReply) {
+    // 1. 检查是否是回复消息，且回复的不是用户自己
+    if (!userReply.replyToId) return;
+    
+    const db = await dbHelper.dbPromise;
+    const parentComment = await db.get(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, userReply.replyToId);
+    
+    // 如果找不到父评论，或者父评论也是用户发的，就不触发AI
+    if (!parentComment || parentComment.authorType === 'user') return;
+
+    console.log(`[论坛引擎] 检测到用户回复了 ${parentComment.authorName} (Type: ${parentComment.authorType})，正在生成回击...`);
+    
+    utils.showToast(`${parentComment.authorName} 正在输入...`);
+
+    try {
+        let authorIdentity = null;
+
+        // 2. 准备身份数据 (包含防崩溃逻辑)
+        if (parentComment.authorType === 'character') {
+            // --- 角色逻辑 ---
+            authorIdentity = appState.dossiers.find(d => d.id === parentComment.authorId);
+            if (!authorIdentity) {
+                console.warn("找不到被回复的角色档案，跳过回复。");
+                return; 
+            }
+        } else if (parentComment.authorType === 'npc') {
+            // --- NPC 逻辑 (核心修复点) ---
+            
+            // 尝试 A: 直接用 ID 查
+            authorIdentity = CONSTANTS.NPCS[parentComment.authorId];
+            
+            // 尝试 B: 如果 ID 查不到 (可能是AI之前把ID填错了)，尝试用名字反向查找
+            if (!authorIdentity) {
+                console.warn(`[论坛修复] 按ID (${parentComment.authorId}) 找不到NPC，尝试按名字 (${parentComment.authorName}) 查找...`);
+                authorIdentity = Object.values(CONSTANTS.NPCS).find(n => n.name === parentComment.authorName);
+            }
+
+            // 尝试 C: 如果还是找不到 (比如改名了)，创建一个临时的“兜底”对象，防止报错
+            if (!authorIdentity) {
+                console.warn(`[论坛修复] 彻底找不到NPC配置，使用临时兜底配置。`);
+                authorIdentity = {
+                    id: parentComment.authorId || 'unknown_npc',
+                    name: parentComment.authorName || '神秘人',
+                    // 给一个通用的性格，防止Prompt报错
+                    personality: '神秘、犀利、活跃在论坛的资深用户。', 
+                    color: '#FFFFFF'
+                };
+            }
+        } else {
+            // --- 路人逻辑 ---
+            authorIdentity = 'passerby';
+        }
+
+        // 3. 构建 Prompt
+        const prompt = promptManager.createForumRecursiveReplyPrompt(
+            post, 
+            parentComment, 
+            userReply, 
+            authorIdentity, // 现在这里绝对不会是 undefined 了
+            appState.dossiers 
+        );
+
+        // 4. 调用 AI
+        const aiResponse = await apiHelper.getChatCompletion(prompt);
+
+        // 5. 解析结果 (兼容 Markdown 格式)
+        const jsonMatch = aiResponse.match(/\{[\s\S]*\}/); 
+        if (!jsonMatch) throw new Error("AI未返回有效JSON");
+        const result = JSON.parse(jsonMatch[0]);
+
+        if (result.content) {
+            // 6. 构建回复对象
+            const aiReply = {
+                postId: post.id,
+                authorId: parentComment.authorId,
+                authorType: parentComment.authorType,
+                authorName: parentComment.authorName, // 保持名字一致
+                content: result.content,
+                timestamp: Date.now(),
+                replyToId: userReply.id,
+                replyToName: '我'
+            };
+
+            // 7. 存入数据库
+            const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, aiReply);
+            aiReply.id = savedId;
+
+            // 8. 立即渲染
+            const card = document.querySelector(`.blast-card[data-post-id="${post.id}"]`);
+            if (card) {
+                const listContainer = card.querySelector('.forum-comments-list');
+                setTimeout(() => {
+                    appendCommentElement(listContainer, aiReply);
+                    listContainer.scrollTop = listContainer.scrollHeight;
+                    utils.showToast('收到新回复');
+updateBlastStats(post.id);
+                }, 1500);
+            }
+        }
+
+    } catch (error) {
+        console.error("生成论坛回复失败:", error);
+        // 不弹窗报错，以免打扰用户体验
+    }
+}
+
+/**
+ * 辅助函数：加载并渲染某个帖子的评论 (包含自动生成逻辑)
+ */
+async function loadForumComments(postId, container) {
+    container.innerHTML = '<div style="opacity:0.5; font-size:12px; padding:15px; text-align:center;">正在加载评论...</div>';
+    
+    try {
+        const db = await dbHelper.dbPromise;
+        let allComments = await db.getAllFromIndex(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, 'by_postId', postId);
+        
+        // --- 自动生成逻辑 ---
+        if (allComments.length === 0) {
+            const post = await dbHelper.get(CONSTANTS.STORE_NAMES.FORUM_POSTS, postId);
+            
+            //核心系修改
+           if (post) {
+                container.innerHTML = '<div style="opacity:0.5; font-size:12px; padding:15px; text-align:center;">正在接收上东区的回响...</div>';
+                
+                // 调用生成函数 (AI 会根据帖子内容自动决定大家说什么)
+                await generateForumReactions(post);
+                
+                // 生成完后，重新从数据库查一遍
+                allComments = await db.getAllFromIndex(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, 'by_postId', postId);
+            }
+        }
+
+        container.innerHTML = ''; 
+        
+        if (allComments.length === 0) {
+            container.innerHTML = '<div style="opacity:0.5; font-size:12px; padding:5px;">暂无评论，抢占沙发！</div>';
+            return;
+        }
+
+        allComments.sort((a, b) => a.timestamp - b.timestamp);
+
+        allComments.forEach(comment => {
+            appendCommentElement(container, comment);
+        });
+        
+        container.scrollTop = container.scrollHeight;
+
+    } catch (error) {
+        console.error("加载评论失败:", error);
+        container.innerHTML = '<div style="color:#ff6b6b; font-size:12px; padding:5px;">加载失败</div>';
+    }
+}
+
+/**
+ * 辅助函数：在列表中追加一条评论 DOM (带删除和回复前缀)
+ */
+function appendCommentElement(container, comment) {
+    // 清理空状态提示
+    if (container.innerHTML.includes('暂无评论') || container.innerHTML.includes('加载')) {
+        container.innerHTML = '';
+    }
+
+    const div = document.createElement('div');
+    div.className = 'forum-comment-item';
+    div.dataset.commentId = comment.id; // 绑定ID，方便查找
+    div.dataset.authorName = comment.authorName; // 绑定名字，方便显示“回复xxx”
+    div.dataset.authorType = comment.authorType; // 绑定类型，为后续AI回复做准备
+    div.dataset.authorId = comment.authorId;     // 绑定作者ID
+    
+    const timeStr = new Date(comment.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    
+    // --- 名字颜色逻辑 (保持不变) ---
+    let nameColor = '#FFD700'; 
+    if (comment.authorType === 'character') nameColor = '#FFFFFF';
+    else if (comment.authorType === 'npc') {
+        const npcConfig = CONSTANTS.NPCS[comment.authorId];
+        if (npcConfig) nameColor = npcConfig.color;
+    } else if (comment.authorType === 'passerby') nameColor = 'rgba(255, 255, 255, 0.7)';
+    
+    // --- 【新增】回复前缀处理 ---
+    let contentHtml = comment.content;
+    if (comment.replyToName) {
+        // 如果这条评论是回复别人的，加上前缀
+        contentHtml = `<span style="opacity: 0.6; margin-right: 4px;">回复 ${comment.replyToName}:</span>${comment.content}`;
+    }
+
+    // --- 构建 HTML (增加删除按钮) ---
+    div.innerHTML = `
+        <span class="timestamp">${timeStr}</span>
+        <span class="author" style="color: ${nameColor};">${comment.authorName}:</span>
+        <span class="text">${contentHtml}</span>
+        <i class="ri-close-line delete-forum-comment-btn" title="删除评论"></i>
+    `;
+    
+    container.appendChild(div);
+}
+
         // =======================================================
         // ============== 4. 初始化和事件监听 (完整版) ===========
         // =======================================================
@@ -13986,8 +15497,410 @@ DOM.movieClearHistoryBtn.addEventListener('click', clearMovieHistory);
                 console.error("保存风格失败:", error);
                 utils.showToast('保存失败');
             }
-        });        
+        });
+
+// --- 【全新 V2】论坛应用事件监听 (浮窗版) ---
+DOM.dockForum.addEventListener('click', async () => {
+    
+    await renderForumBlasts();
+    
+    navigateToPage(DOM.forumApp, 'forum-main-page');
+});
+
+    DOM.forumBackBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const target = e.target.closest('.back-button').dataset.target;
+            if (target === 'desktop') {
+                closeNavigator(DOM.forumApp);
+            } else {
+                navigateToPage(DOM.forumApp, target);
+            }
+        });
+    });
+    
+    // 【核心修改】点击“+”号，打开“发帖”浮窗
+    DOM.addBlastBtn.addEventListener('click', () => {
+        DOM.forumCreationModal.classList.add('visible');
+    });
+
+    // 【核心修改】点击“个人”图标，打开“身份设置”浮窗
+    DOM.gotoForumProfileBtn.addEventListener('click', () => {
+        DOM.forumProfileModal.classList.add('visible');
+    });
+
+    // --- 新增：关闭浮窗的逻辑 ---
+    const closeCreationModal = () => DOM.forumCreationModal.classList.remove('visible');
+    DOM.closeForumCreationModalBtn.addEventListener('click', closeCreationModal);
+    DOM.forumCreationModal.addEventListener('click', (e) => {
+        if (e.target === DOM.forumCreationModal) closeCreationModal();
+    });
+
+    const closeProfileModal = () => DOM.forumProfileModal.classList.remove('visible');
+    DOM.closeForumProfileModalBtn.addEventListener('click', closeProfileModal);
+    DOM.forumProfileModal.addEventListener('click', (e) => {
+        if (e.target === DOM.forumProfileModal) closeProfileModal();
+    });
+    
+    // (我们稍后会在这里添加保存和发布的逻辑)
+// ^^^^  替换到这里结束  ^^^^
+
+// ======= 【修正版】论坛身份设置与头像上传逻辑 =======// 
+
+// 1. 准备隐藏的文件上传输入框 
+const uploaderInput = DOM.forumAvatarUploaderInput; 
+uploaderInput.type = 'file';
+uploaderInput.accept = 'image/*';
+uploaderInput.style.display = 'none';
+document.body.appendChild(uploaderInput);
+
+// 2. 点击“头像区域” -> 触发文件选择
+DOM.modalForumAvatarUploader.addEventListener('click', () => {
+    uploaderInput.click();
+});
+
+// 3. 监听文件选择 -> 压缩、存储图片 -> 暂存 ID 到 dataset
+uploaderInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+        utils.showToast('正在处理头像...');
+        // a. 压缩
+        const compressedFile = await compressImageForDisplay(file);
+        // b. 存入 ASSETS 表
+        const assetId = await dbHelper.add(CONSTANTS.STORE_NAMES.ASSETS, { file: compressedFile });
+        
+        // c. 【关键交接棒】把 ID 绑在 DOM 元素上，供保存按钮读取
+        DOM.modalForumAvatarUploader.dataset.assetId = assetId;
+
+        // d. 立即显示预览
+        const url = URL.createObjectURL(compressedFile);
+        DOM.modalForumAvatarUploader.style.backgroundImage = `url(${url})`;
+        DOM.modalForumAvatarUploader.innerHTML = ''; // 清空加号图标
+
+    } catch (error) {
+        console.error("论坛头像上传失败:", error);
+        utils.showToast('头像上传失败');
+    } finally {
+        e.target.value = ''; // 重置
+    }
+});
+
+// 4. 打开浮窗 -> 从数据库读取旧设置 -> 回显到界面
+DOM.gotoForumProfileBtn.addEventListener('click', async () => {
+    DOM.forumProfileModal.classList.add('visible');
+    
+    // 读取 'user_settings' 表里的 'forum_profile'
+    const settings = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'forum_profile') || {};
+    
+    // 回显文字信息
+    document.getElementById('modal-forum-nickname-input').value = settings.nickname || '';
+    // 只有当您刚刚加了世界观输入框后，这一行才有效，如果没有加也不会报错，因为是空字符串
+    if (DOM.modalForumWorldviewInput) {
+        DOM.modalForumWorldviewInput.value = settings.worldview || '';
+    }
+    
+    // 回显头像
+    if (settings.avatarAssetId) {
+        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, settings.avatarAssetId);
+        if (asset?.file) {
+            DOM.modalForumAvatarUploader.style.backgroundImage = `url(${URL.createObjectURL(asset.file)})`;
+            DOM.modalForumAvatarUploader.innerHTML = '';
+        }
+        // 【关键回显】如果是旧头像，也要把 ID 绑回去
+        DOM.modalForumAvatarUploader.dataset.assetId = settings.avatarAssetId;
+    } else {
+        // 没有头像则重置
+        DOM.modalForumAvatarUploader.style.backgroundImage = 'none';
+        DOM.modalForumAvatarUploader.innerHTML = '<i class="ri-user-add-line"></i>';
+        delete DOM.modalForumAvatarUploader.dataset.assetId;
+    }
+});
+
+// 5. 点击“保存” -> 从界面收集所有数据 -> 存入数据库
+document.getElementById('save-forum-profile-modal-btn').addEventListener('click', async () => {
+    const nickname = document.getElementById('modal-forum-nickname-input').value.trim();
+    // 获取世界观 (如果还没加这个输入框，就默认为空)
+    const worldview = DOM.modalForumWorldviewInput ? DOM.modalForumWorldviewInput.value.trim() : '';
+    
+    // 【关键接棒】从 DOM 元素上拿走 assetId
+    const rawId = DOM.modalForumAvatarUploader.dataset.assetId;
+    const avatarAssetId = rawId ? parseInt(rawId, 10) : null;
+
+    if (!nickname) {
+        utils.showToast('请至少设置一个昵称');
+        return;
+    }
+
+    const profileData = {
+        nickname: nickname,
+        worldview: worldview,
+        avatarAssetId: avatarAssetId
+    };
+
+    try {
+        // 存入大抽屉 USER_SETTINGS
+        await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, profileData, 'forum_profile');
+        
+        utils.showToast('论坛身份已保存 √');
+        DOM.forumProfileModal.classList.remove('visible');
+
+    } catch (error) {
+        console.error("保存论坛设置失败:", error);
+        utils.showToast('保存失败');
+    }
+});
+
+    // --- 【核心】用户发布帖子逻辑 ---
+    const publishBlastModalBtn = document.getElementById('publish-blast-modal-btn');
+
+    publishBlastModalBtn.addEventListener('click', async () => {
+        const title = document.getElementById('modal-blast-title-input').value.trim();
+        const content = document.getElementById('modal-blast-content-input').value.trim();
+
+        if (!content) {
+            utils.showToast('爆料内容不能为空');
+            return;
+        }
+
+        // 1. 获取用户的论坛身份
+        const profile = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'forum_profile');
+        if (!profile || !profile.nickname) {
+            utils.showToast('请先点击右上角设置您的论坛身份');
+            return;
+        }
+
+        // 2. 构建帖子对象
+        const newPost = {
+            authorType: 'user', // 标记为用户发的
+            authorId: 'global_user', // 固定ID
+            authorName: profile.nickname, // 这里的名字是“快照”，发帖时的名字
+            authorAvatarId: profile.avatarAssetId, // 存头像ID
+            title: title || '无标题',
+            content: content,
+            timestamp: Date.now()
+        };
+
+        try {
+            // 3. 存入数据库
+            await dbHelper.add(CONSTANTS.STORE_NAMES.FORUM_POSTS, newPost);
             
+            utils.showToast('爆料已发布！XOXO');
+            
+            // 4. 关闭浮窗并清空输入
+            DOM.forumCreationModal.classList.remove('visible');
+            document.getElementById('modal-blast-title-input').value = '';
+            document.getElementById('modal-blast-content-input').value = '';
+
+            await renderForumBlasts();
+
+        } catch (error) {
+            console.error("发布帖子失败:", error);
+            utils.showToast('发布失败');
+        }
+    });
+
+// --- 论坛卡片交互总线 (修正版：支持点击空白清除状态 + 收起重置) ---
+    DOM.blastsContainer.addEventListener('click', async (e) => {
+        const target = e.target;
+        const card = target.closest('.blast-card');
+        if (!card) return;
+        
+        const postId = parseInt(card.dataset.postId, 10);
+
+        // === 0. 【新增】点击空白区域清除回复状态 ===
+        // 如果点击了卡片内部，但没有点击“评论项”、“输入框”、“发送按钮”、“展开按钮”
+        // 则视为“取消回复”，恢复默认状态
+        if (!target.closest('.forum-comment-item') && 
+            !target.closest('.comment-input') && 
+            !target.closest('.send-forum-comment-btn') &&
+            !target.closest('.toggle-comments-btn')) {
+            
+            // 1. 清除全局回复目标
+            appState.tempForumReplyTarget = null;
+            
+            // 2. 恢复输入框提示语
+            const input = card.querySelector('.comment-input');
+            if (input) {
+                input.placeholder = 'Add a comment...';
+            }
+
+            // 3. 移除所有评论的高亮样式
+            card.querySelectorAll('.forum-comment-item').forEach(item => item.classList.remove('replying-to'));
+        }
+
+        // === 1. 删除帖子 (逻辑不变) ===
+        if (target.closest('.delete-blast-btn')) {
+            if (confirm("确定要删除这条爆料吗？")) {
+                try {
+                    await dbHelper.delete(CONSTANTS.STORE_NAMES.FORUM_POSTS, postId);
+                    card.style.opacity = '0';
+                    setTimeout(async () => {
+                        card.remove();
+                        if (DOM.blastsContainer.children.length === 0) await renderForumBlasts();
+                    }, 300);
+                    utils.showToast('已删除');
+                } catch (error) { console.error(error); }
+            }
+            return;
+        }
+
+        // === 2. 展开/收起评论区 (修正版：收起时彻底重置) ===
+        if (target.closest('.toggle-comments-btn')) {
+            const section = card.querySelector('.blast-comments-section');
+            const listContainer = section.querySelector('.forum-comments-list');
+            const input = card.querySelector('.comment-input'); // 获取输入框
+
+            if (section.style.display === 'none' || section.style.display === '') {
+                // --- 展开 ---
+                section.style.display = 'block';
+                await loadForumComments(postId, listContainer);
+            } else {
+                // --- 收起 ---
+                section.style.display = 'none';
+                
+                // 【核心修复】收起时，彻底重置所有回复状态
+                appState.tempForumReplyTarget = null; // 清除内存状态
+                if (input) {
+                    input.value = ''; // (可选) 是否清空已输入的文字看你喜好，通常收起意味着放弃
+                    input.placeholder = 'Add a comment...'; // 恢复默认提示
+                }
+                // 清除所有高亮
+                card.querySelectorAll('.forum-comment-item').forEach(item => item.classList.remove('replying-to'));
+            }
+            return;
+        }
+
+        // === 3. 删除单条评论 (逻辑不变) ===
+        if (target.closest('.delete-forum-comment-btn')) {
+            e.stopPropagation(); 
+            const commentItem = target.closest('.forum-comment-item');
+            const commentId = parseInt(commentItem.dataset.commentId, 10);
+            
+            if (confirm("删除这条评论？")) {
+                try {
+                    await dbHelper.delete(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, commentId);
+                    commentItem.remove();
+                    utils.showToast('评论已删除');
+                } catch (error) { console.error(error); }
+            }
+            return;
+        }
+
+        // === 4. 点击某条评论 -> 准备回复 (逻辑不变) ===
+        const clickedComment = target.closest('.forum-comment-item');
+        if (clickedComment) {
+            const input = card.querySelector('.comment-input');
+            const targetName = clickedComment.dataset.authorName;
+            const targetId = parseInt(clickedComment.dataset.commentId, 10);
+            const targetType = clickedComment.dataset.authorType;
+            const targetAuthorId = clickedComment.dataset.authorId;
+
+            // 记录回复目标
+            appState.tempForumReplyTarget = { 
+                id: targetId, 
+                name: targetName,
+                type: targetType,
+                authorId: targetAuthorId
+            };
+
+            // UI 反馈：更新输入框提示
+            input.placeholder = `回复 ${targetName}...`;
+            input.focus();
+
+            // UI 反馈：高亮被选中的评论
+            card.querySelectorAll('.forum-comment-item').forEach(item => item.classList.remove('replying-to'));
+            clickedComment.classList.add('replying-to');
+            
+            // 阻止冒泡，防止触发上面的“点击空白清除”逻辑
+            e.stopPropagation(); 
+            return;
+        }
+
+        // === 5. 发送评论 (逻辑不变) ===
+        if (target.closest('.send-forum-comment-btn')) {
+            const input = card.querySelector('.comment-input');
+            const content = input.value.trim();
+            if (!content) return;
+
+            const profile = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'forum_profile');
+            const authorName = profile?.nickname || 'Anonymous';
+            
+            // 检查是否有回复目标
+            let replyToId = null;
+            let replyToName = null;
+            
+            if (appState.tempForumReplyTarget) {
+                replyToId = appState.tempForumReplyTarget.id;
+                replyToName = appState.tempForumReplyTarget.name;
+            }
+
+            const newComment = {
+                postId: postId,
+                authorId: 'global_user',
+                authorType: 'user',
+                authorName: authorName,
+                content: content,
+                timestamp: Date.now(),
+                replyToId: replyToId,   
+                replyToName: replyToName 
+            };
+
+            try {
+                const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, newComment);
+                newComment.id = savedId;
+                
+                const listContainer = card.querySelector('.forum-comments-list');
+                appendCommentElement(listContainer, newComment);
+updateBlastStats(postId);
+                
+                // --- 发送成功后的清理工作 ---
+                input.value = '';
+                input.placeholder = 'Add a comment...'; // 恢复默认提示
+                appState.tempForumReplyTarget = null; // 清除目标
+                card.querySelectorAll('.forum-comment-item').forEach(item => item.classList.remove('replying-to')); // 清除高亮
+                
+                listContainer.scrollTop = listContainer.scrollHeight;
+
+                // 只有当这是一条回复消息（有 replyToId）时，才去尝试触发
+                if (newComment.replyToId) {
+                    // 获取当前帖子对象（我们需要帖子的内容作为上下文）
+                    const post = await dbHelper.get(CONSTANTS.STORE_NAMES.FORUM_POSTS, postId);
+                    if (post) {
+                        // 异步调用，不阻塞界面响应
+                        handleForumRecursiveReply(post, newComment);
+                    }
+                }
+
+            } catch (error) {
+                console.error("评论失败:", error);
+                utils.showToast("发送失败");
+            }
+        }
+    });
+
+// --- 论坛标题点击刷新逻辑 (生成新帖子版) ---
+    DOM.forumRefreshBtn.addEventListener('click', async () => {
+        DOM.forumRefreshBtn.classList.add('refreshing-breathe');
+        
+        try {
+            // 1. 尝试生成新帖子 (这会比较慢，因为要调API)
+            const success = await generateNewForumPosts();
+            
+            // 2. 无论生成是否成功，都重新渲染列表
+            if (success) {
+                await renderForumBlasts();
+            }
+        } catch (e) {
+            console.error(e);
+            utils.showToast('刷新遇到问题');
+        } finally {
+            setTimeout(() => {
+                DOM.forumRefreshBtn.classList.remove('refreshing-breathe');
+            }, 800);
+        }
+    });
+           
 }
         async function initializeApp() {
             try {
