@@ -6800,6 +6800,74 @@ ${npcContext}
                     { role: "user", content: "请立即根据上述设定（注意字数要充实，正文必须用中文），生成全新的论坛信息流 JSON 数组。" }
                 ];
             },
+
+// --- 【修正版】用户评论后的连锁反应 (支持多人围观) ---
+            createForumUserCommentResponsePrompt(post, userComment, authorIdentity, bystanders, allDossiers) {
+                
+                // 1. 确定贴主身份描述
+                let authorContext = "";
+                if (post.authorType === 'character') {
+                    const d = authorIdentity;
+                    authorContext = `**贴主身份 (必须回复):** 角色【${d.character.name}】\n**人设:** ${d.character.background}`;
+                } else if (post.authorType === 'npc') {
+                    const n = authorIdentity;
+                    authorContext = `**贴主身份 (必须回复):** NPC【${n.name}】\n**性格:** ${n.personality}`;
+                    if (n.id === 'gossip_girl') authorContext += "\n(拥有上帝视角，语气犀利)";
+                } else {
+                    authorContext = `**贴主身份 (必须回复):** 路人【${post.authorName}】\n**风格:** 普通论坛用户。`;
+                }
+
+                // 2. 确定围观群众列表
+                const bystanderContext = bystanders.map((b, index) => {
+                    if (b.type === 'character') return `${index + 1}. 围观者【${b.data.character.name}】 (你的角色)`;
+                    if (b.type === 'npc') return `${index + 1}. 围观者【${b.data.name}】 (固定NPC)`;
+                    return `${index + 1}. 围观者【路人】 (随机昵称)`;
+                }).join('\n   ');
+
+                const systemPrompt = `
+# 核心使命：模拟论坛互动的连锁反应 (群嘲/群响模式)
+用户(User)刚刚在帖子下发表了一条评论。你需要生成一组回应。
+
+# 上下文
+- **帖子标题:** "${post.title}"
+- **帖子内容:** "${post.content}"
+- **用户的评论:** "${userComment.content}"
+
+# 你的扮演任务 (共 ${bystanders.length + 1} 条回复)
+
+1. **贴主回应 (必选):**
+   ${authorContext}
+   *要求:* 针对用户的评论进行直接回应。
+
+2. **围观者插嘴 (必须为以下每一位各生成 1 条):**
+   ${bystanderContext}
+   *要求:* 
+   - **角色/NPC:** 必须符合其人设。
+   - **路人:** 语气要多样化（吃瓜、杠精、复读机、膜拜大佬等），简短口语化。
+   - **互动:** 他们是回复用户的，可以直接@用户，也可以互相讨论。
+
+# 输出格式规则 【铁律】
+你必须、且只能返回一个 **JSON 数组**。格式如下：
+[
+  {
+    "role": "author",
+    "content": "[贴主的回应]"
+  },
+  {
+    "role": "bystander",
+    "id": "[角色/NPC填ID；路人填'passerby']",
+    "name": "[名字]",
+    "type": "[character / npc / passerby]",
+    "content": "[围观者的回应]"
+  },
+  ... (请确保上面列表里的每个人都有对应的对象)
+]
+`;
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: "用户发表了评论，请立即生成全员互动回应 JSON 数组。" }
+                ];
+            },
         
     async createChatPrompt(dossier, chatHistory, finalUserInput, quotedMessage = null) {
     
@@ -8934,7 +9002,7 @@ if (momentActionIndex !== -1) {
             }
         } else {
             // 情况B: 新消息是普通的、不含引用的多行回复
-            const newMessages = newContent.split('\n').filter(line => line.trim() !== '');
+           const newMessages = newContent.split('|||').filter(line => line.trim() !== ''); 
             for (const reply of newMessages) {
                 const newAiMessage = { dossierId, sender: 'character', content: reply, timestamp: Date.now() };
                 const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, newAiMessage);
@@ -9002,7 +9070,7 @@ if (momentActionIndex !== -1) {
                 if (replies.length === 0) throw new Error("AI 返回了空内容。");
 
                 for (const reply of replies) {
-                    const aiMessage = { dossierId, sender: 'character', content: reply, timestamp: Date.now() };
+                   const aiMessage = { dossierId, sender: 'character', content: reply.trim(), timestamp: Date.now() };
                     const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, aiMessage);
                     aiMessage.id = savedId;
                     appState.currentChatHistory.push(aiMessage);
@@ -11282,13 +11350,13 @@ const ActionEngine = {
 
 // “无风的思念”日记触发逻辑
         // 为了防止AI频繁写日记，我们增加一个概率锁
-        if (Math.random() < 0.2) { // 每次检查时，有20%的几率进入日记触发流程
+        if (Math.random() < 0.5) {
             for (const dossier of appState.dossiers) {
                 // 每个角色，每12小时内，有15%的几率触发一次
                 const lastDiaryKey = `last_diary_trigger_${dossier.id}`;
                 const lastTriggerTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastDiaryKey))?.value || 0;
                 
-                if (Date.now() - lastTriggerTime > 12 * 60 * 60 * 1000 && Math.random() < 0.15) {
+               if (Date.now() - lastTriggerTime > 3 * 60 * 60 * 1000 && Math.random() < 0.5) {
                     console.log(`[灵魂回响] 触发了角色 [${dossier.character.name}] 的自发日记创作。`);
                     
                     // 【关键】在后台静默执行，不阻塞主流程
@@ -12656,6 +12724,135 @@ async function generateForumReactions(post) {
     } catch (error) {
         console.error("生成帖子评论失败:", error);
         return false;
+    }
+}
+
+/**
+ * 【核心】处理用户发表顶级评论后的连锁反应 (贴主回复 + 围观)
+ */
+async function handleForumUserCommentReaction(post, userComment) {
+    // 只有当这是顶级评论（不是回复别人的）时才触发
+    if (userComment.replyToId) return;
+
+    console.log(`[论坛引擎] 用户评论了帖子 #${post.id}，正在触发连锁反应...`);
+    utils.showToast('正在等待回应...');
+
+    try {
+        // --- 1. 确定贴主身份 ---
+        let authorIdentity = null;
+        if (post.authorType === 'character') {
+            authorIdentity = appState.dossiers.find(d => d.id === post.authorId);
+            if (!authorIdentity) return; 
+        } else if (post.authorType === 'npc') {
+            // NPC ID 纠错逻辑
+            let npcId = post.authorId;
+            if (!CONSTANTS.NPCS[npcId]) {
+                 npcId = Object.keys(CONSTANTS.NPCS).find(k => CONSTANTS.NPCS[k].name === post.authorName) || npcId;
+            }
+            authorIdentity = CONSTANTS.NPCS[npcId];
+        } else {
+            authorIdentity = 'passerby';
+        }
+
+        // --- 2. 随机挑选围观群众 (目标：总回复数 5-8 条) ---
+        const bystanders = [];
+        // 随机决定总数 (5 到 8)
+        const totalResponses = Math.floor(Math.random() * 4) + 5; 
+        // 减去贴主自己，剩下的就是围观群众的数量 (4 到 7)
+        const neededBystanders = totalResponses - 1; 
+
+        // A. 准备“熟人”候选池 (角色 + NPC)
+        let candidates = [];
+        
+        // 加入角色 (排除贴主自己)
+        appState.dossiers.forEach(d => {
+            if (d.id !== post.authorId) candidates.push({ type: 'character', data: d });
+        });
+        
+        // 加入 NPC (排除贴主自己)
+        Object.values(CONSTANTS.NPCS).forEach(n => {
+            if (n.id !== post.authorId) candidates.push({ type: 'npc', data: n });
+        });
+
+        // 打乱候选人顺序
+        candidates.sort(() => 0.5 - Math.random());
+
+        // B. 从熟人里选几个 (比如选 2-4 个，让熟人多露脸)
+        const namedCount = Math.min(candidates.length, Math.floor(Math.random() * 3) + 2); 
+        bystanders.push(...candidates.slice(0, namedCount));
+
+        // C. 剩下的名额全部用“路人”填充
+        const passerbyNeeded = neededBystanders - bystanders.length;
+        for (let i = 0; i < passerbyNeeded; i++) {
+            // 这里的 data 只是占位，Prompt 会自动处理路人逻辑
+            bystanders.push({ type: 'passerby', data: null }); 
+        }
+
+        // --- 3. 调用 AI ---
+        const prompt = promptManager.createForumUserCommentResponsePrompt(
+            post, userComment, authorIdentity, bystanders, appState.dossiers
+        );
+        const aiResponse = await apiHelper.getChatCompletion(prompt);
+
+        // --- 4. 解析并保存 ---
+        const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) throw new Error("AI未返回有效JSON数组");
+        const replies = JSON.parse(jsonMatch[0]);
+
+        for (const reply of replies) {
+            let newReply = {
+                postId: post.id,
+                content: reply.content,
+                timestamp: Date.now() + Math.floor(Math.random() * 2000), // 稍微错开时间
+                replyToId: userComment.id, // 【关键】回复的是用户的这条评论
+                replyToName: '我'
+            };
+
+            if (reply.role === 'author') {
+                // 贴主回复
+                newReply.authorId = post.authorId;
+                newReply.authorType = post.authorType;
+                newReply.authorName = post.authorName;
+            } else {
+                // 围观者回复
+                newReply.authorType = reply.type;
+                newReply.authorName = reply.name;
+                
+                if (reply.type === 'character') {
+                    // 如果是角色，需要反查ID
+                    const d = appState.dossiers.find(doc => doc.character.name === reply.name);
+                    newReply.authorId = d ? d.id : 'unknown';
+                } else if (reply.type === 'npc') {
+                    newReply.authorId = reply.id;
+                } else {
+                    newReply.authorId = `passerby_${Date.now()}`;
+                }
+            }
+
+            // 入库
+            await dbHelper.add(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, newReply);
+        }
+
+        // --- 5. 延迟刷新UI ---
+        setTimeout(async () => {
+            // 找到对应卡片
+            const card = document.querySelector(`.blast-card[data-post-id="${post.id}"]`);
+            if (card) {
+                // 只有当评论区是展开状态时，才追加渲染，否则只更新数字
+                const commentsSection = card.querySelector('.blast-comments-section');
+                if (commentsSection.style.display === 'block') {
+                    // 重新加载该帖子的所有评论 (这是最简单的保持排序和层级的方法)
+                    const listContainer = card.querySelector('.forum-comments-list');
+                    await loadForumComments(post.id, listContainer);
+                }
+                utils.showToast(`收到了 ${replies.length} 条新回复`);
+            }
+            // 更新数字
+            updateBlastStats(post.id);
+        }, 2000);
+
+    } catch (error) {
+        console.error("生成连锁反应失败:", error);
     }
 }
 
@@ -15817,7 +16014,7 @@ document.getElementById('save-forum-profile-modal-btn').addEventListener('click'
             return;
         }
 
-        // === 5. 发送评论 (逻辑不变) ===
+        // === 5. 发送评论 (核心逻辑：含AI触发) ===
         if (target.closest('.send-forum-comment-btn')) {
             const input = card.querySelector('.comment-input');
             const content = input.value.trim();
@@ -15842,33 +16039,41 @@ document.getElementById('save-forum-profile-modal-btn').addEventListener('click'
                 authorName: authorName,
                 content: content,
                 timestamp: Date.now(),
-                replyToId: replyToId,   
-                replyToName: replyToName 
+                replyToId: replyToId,
+                replyToName: replyToName
             };
 
             try {
+                // 1. 保存到数据库
                 const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.FORUM_COMMENTS, newComment);
                 newComment.id = savedId;
                 
+                // 2. 渲染上屏
                 const listContainer = card.querySelector('.forum-comments-list');
                 appendCommentElement(listContainer, newComment);
-updateBlastStats(postId);
                 
-                // --- 发送成功后的清理工作 ---
+                // 3. 清理输入框和状态
                 input.value = '';
-                input.placeholder = 'Add a comment...'; // 恢复默认提示
-                appState.tempForumReplyTarget = null; // 清除目标
-                card.querySelectorAll('.forum-comment-item').forEach(item => item.classList.remove('replying-to')); // 清除高亮
+                input.placeholder = 'Add a comment...';
+                appState.tempForumReplyTarget = null;
+                card.querySelectorAll('.forum-comment-item').forEach(item => item.classList.remove('replying-to'));
                 
                 listContainer.scrollTop = listContainer.scrollHeight;
 
-                // 只有当这是一条回复消息（有 replyToId）时，才去尝试触发
-                if (newComment.replyToId) {
-                    // 获取当前帖子对象（我们需要帖子的内容作为上下文）
-                    const post = await dbHelper.get(CONSTANTS.STORE_NAMES.FORUM_POSTS, postId);
-                    if (post) {
-                        // 异步调用，不阻塞界面响应
+                // --- 【核心】触发后续反应 ---
+                
+                // 4. 立即更新卡片上的统计数字 (评论数+1)
+                updateBlastStats(postId); 
+
+                // 5. 触发 AI 逻辑
+                const post = await dbHelper.get(CONSTANTS.STORE_NAMES.FORUM_POSTS, postId);
+                if (post) {
+                    if (newComment.replyToId) {
+                        // 情况 A: 楼中楼 -> 单人回击
                         handleForumRecursiveReply(post, newComment);
+                    } else {
+                        // 情况 B: 顶级评论 -> 贴主+路人围观
+                        handleForumUserCommentReaction(post, newComment);
                     }
                 }
 
