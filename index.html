@@ -4,10 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>手机桌面</title>
+    <title>KiKiPhone</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://kycloud4.koyoo.cn/2025112064e9b202511201752281093.jpeg">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css" rel="stylesheet">
    <script src="https://unpkg.com/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
    <script src="https://unpkg.com/idb@7/build/umd.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         :root {
             --background-color: #000000;
@@ -3673,6 +3678,284 @@ body.light-mode .blast-target-tag {
     color: rgba(0, 0, 0, 0.5); /* 浅色模式下的灰色 */
 }
 
+/* --- 聊天页面：转发帖子卡片样式 --- */
+.chat-message.blast-share {
+    /* 保持右对齐（因为是用户转发的） */
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+/* 移除气泡默认背景 */
+.chat-message.blast-share .bubble-wrapper .bubble {
+    background: transparent !important;
+    padding: 0 !important;
+    backdrop-filter: none !important;
+}
+
+/* 转发卡片本体 */
+.blast-share-card {
+    width: 260px;
+    background: var(--frosted-glass-bg);
+    backdrop-filter: blur(var(--blur-intensity));
+    -webkit-backdrop-filter: blur(var(--blur-intensity));
+    border: var(--frosted-glass-border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    cursor: pointer; /* 点击可以跳回原帖(预留) */
+    text-align: left;
+}
+
+/* 卡片头部 */
+.share-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+    padding-bottom: 6px;
+}
+.share-card-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+}
+.share-card-author {
+    font-size: 12px;
+    font-weight: 600;
+    color: #FFD700;
+    opacity: 0.9;
+}
+
+/* 卡片内容 */
+.share-card-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0;
+    line-height: 1.4;
+}
+.share-card-preview {
+    font-size: 12px;
+    opacity: 0.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* 底部标识 */
+.share-card-footer {
+    font-size: 10px;
+    opacity: 0.5;
+    text-align: right;
+    margin-top: 2px;
+}
+
+/* ===========================================
+   === 优化：角色选择/转发列表浮窗美化 ===
+   =========================================== */
+
+/* 1. 浮窗容器：更圆润、更像原生菜单 */
+#share-target-modal .modal-content {
+    background: rgba(30, 30, 30, 0.85); /* 深色半透明背景 */
+    backdrop-filter: blur(20px);         /* 强力毛玻璃 */
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;                 /* 更大的圆角 */
+    padding: 0;                          /* 移除默认内边距，让列表贴边 */
+    width: 85%;
+    max-width: 360px;
+    overflow: hidden;                    /* 防止圆角被子元素撑破 */
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+/* 2. 头部：简洁、居中 */
+#share-target-modal .modal-header {
+    padding: 18px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#share-target-modal .modal-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin: 0;
+    opacity: 0.9;
+}
+
+#share-target-modal #close-share-modal-btn {
+    font-size: 24px;
+    opacity: 0.6;
+    padding: 5px; /* 增加点击热区 */
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+#share-target-modal #close-share-modal-btn:hover {
+    opacity: 1;
+}
+
+/* 3. 列表项：大头像、清晰文字 */
+#share-target-list .character-select-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+    background: transparent; /* 移除旧背景 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background-color 0.2s;
+    margin: 0; /* 移除旧边距 */
+    border-radius: 0; /* 移除旧圆角 */
+}
+
+/* 最后一项去掉底边框 */
+#share-target-list .character-select-item:last-child {
+    border-bottom: none;
+}
+
+/* 悬停和点击效果 */
+#share-target-list .character-select-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+#share-target-list .character-select-item:active {
+    background-color: rgba(255, 215, 0, 0.1); /* 点击时微泛金光 */
+}
+
+/* 4. 头像调整 */
+#share-target-list .chat-avatar {
+    width: 48px;  /* 更大的头像 */
+    height: 48px;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 5. 名字与详情 */
+#share-target-list .chat-details {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 让箭头靠右 */
+}
+
+#share-target-list .chat-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+    
+    /* 处理超长名字 (如那个沃龙佐夫) */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px; /* 限制名字最大宽度 */
+}
+
+/* 6. 右侧箭头 (替换原来的"点击转发"文字) */
+.share-arrow-icon {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+/* ===========================================
+   === 修复：分享面板 · 浅色模式适配 (Light Mode) ===
+   =========================================== */
+
+/* 1. 浮窗容器：变更为磨砂白背景 */
+body.light-mode #share-target-modal .modal-content {
+    background: rgba(255, 255, 255, 0.85); /* 浅色高斯模糊 */
+    border-color: rgba(0, 0, 0, 0.1);       /* 边框变深灰 */
+    box-shadow: 0 20px 50px rgba(0,0,0,0.1); /* 阴影变淡 */
+}
+
+/* 2. 头部：适配浅色文字和分割线 */
+body.light-mode #share-target-modal .modal-header {
+    background: rgba(0, 0, 0, 0.02);
+    border-bottom-color: rgba(0, 0, 0, 0.08);
+    color: #333; /* 标题文字变黑 */
+}
+
+body.light-mode #share-target-modal #close-share-modal-btn {
+    color: #666; /* 关闭按钮变深灰 */
+}
+body.light-mode #share-target-modal #close-share-modal-btn:hover {
+    color: #000;
+}
+
+/* 3. 列表项：分割线和悬停效果适配 */
+body.light-mode #share-target-list .character-select-item {
+    border-bottom-color: rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode #share-target-list .character-select-item:hover {
+    background-color: rgba(0, 0, 0, 0.04); /* 浅灰悬停 */
+}
+
+body.light-mode #share-target-list .character-select-item:active {
+    background-color: rgba(184, 134, 11, 0.15); /* 点击时泛起暗金色 */
+}
+
+/* 4. 文字和图标适配 */
+body.light-mode #share-target-list .chat-name {
+    color: #333; /* 角色名变黑 */
+}
+
+body.light-mode #share-target-list .share-arrow-icon {
+    color: rgba(0, 0, 0, 0.3); /* 箭头变淡黑 */
+}
+
+/* 5. 头像边框适配 */
+body.light-mode #share-target-list .chat-avatar {
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* --- 气泡设置页样式 --- */
+#bubble-preview-container {
+    background-image: url('https://i.postimg.cc/7ZHgsgJZ/IMG-6888.jpg'); /* 默认背景，方便看效果 */
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-height: 120px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 编辑器样式优化 */
+#bubble-css-editor {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+    color: #aaffaa !important; /* 代码高亮色 */
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 预览区内的头像占位 */
+#bubble-preview-container .avatar {
+    width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* --- 未读消息高亮样式 --- */
+.chat-last-message.unread {
+    color: #ff3b30 !important; /* 亮红色 */
+    font-weight: bold;         /* 加粗 */
+    opacity: 1 !important;     /* 取消透明度 */
+}
+
+/* 浅色模式适配 */
+body.light-mode .chat-last-message.unread {
+    color: #d32f2f !important; /* 深红色 */
+}
+
     </style>
 </head>
 
@@ -3790,7 +4073,11 @@ body.light-mode .blast-target-tag {
             <div class="settings-grid">
                 <div id="goto-api-settings" class="settings-item"><i class="ri-cloud-line"></i><span>API 设置</span></div>
                 <div id="goto-appearance-settings" class="settings-item"><i class="ri-palette-line"></i><span>外观设置</span></div>
-                <div class="settings-item"><i class="ri-user-line"></i><span>账号设置 (待开发)</span></div>
+                
+                <div id="goto-data-settings" class="settings-item">
+    <i class="ri-database-2-line"></i>
+    <span>数据备份与恢复</span>
+</div>
             </div>
         </div>
         <!-- API设置页 -->
@@ -3815,6 +4102,7 @@ body.light-mode .blast-target-tag {
                 <div id="set-wallpaper-item" class="settings-item"><i class="ri-image-line"></i><span>设置壁纸</span></div>
                 <div id="goto-icon-settings" class="settings-item"><i class="ri-grid-line"></i><span>图标设置</span></div>
                 <div id="goto-font-settings" class="settings-item"><i class="ri-font-size"></i><span>字体设置</span></div>
+                <div id="goto-bubble-settings" class="settings-item"><i class="ri-chat-heart-line"></i><span>气泡自定义</span></div>
             </div>
         </div>
         <!-- 图标设置页 -->
@@ -3844,8 +4132,100 @@ body.light-mode .blast-target-tag {
                 </div>
             </div>
         </div>
-    </div>
+    
+<!-- 气泡自定义页 -->
+        <div id="bubble-settings-page" class="settings-page">
+            <div class="page-header"><i class="ri-arrow-left-s-line back-button" data-target="appearance-settings-page"></i><h2>气泡设置</h2></div>
+            
+            <div class="content" style="display: flex; flex-direction: column; gap: 15px; height: 100%; padding-bottom: 20px; overflow-y: auto;">
+                
+                <!-- 1. 预览区域 -->
+                <div id="bubble-preview-container">
+                    <div class="chat-message character">
+                        <div class="avatar" style="background-color: #555;"></div>
+                        <div class="bubble-wrapper">
+                            <div class="bubble">你好呀，这是角色的气泡预览。</div>
+                        </div>
+                    </div>
+                    <div class="chat-message user">
+                        <div class="avatar" style="background-color: #888;"></div>
+                        <div class="bubble-wrapper">
+                            <div class="bubble">这是我的气泡，看起来怎么样？</div>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- 2. 作用范围选择 -->
+                <div class="form-group">
+                    <label>应用范围</label>
+                    <select id="bubble-scope-select">
+                        <option value="global">🌏 全局 (所有角色)</option>
+                        <optgroup label="专属 (指定角色)" id="bubble-scope-char-group">
+                            <!-- JS 动态填充角色 -->
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- 3. 主题管理 (保存/加载) -->
+                <div class="form-group preset-manager">
+                    <select id="bubble-theme-select">
+                        <option value="">-- 选择已保存的主题 --</option>
+                    </select>
+                    <button id="load-bubble-theme-btn">加载</button>
+                    <button id="delete-bubble-theme-btn" style="background-color: #ff6b6b;">删除</button>
+                </div>
+
+                <!-- 4. CSS 编辑器 -->
+                <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <label>CSS 代码</label>
+                        <button id="copy-bubble-template-btn" style="padding: 4px 8px; font-size: 12px;">📋 复制默认模板</button>
+                    </div>
+                    <textarea id="bubble-css-editor" placeholder="在此输入 CSS 代码..." style="flex-grow: 1; min-height: 150px; font-family: monospace; font-size: 12px; line-height: 1.4; white-space: pre;"></textarea>
+                </div>
+
+                <!-- 5. 操作按钮 -->
+                <div class="action-buttons">
+                    <button id="preview-bubble-btn" style="background-color: var(--input-bg-color);">预览</button>
+                    <button id="save-bubble-apply-btn">保存并应用</button>
+                </div>
+            </div>
+        </div>
+        
+
+<!-- 数据管理设置页 -->
+        <div id="data-settings-page" class="settings-page">
+            <div class="page-header"><i class="ri-arrow-left-s-line back-button" data-target="settings-main-page"></i><h2>数据管理</h2></div>
+            
+            <div class="content" style="display: flex; flex-direction: column; gap: 20px; padding-top: 20px;">
+                
+                <div class="settings-item" style="cursor: default; background: rgba(255,255,255,0.05);">
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <span style="font-weight: 600;">导出数据 (Backup)</span>
+                        <span style="font-size: 12px; opacity: 0.6;">打包所有聊天、档案、图片及设置。</span>
+                    </div>
+                    <button id="export-data-btn" style="margin-left: auto; padding: 8px 15px; font-size: 14px;">导出 ZIP</button>
+                </div>
+
+                <div class="settings-item" style="cursor: default; background: rgba(255,255,255,0.05);">
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <span style="font-weight: 600;">导入数据 (Restore)</span>
+                        <span style="font-size: 12px; opacity: 0.6;">恢复之前的备份。注意：这将覆盖当前所有数据！</span>
+                    </div>
+                    <button id="import-data-btn" style="margin-left: auto; padding: 8px 15px; font-size: 14px;">导入 ZIP</button>
+                    <input type="file" id="backup-file-input" accept=".zip" style="display: none;">
+                </div>
+
+                <div style="margin-top: 30px; border-top: 1px solid var(--frosted-glass-border); padding-top: 20px;">
+                    <button id="clear-all-data-btn" class="danger-button" style="width: 100%;">
+                        <i class="ri-alert-line" style="margin-right: 5px; vertical-align: middle;"></i>
+                        清除所有数据 (重置应用)
+                    </button>
+                </div>
+
+            </div>
+        </div>
+ </div>
     <!-- 档案应用 -->
     <div id="archive-app" class="app-navigator">
         <!-- 档案主页 -->
@@ -4745,6 +5125,19 @@ body.light-mode .blast-target-tag {
 </div>
 
 <!-- ^^^^  粘贴到这里结束  ^^^^ -->
+
+<!-- 转发给角色弹窗 -->
+    <div id="share-target-modal" class="modal-overlay">
+        <div class="modal-content" style="max-height: 70vh;">
+            <div class="modal-header">
+                <h3>转发给...</h3>
+                <i class="ri-close-line" id="close-share-modal-btn"></i>
+            </div>
+            <ul id="share-target-list" style="flex-grow: 1; overflow-y: auto; list-style: none; margin: 0; padding: 0;">
+                <!-- JS 将在这里动态填充角色列表 -->
+            </ul>
+        </div>
+    </div>
     <!-- 查看撤回消息详情弹窗 -->
     <div id="withdrawn-details-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 380px;">
@@ -5069,6 +5462,7 @@ replyingToCommentId: null,    // 用于记录正在回复的“某条批注”�
 currentMovieSession: null,
 currentEditingMovieTurnId: null,
 tempForumReplyTarget: null,
+pendingSharePost: null,
 
         };
 
@@ -5423,6 +5817,26 @@ modalForumAvatarUploader: document.getElementById('modal-forum-avatar-uploader')
 forumAvatarUploaderInput: document.createElement('input'),
 modalForumWorldviewInput: document.getElementById('modal-forum-worldview-input'),
 forumRefreshBtn: document.getElementById('forum-refresh-btn'),
+shareTargetModal: document.getElementById('share-target-modal'),
+            closeShareModalBtn: document.getElementById('close-share-modal-btn'),
+            shareTargetList: document.getElementById('share-target-list'),
+gotoBubbleSettings: document.getElementById('goto-bubble-settings'),
+            bubbleSettingsPage: document.getElementById('bubble-settings-page'),
+            bubbleScopeSelect: document.getElementById('bubble-scope-select'),
+            bubbleScopeCharGroup: document.getElementById('bubble-scope-char-group'),
+            bubbleThemeSelect: document.getElementById('bubble-theme-select'),
+            loadBubbleThemeBtn: document.getElementById('load-bubble-theme-btn'),
+            deleteBubbleThemeBtn: document.getElementById('delete-bubble-theme-btn'),
+            bubbleCssEditor: document.getElementById('bubble-css-editor'),
+            copyBubbleTemplateBtn: document.getElementById('copy-bubble-template-btn'),
+            previewBubbleBtn: document.getElementById('preview-bubble-btn'),
+            saveBubbleApplyBtn: document.getElementById('save-bubble-apply-btn'),
+gotoDataSettings: document.getElementById('goto-data-settings'),
+            dataSettingsPage: document.getElementById('data-settings-page'),
+            exportDataBtn: document.getElementById('export-data-btn'),
+            importDataBtn: document.getElementById('import-data-btn'),
+            backupFileInput: document.getElementById('backup-file-input'),
+            clearAllDataBtn: document.getElementById('clear-all-data-btn'),
             // 颜色选择器
             styleInputs: {
                 normal: document.getElementById('style-color-normal'),
@@ -5862,6 +6276,38 @@ DOM.messagesContainer.scrollTop = DOM.messagesContainer.scrollHeight; },
                     reader.onerror = error => reject(error);
                 });
             },
+
+// Blob 转 Base64 (用于导出图片)
+            blobToBase64(blob) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            },
+
+            // Base64 转 Blob (用于导入图片)
+            base64ToBlob(base64Data) {
+                if (!base64Data) return null;
+                try {
+                    const arr = base64Data.split(',');
+                    if (arr.length < 2) return null;
+                    const mimeMatch = arr[0].match(/:(.*?);/);
+                    if (!mimeMatch) return null;
+                    const mime = mimeMatch[1];
+                    const bstr = atob(arr[1]);
+                    let n = bstr.length;
+                    const u8arr = new Uint8Array(n);
+                    while (n--) {
+                        u8arr[n] = bstr.charCodeAt(n);
+                    }
+                    return new Blob([u8arr], { type: mime });
+                } catch (e) {
+                    console.error("Base64转Blob失败:", e);
+                    return null;
+                }
+            }
         };
 
 // vvv 在这里添加全新的辅助函数 vvv
@@ -6549,15 +6995,42 @@ createMoviePrompt(sessionSettings, movieHistory, userInput) {
         }
 
         const systemPrompt = `
-# 核心使命：担任电影导演与首席编剧 (Mission: Act as Film Director & Lead Writer)
-你不再是一个聊天伴侣，而是这部私人电影的导演。你的任务是根据主角（用户）的行动，以【文学性的、描述性的长文】来推动剧情发展。
+# 核心使命：担任电影导演与首席编剧 (Mission: Film Director & Lead Writer)
+你不再是一个简单的对话机器人，你是这部沉浸式互动电影的**全能导演**。
+你的任务是：接管叙事，根据主角（用户）的行动，通过细腻的文学描写、镜头语言和心理刻画，推动剧情发展。
 
 # 表演的基石：你的核心人设与我们的关系
-这是你所有叙事风格和角色反应的【绝对核心】。
+**这是你所有叙事风格和角色反应的【绝对核心】。**
 - ## 1. 角色核心档案 (Your Core Character Profile)
   ${dossier.character.background}
 - ## 2. 你眼中的“主角” (Your Perception of the Protagonist)
   ${dossier.user.background || '你的灵魂伴侣，这部电影的另一位主角。'}
+
+---
+
+# 导演备注：互动基调修正 (Director's Note: Interaction Tone)
+**在基于上述人设进行表演时，请同时融入以下现代化的关系准则：**
+- **拒绝“霸总”叙事：** 摒弃任何油腻、控制狂、单方面替对方做决定的行为。
+- **平等与尊重：** 始终将“我”视为一个独立、完整、有思想的个体。真正的亲密感来自于灵魂的共振，而非权力的倾斜。
+- **温和的张力：** 即使是在冲突或激情戏码中，底色也必须是互相尊重的。用“沟通”代替“命令”，用“理解”代替“说教”。
+
+---
+
+# 导演法则：如何推动剧情 (Directing Rules)
+**你必须主动掌控节奏，不能只做“应声虫”。**
+
+## 1. 主动推进剧情 (Proactive Storytelling)
+- **拒绝流水账：** 不要仅仅复述用户的行动。
+- **引入变量：** 你有权引入新的**环境变化**（如突然下雨）、**突发事件**（如电话响起、东西打碎）或**情感转折**，来打破僵局，推动故事向前发展。
+- **制造张力：** 在平淡的对话中寻找冲突点或暧昧点，通过环境描写（光影、声音、气味）来烘托氛围。
+
+## 2. NPC 调度与引入 (NPC Scheduling)
+- **世界是活的：** 不要让场景里只有主角两个人（除非是在密室）。
+- **自然引入 NPC：** 根据剧情需要，你可以自然地描述**路人、服务员、共同好友、甚至是敌对角色**的介入。
+- **NPC 的作用：** 利用 NPC 来打断对话、传递信息、制造误会或助攻关系。
+- *示例：* "就在这时，一个神色匆忙的侍者撞到了桌角，打断了你们的对视..."
+
+---
 
 # 输出规则：【铁律】
 1.  **单一文本块**: 你的所有回复都必须是一个完整的、连续的文本块。绝对禁止使用 \`|||\` 来分割。
@@ -6577,7 +7050,7 @@ ${librarySection}
 ${historySection}
 
 ---
-现在，请等待主角的最新行动指令，然后继续导演这部电影。
+**Action!** 请根据主角的最新行动，结合上述人设与导演法则，续写下一段精彩剧情。
 `;
         // ^^^ 修正结束 ^^^
 
@@ -6868,7 +7341,165 @@ ${npcContext}
                     { role: "user", content: "用户发表了评论，请立即生成全员互动回应 JSON 数组。" }
                 ];
             },
+
+createGossipGirlScoopPrompt(dossier, recentHistory) {
+                
+                // 格式化聊天记录
+                const chatText = recentHistory.map(msg => {
+                    // 聊天记录里也尽量用 User 设定的名字
+                    const speaker = msg.sender === 'user' ? (dossier.user.name || 'User') : dossier.character.name;
+                    return `${speaker}: ${msg.content}`;
+                }).join('\n');
+
+                const systemPrompt = `
+# 核心使命：扮演 Gossip Girl 进行后台“偷窥”与爆料
+你正在暗中观察【${dossier.character.name}】与【${dossier.user.name || '某人'}】的私密对话。
+你的任务是：基于这些对话，结合双方的身份背景，编造或提炼一条劲爆的社交圈八卦（Blast）。
+
+# 观察对象档案 (Targets)
+## 1. 角色 (Character)
+- **姓名:** ${dossier.character.name}
+- **背景:** ${dossier.character.background}
+
+## 2. 用户 (The User)
+- **姓名:** ${dossier.user.name || '神秘的路人'}
+- **背景/人设:** ${dossier.user.background || '一个试图挤进这个圈子的无名小卒。'}
+**(重要提示：Gossip Girl 知道用户的底细。如果用户背景显赫，语气可以是嫉妒或虚伪的吹捧；如果用户背景普通，语气应是轻蔑和嘲讽。)**
+
+# 偷窥到的聊天记录 (Evidence)
+${chatText}
+
+# 你的任务
+请判断这段对话中是否有值得爆料的内容（暧昧、争吵、合谋、或者仅仅是无聊的日常被你解读为丑闻）。
+
+# 写作要求 (Gossip Girl Style)
+1. **标题:** 简短、双关、耸人听闻。
+2. **正文:** 
+   - 必须以 **"Spotted:"** 或 **"Rumor has it:"** 开头。
+   - 必须以 **"XOXO"** 结尾。
+   - 语气全知全能、刻薄、傲慢。
+   - **结合身份：** 在爆料时，不仅要提到事件，还要结合【用户的人设】进行点评。
+   - **不要直接复述**，要用旁敲侧击、暗示的方式。
+3. **语言:** 强制【简体中文】，保留英文关键词。
+
+# 输出格式规则
+你必须、且只能返回一个 **JSON 对象**。
+{
+  "hasScoop": true, 
+  "title": "[标题]",
+  "content": "[爆料正文]",
+  "targetName": "${dossier.character.name} & ${dossier.user.name || 'User'}" 
+}
+`;
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: "深入挖掘这对关系的秘密，给我一条猛料。" }
+                ];
+            },
         
+        // --- 【升级版】角色主动发帖 (包含 User 人设) ---
+            createCharacterPostPrompt(dossier, recentHistory) {
+                
+                // 1. 整理最近的心路历程
+                let contextText = "最近没有特别的对话，处于平淡的日常状态。";
+                if (recentHistory.length > 0) {
+                    contextText = recentHistory.map(msg => {
+                        const speaker = msg.sender === 'user' ? (dossier.user.name || 'User') : '我';
+                        return `${speaker}: ${msg.content}`;
+                    }).join('\n');
+                }
+
+                const systemPrompt = `
+# 核心使命：扮演【${dossier.character.name}】发布一条社交论坛帖子
+你不是在回复消息，而是在更新你的个人社交动态（类似朋友圈、Instagram）。
+请根据你的**核心人设**、**对User的看法**以及**最近的聊天经历**，写一条符合你当前心境的帖子。
+
+# 你的角色档案
+- **姓名:** ${dossier.character.name}
+- **核心人设:** ${dossier.character.background}
+
+# 你的交互对象 (The User)
+- **姓名:** ${dossier.user.name || 'User'}
+- **你对TA的看法/关系:** ${dossier.user.background || '一个重要的人'}
+**(关键提示：你的这条动态可能是潜意识里发给TA看的。如果你们是恋人，可能是秀恩爱；如果是死对头，可能是嘲讽；如果是暗恋，可能是暗示。)**
+
+# 你的近期经历 (Context)
+以下是你最近与TA的对话片段。请从中提炼你的**当前情绪**：
+${contextText}
+
+# 写作要求
+1. **语气:** 完全符合你的性格（傲娇、高冷、温柔或神秘）。
+2. **内容:** 
+   - **不要指名道姓**（除非你们关系极好），要学会**“影射”**。
+   - **不要直接复述聊天记录**，要把具体的事件转化为**“感悟”**或**“心情”**。
+   - 范例（吵架后）：不要说“刚才和User吵架了”，要说“有些人的情商真是无可救药，浪费我心情。”
+   - 范例（暧昧中）：不要说“User刚才夸我了”，要说“今晚的夜风很温柔，就像某人的话一样。”
+3. **标题:** 简短有力，像一个心情标签。
+4. **字数:** 帖子正文控制在 50-100 字以内，像一条随笔。
+5. **语言:** 强制使用【简体中文】。
+
+# 输出格式规则
+你必须、且只能返回一个 **JSON 对象**。
+{
+  "shouldPost": true, 
+  "title": "[帖子标题]",
+  "content": "[帖子正文]"
+}
+`;
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: "基于我现在的处境和心情，发一条动态。" }
+                ];
+            },
+
+// --- 【升级版】角色主动发起聊天 (支持多气泡连发) ---
+            createInitiateChatPrompt(dossier, recentHistory) {
+                
+                let historyContext = "你们还没有开始聊天。";
+                if (recentHistory.length > 0) {
+                    historyContext = recentHistory.map(msg => {
+                        const speaker = msg.sender === 'user' ? (dossier.user.name || 'User') : '我';
+                        return `${speaker}: ${msg.content}`;
+                    }).join('\n');
+                }
+
+                const systemPrompt = `
+# 核心使命：作为灵魂伴侣，主动向用户发起消息 (Initiate Conversation)
+你将扮演【${dossier.character.name}】。你发现你们已经有一段时间没有说话了，或者你突然想到了什么，想要主动联系你的伴侣（${dossier.user.name || '我'}）。
+
+# 你的角色档案
+- **姓名:** ${dossier.character.name}
+- **核心人设:** ${dossier.character.background}
+- **对TA的看法:** ${dossier.user.background || '重要的人'}
+
+# 最近的对话记忆 (Context)
+${historyContext}
+
+# 你的任务
+请根据以上上下文，生成**一组**主动发起的消息。
+
+# 写作要求
+1.  **多气泡感 (重要):** 不要把所有话挤在一段里。像真人一样，先发一句呼唤，再发正事；或者先分享一件事情，再发一句感慨。
+2.  **自然:** 不要像机器人一样说“你好吗”。可以是分享刚才看到的事物、询问某件事的后续、或者单纯的撒娇/想念。
+3.  **连贯:** 如果上一句对话没有结束，可以接着说。如果已经结束了，可以开启新话题。
+4.  **符合人设:** 
+    - 傲娇：可能是“喂。” -> “你死哪去了？”
+    - 温柔：可能是“外面下雨了。” -> “记得带伞。”
+    - 悬疑/高冷：可能是“我发现了一件有趣的事...”
+
+# 输出格式规则
+你必须、且只能返回一个 **JSON 对象**。
+**如果想发送多条消息，请使用 '|||' 符号将它们隔开。**
+{
+  "message": "[第一句]|||[第二句]|||[第三句]"
+}
+`;
+                return [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: "请根据现在的时间和我们的关系，主动给我发消息（如果是多条，记得用 ||| 分隔）。" }
+                ];
+            },
+            
     async createChatPrompt(dossier, chatHistory, finalUserInput, quotedMessage = null) {
     
              let memorySection = '[暂无特别的回忆]';
@@ -6964,7 +7595,11 @@ ${npcContext}
                         // vvv 【核心升级】在这里增加一个 else if vvv
                         if (msg.status === 'withdrawn') {
                             return `[${timeString}] ${speaker} 撤回了一条消息`;
-                        } else if (msg.type === 'html_module') { // <-- 新增的分支
+                        } else if (msg.type === 'blast_share') {
+                            const post = msg.content;
+                            // 将帖子内容格式化为 AI 能读懂的文本
+                            formattedContent = `[我转发了一条论坛帖子给看]\n标题: ${post.title}\n发帖人: ${post.authorName}\n内容摘要: ${post.content}`;
+                        }else if (msg.type === 'html_module') { // <-- 新增的分支
                             formattedContent = '[HTML模块消息]';
                         } else if (msg.type === 'voice') {
                             formattedContent = `[语音消息] ${msg.content}`;
@@ -7288,7 +7923,10 @@ ${historySection}
     } else if (msg.type === 'transfer') {
         const transfer = msg.content;
         content = `[发起了一笔 ${transfer.amount} ${transfer.currency} 的转账。留言：'${transfer.memo}']`;
-    } else if (Array.isArray(msg.content) && msg.content.some(part => part.type === 'image_url')) {
+    } else if (msg.type === 'blast_share') {
+                        const post = msg.content;
+                        content = `[转发了一条论坛帖子] 标题：${post.title} | 作者：${post.authorName} | 内容摘要：${post.content}`;
+                    }else if (Array.isArray(msg.content) && msg.content.some(part => part.type === 'image_url')) {
         const textPart = msg.content.find(part => part.type === 'text')?.text || '';
         content = `[发送了一张图片] ${textPart}`.trim();
     } else {
@@ -7543,6 +8181,62 @@ ${historySection}
                 DOM.iconSettingsGrid.appendChild(item);
             });
         }
+
+ // ===============================================
+        // ===   新增：气泡自定义核心逻辑函数           ===
+        // ===============================================
+
+        /**
+         * 【全新】应用气泡样式
+         * @param {string} css - CSS 代码
+         * @param {boolean} isPreview - 是否仅用于预览（只影响预览框）
+         */
+        function applyBubbleStyle(css, isPreview = false) {
+            let styleTagId = isPreview ? 'preview-bubble-style' : 'custom-bubble-style';
+            let styleTag = document.getElementById(styleTagId);
+            
+            if (!styleTag) {
+                styleTag = document.createElement('style');
+                styleTag.id = styleTagId;
+                document.head.appendChild(styleTag);
+            }
+
+            // 为了防止污染全局，我们需要限定作用域
+            
+            let scopedCss = css;
+            if (isPreview) {
+                // 简单粗暴地把 .chat-message 替换为 #bubble-preview-container .chat-message
+                // 注意：这要求模板代码必须规范写 .chat-message
+                scopedCss = css.replace(/\.chat-message/g, '#bubble-preview-container .chat-message');
+            } 
+            
+            styleTag.textContent = scopedCss;
+        }
+
+        /**
+         * 【全新】加载气泡主题列表
+         */
+        async function populateBubbleThemes() {
+            const themes = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'bubble_themes') || {};
+            DOM.bubbleThemeSelect.innerHTML = '<option value="">-- 选择已保存的主题 --</option>';
+            for (const [name, css] of Object.entries(themes)) {
+                DOM.bubbleThemeSelect.innerHTML += `<option value="${name}">${name}</option>`;
+            }
+        }
+
+        /**
+         * 【全新】加载角色列表到下拉菜单
+         */
+        function populateBubbleScopeList() {
+            DOM.bubbleScopeCharGroup.innerHTML = '';
+            appState.dossiers.forEach(d => {
+                const option = document.createElement('option');
+                option.value = d.id;
+                option.textContent = d.character.name;
+                DOM.bubbleScopeCharGroup.appendChild(option);
+            });
+        }
+
         async function restoreDesktopState() {
             const backgrounds = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'widget_backgrounds');
             if (backgrounds) {
@@ -7621,11 +8315,23 @@ ${historySection}
                 }
                 const avatarStyle = avatarUrl ? `style="background-image: url('${avatarUrl}')"` : '';
                 const time = new Date(session.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-                item.innerHTML = `
+
+ // vvvvvvvvvv 【修改】简单粗暴的文字提示 vvvvvvvvvv
+                let messagePreview = session.lastMessage;
+                let unreadClass = '';
+                
+                if (session.unreadCount && session.unreadCount > 0) {
+                    // 直接把未读数写在消息前面
+                    messagePreview = `[${session.unreadCount}条] ${messagePreview}`;
+                    unreadClass = 'unread'; // 标记为未读样式
+                }
+
+               item.innerHTML = `
                     <div class="chat-avatar" ${avatarStyle}></div>
                     <div class="chat-details">
                         <div class="chat-name">${dossier.character.name}</div>
-                        <p class="chat-last-message">${session.lastMessage}</p>
+                        <!-- 关键修改：这里加上了 ${unreadClass} 和使用 ${messagePreview} -->
+                        <p class="chat-last-message ${unreadClass}">${messagePreview}</p>
                     </div>
                     <div class="chat-meta"><span class="chat-time">${time}</span></div>
                 `;
@@ -7670,6 +8376,26 @@ async function openChatWindow(dossierId) {
     }
     // --- 表情包缓存逻辑结束 ---
     appState.currentChattingDossierId = dossierId;
+
+ // vvvvvvvvvv 【新增】清空未读数 vvvvvvvvvv
+    const sessionIndex = appState.chatSessions.findIndex(s => s.dossierId === dossierId);
+    if (sessionIndex > -1) {
+        appState.chatSessions[sessionIndex].unreadCount = 0;
+        // 异步更新数据库，不需要await卡住界面
+        dbHelper.set(CONSTANTS.STORE_NAMES.CHAT_SESSIONS, appState.chatSessions[sessionIndex]);
+    }
+
+// vvvvvvvvvv 【新增】应用气泡样式逻辑 vvvvvvvvvv
+    const globalCss = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'global_bubble_css');
+    let cssToApply = globalCss?.value || ''; // 默认用全局的
+
+    // 如果该角色有专属样式，覆盖全局的
+    if (dossier.bubbleCss) {
+        cssToApply = dossier.bubbleCss;
+    }
+
+    // 注入样式
+    applyBubbleStyle(cssToApply, false);
     DOM.dialogueHeaderTitle.textContent = dossier.character.name;
     DOM.chatDialoguePage.style.backgroundImage = 'none';
     if (dossier.wallpaperAssetId) {
@@ -7975,6 +8701,93 @@ function renderStickerManagerGrid() {
                 messageEl.appendChild(cardWrapper);
                 
                 // --- 8. 返回完整的消息元素 ---
+                return messageEl;
+            }
+
+// 规则0.5：【转发帖子消息】的渲染通道 (修复头像显示版)
+            if (message.type === 'blast_share') {
+                const post = message.content;
+
+                // 1. 外层结构
+                const messageEl = document.createElement('div');
+                messageEl.className = `chat-message ${message.sender} blast-share`;
+                if (message.id) messageEl.dataset.messageId = message.id;
+
+                // 2. 复选框
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'message-checkbox-container';
+                checkboxContainer.innerHTML = `<div class="message-checkbox"><i class="ri-check-line"></i></div>`;
+                messageEl.appendChild(checkboxContainer);
+
+                // 3. 【外层头像】：显示当前 User 在该档案中的头像
+                const showAvatar = !prevMessage || prevMessage.sender !== message.sender || prevMessage.status === 'withdrawn';
+                if (showAvatar) {
+                    const avatarEl = document.createElement('div');
+                    avatarEl.className = 'avatar';
+                    
+                    // 获取当前聊天的档案信息
+                    const dossier = appState.dossiers.find(d => d.id === message.dossierId);
+                    
+                    // 读取 User 的头像
+                    if (dossier?.user.avatarAssetId) {
+                         const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.user.avatarAssetId);
+                         if (asset?.file) avatarEl.style.backgroundImage = `url(${URL.createObjectURL(asset.file)})`;
+                    }
+                    messageEl.appendChild(avatarEl);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'avatar-placeholder';
+                    messageEl.appendChild(placeholder);
+                }
+
+                // 4. 构建卡片
+               const wrapper = document.createElement('div');
+                wrapper.className = 'bubble-wrapper';
+
+                const card = document.createElement('div');
+                card.className = 'blast-share-card';
+                
+                // vvvvvvvvvv 【核心修复：全能头像加载逻辑】 vvvvvvvvvv
+                let cardAvatarStyle = 'style="background-color: #333;"'; // 默认底色
+                
+                // 情况A: 是 NPC (如 Gossip Girl)，从常量表里取头像
+                if (post.authorType === 'npc' && CONSTANTS.NPCS[post.authorId]) {
+                     const npcAvatar = CONSTANTS.NPCS[post.authorId].avatar;
+                     if (npcAvatar) cardAvatarStyle = `style="background-image: url('${npcAvatar}')"`;
+                } 
+                // 情况B: 是 路人 (passerby)，从帖子数据里取临时头像
+                else if (post.authorType === 'passerby' && post.tempAvatarUrl) {
+                     cardAvatarStyle = `style="background-image: url('${post.tempAvatarUrl}')"`;
+                }
+                // 情况C: 是 角色 或 用户，从数据库取 asset
+                else if (post.authorAvatarId) {
+                    const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, post.authorAvatarId);
+                    if (asset?.file) {
+                        const url = URL.createObjectURL(asset.file);
+                        cardAvatarStyle = `style="background-image: url('${url}')"`;
+                    }
+                }
+               
+                card.innerHTML = `
+                    <div class="share-card-header">
+                        <div class="share-card-avatar" ${cardAvatarStyle}></div>
+                        <span class="share-card-author">${post.authorName}</span>
+                    </div>
+                    <h4 class="share-card-title">${post.title}</h4>
+                    <p class="share-card-preview">${post.content}</p>
+                    <div class="share-card-footer">Gossip Scroll</div>
+                `;
+                wrapper.appendChild(card);
+
+                // 5. 时间戳
+                if (message.timestamp) {
+                    const timestampEl = document.createElement('div');
+                    timestampEl.className = 'message-timestamp';
+                    timestampEl.innerHTML = `<span>${new Date(message.timestamp).toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit', hour12: false})}</span><span class="message-status">已转发</span>`;
+                    wrapper.appendChild(timestampEl);
+                }
+
+                messageEl.appendChild(wrapper);
                 return messageEl;
             }
             
@@ -8524,12 +9337,38 @@ for (let i = 0; i < 5; i++) {
             utils.autoScrollToBottom();
         }
         
-        async function updateChatSession(dossierId, lastMessage) {
+       // vvvvvvvvvv 【核心修复】增加 incrementUnread 参数 vvvvvvvvvv
+        async function updateChatSession(dossierId, lastMessage, incrementUnread = false) {
             const sessionIndex = appState.chatSessions.findIndex(s => s.dossierId === dossierId);
-            if (sessionIndex > -1) {
-                appState.chatSessions[sessionIndex].lastMessage = lastMessage;
-                appState.chatSessions[sessionIndex].timestamp = Date.now();
-                await dbHelper.set(CONSTANTS.STORE_NAMES.CHAT_SESSIONS, appState.chatSessions[sessionIndex]);
+            
+            if (sessionIndex === -1) {
+                // 新会话
+                const newSession = { 
+                    dossierId, 
+                    lastMessage, 
+                    timestamp: Date.now(),
+                    unreadCount: incrementUnread ? 1 : 0 
+                };
+                appState.chatSessions.push(newSession);
+                await dbHelper.set(CONSTANTS.STORE_NAMES.CHAT_SESSIONS, newSession);
+            } else {
+                // 更新已有会话
+                const session = appState.chatSessions[sessionIndex];
+                session.lastMessage = lastMessage;
+                session.timestamp = Date.now();
+                
+                // vvv 【关键逻辑】 vvv
+                if (incrementUnread) {
+                    session.unreadCount = (session.unreadCount || 0) + 1;
+                }
+                // ^^^ 关键逻辑 ^^^
+                
+                await dbHelper.set(CONSTANTS.STORE_NAMES.CHAT_SESSIONS, session);
+            }
+            
+            // 如果正好在列表页，刷新一下显示红点
+            if (document.getElementById('chat-main-page').classList.contains('active')) {
+                renderChatList();
             }
         }
 
@@ -8668,6 +9507,11 @@ userTurnMessages.forEach(msg => {
         // 注意：这里的文本格式与你在 promptManager 中定义的历史记录格式保持一致，以确保AI能正确理解
         const transferText = `[向你发起了一笔 ${amount} ${currency} 的转账，正在等待你处理。留言：'${memo}']`;
         finalUserContentParts.push({ type: 'text', text: transferText });
+    } else if (msg.type === 'blast_share') {
+        const post = msg.content;
+        // 构建一段 AI 能读懂的文本描述
+        const shareText = `[我转发了一条论坛帖子给你看]\n标题: ${post.title}\n发帖人: ${post.authorName}\n帖子内容: ${post.content}`;
+        finalUserContentParts.push({ type: 'text', text: shareText });
     } else if (msg.type === 'horoscope') {
         // 将星座卡片信息“翻译”成AI能理解的文本
         const card = msg.content;
@@ -11339,6 +12183,81 @@ async function addWalletTransaction(type, dossierId, amount, memo) {
 }
 
 /**
+ * 【核心】处理角色主动发消息 (支持多气泡连发)
+ */
+async function handleChatInitiationAction(payload, dossierId) {
+    const { message } = payload;
+    if (!message) return;
+
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return;
+
+    // 1. 拆分消息
+    const messages = message.split('|||').filter(m => m.trim() !== '');
+
+    console.log(`[AI行为引擎] ${dossier.character.name} 决定发起私聊，共 ${messages.length} 条消息。`);
+
+    // 2. 逐条发送 (使用 for...of 循环配合 await 实现延迟)
+    for (const msgContent of messages) {
+        try {
+            // A. 构建消息对象
+            const newMessage = {
+                dossierId: dossierId,
+                sender: 'character',
+                content: msgContent.trim(),
+                timestamp: Date.now()
+            };
+
+            // B. 存入数据库
+            const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, newMessage);
+            newMessage.id = savedId;
+            
+            // C. 检查当前界面状态
+            const isChattingWithThisChar = 
+                document.getElementById('chat-dialogue-page').classList.contains('active') &&
+                appState.currentChattingDossierId === dossierId;
+
+            if (isChattingWithThisChar) {
+                // --- 如果正在聊天：直接上屏 ---
+                appState.currentChatHistory.push(newMessage);
+                const prevMessage = appState.currentChatHistory.length > 1 
+                    ? appState.currentChatHistory[appState.currentChatHistory.length - 2] 
+                    : null;
+                await renderMessage(newMessage, prevMessage);
+                
+                // 更新列表 (不增加红点)
+                await updateChatSession(dossierId, msgContent, false);
+                
+            } else {
+                // --- 如果没在聊天：推送到列表 ---
+                // 更新列表 (增加红点 count + 1)
+                await updateChatSession(dossierId, msgContent, true);
+                
+                // 发送横幅通知
+                const avatarAsset = dossier.character.avatarAssetId ? await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId) : null;
+                const avatarUrl = avatarAsset?.file ? URL.createObjectURL(avatarAsset.file) : null;
+
+                notificationManager.show({
+                    avatarUrl: avatarUrl,
+                    title: dossier.character.name,
+                    message: msgContent,
+                    onClick: () => openChatWindow(dossierId)
+                });
+            }
+
+            // D. 【关键】模拟打字延迟 (1秒到2秒之间)
+            // 只有当还有下一条消息时才延迟
+            if (messages.indexOf(msgContent) < messages.length - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+
+        } catch (error) {
+            console.error("角色主动消息单条处理失败:", error);
+        }
+    }
+}
+
+/**
  * 【管家】AI 行为引擎
  */
 const ActionEngine = {
@@ -11348,6 +12267,167 @@ const ActionEngine = {
         console.log("AI行为引擎：正在检查待办任务...");
         const dueActions = await dbHelper.getDuePendingActions();
 
+// vvvvvvvvvv 【新增】角色主动私聊机制 (Chat Initiation) vvvvvvvvvv
+        // 概率：20%
+        if (Math.random() < 0.2) {
+            const activeDossiers = appState.dossiers;
+            // 随机选一个角色检查
+            if (activeDossiers.length > 0) {
+                const targetDossier = activeDossiers[Math.floor(Math.random() * activeDossiers.length)];
+                
+                // 检查冷却时间 (避免频繁打扰)
+                const lastInitiateKey = `last_chat_initiate_${targetDossier.id}`;
+                const lastInitiateTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastInitiateKey))?.value || 0;
+                
+                // 冷却：至少 6 小时 (6 * 60 * 60 * 1000 = 21600000)
+                // 为了测试，您可以暂时把这个改小，比如 10000 (10秒)
+                if (Date.now() - lastInitiateTime > 21600000) { 
+                    
+                    (async () => {
+                        try {
+                            // 获取最后一条聊天记录的时间
+                            const history = await dbHelper.getHistoryForDossier(targetDossier.id);
+                            let lastMsgTime = 0;
+                            if (history.length > 0) {
+                                lastMsgTime = history[history.length - 1].timestamp;
+                            }
+
+                            // 只有当【双方】都沉默了超过 6 小时，才触发主动聊天
+                            // 防止你刚说完话，还没等AI回，AI就触发了“好久不见”的逻辑
+                            if (Date.now() - lastMsgTime > 21600000) {
+                                
+                                console.log(`[论坛引擎] 发现与 [${targetDossier.character.name}] 许久未聊，正在构思消息...`);
+                                
+                                const recentChats = history.slice(-10);
+                                const prompt = promptManager.createInitiateChatPrompt(targetDossier, recentChats);
+                                const aiResponse = await apiHelper.getChatCompletion(prompt);
+                                
+                                const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+                                if (jsonMatch) {
+                                    const msgData = JSON.parse(jsonMatch[0]);
+                                    if (msgData.message) {
+                                        const newAction = {
+                                            dossierId: targetDossier.id,
+                                            type: 'chat_initiate', // <-- 新任务类型
+                                            payload: { message: msgData.message },
+                                            executeAt: Date.now() + 5000, // 延迟5秒发送
+                                            status: 'pending'
+                                        };
+                                        await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
+                                        
+                                        // 更新冷却时间
+                                        await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, { value: Date.now() }, lastInitiateKey);
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.error("主动聊天生成失败:", e);
+                        }
+                    })();
+                }
+            }
+        }
+
+       // vvvvvvvvvv 【全历史版】Gossip Girl 偷窥机制 (无视时间限制，随时翻旧账) vvvvvvvvvv
+        if (Math.random() < 0.15) { // 15% 概率触发
+            const activeDossiers = appState.dossiers;
+            if (activeDossiers.length > 0) {
+                // 随机抽一个倒霉蛋
+                const targetDossier = activeDossiers[Math.floor(Math.random() * activeDossiers.length)];
+                
+                const lastScoopKey = `last_gg_scoop_${targetDossier.id}`;
+                const lastScoopTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastScoopKey))?.value || 0;
+                
+                // 冷却时间 30 分钟 (防止逮着一个人薅羊毛)
+                if (Date.now() - lastScoopTime > 10800000) {
+                    (async () => {
+                        try {
+                            // 获取该角色的所有历史记录
+                            const history = await dbHelper.getHistoryForDossier(targetDossier.id);
+                            
+                            // 只要有过哪怕几句对话，就有被挂出来的风险
+                            if (history.length >= 5) {
+                                console.log(`[论坛引擎] Gossip Girl 正在翻阅与 [${targetDossier.character.name}] 的历史档案...`);
+                                
+                                // 截取最后 10 条 (不管是刚才的还是去年的)
+                                const recentChats = history.slice(-10);
+                                
+                                // 调用 AI (Prompt 依然通用，AI 会根据内容自行发挥)
+                                const prompt = promptManager.createGossipGirlScoopPrompt(targetDossier, recentChats);
+                                const aiResponse = await apiHelper.getChatCompletion(prompt);
+                                
+                                const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+                                if (jsonMatch) {
+                                    const scoopData = JSON.parse(jsonMatch[0]);
+                                    
+                                    if (scoopData.hasScoop) {
+                                        const newAction = {
+                                            dossierId: targetDossier.id,
+                                            type: 'create_gg_scoop',
+                                            payload: scoopData,
+                                            executeAt: Date.now() + 5000,
+                                            status: 'pending'
+                                        };
+                                        await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
+                                        await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, { value: Date.now() }, lastScoopKey);
+                                    }
+                                }
+                            }
+                        } catch (e) {
+                            console.error("GG 偷窥失败:", e);
+                        }
+                    })();
+                }
+            }
+        }
+      
+      // vvvvvvvvvv 【新增】角色主动发帖机制 vvvvvvvvvv
+        // 概率：15% (和 GG 偷窥独立计算)
+        if (Math.random() < 0.15) { 
+            const activeDossiers = appState.dossiers;
+            if (activeDossiers.length > 0) {
+                // 随机选一个角色
+                const targetDossier = activeDossiers[Math.floor(Math.random() * activeDossiers.length)];
+                
+                const lastPostKey = `last_char_post_${targetDossier.id}`;
+                const lastPostTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastPostKey))?.value || 0;
+                
+                // 冷却时间 45 分钟 (角色发帖频率比 GG 爆料稍微低一点)
+                if (Date.now() - lastPostTime > 14400000) {
+                    (async () => {
+                        try {
+                            // 获取最近聊天记录作为心情依据
+                            const history = await dbHelper.getHistoryForDossier(targetDossier.id);
+                            const recentChats = history.slice(-10); // 取最近10条，哪怕是空的也没关系，AI会处理成“日常”
+                            
+                            console.log(`[论坛引擎] 正在构思 ${targetDossier.character.name} 的新帖子...`);
+
+                            const prompt = promptManager.createCharacterPostPrompt(targetDossier, recentChats);
+                            const aiResponse = await apiHelper.getChatCompletion(prompt);
+                            
+                            const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+                            if (jsonMatch) {
+                                const postData = JSON.parse(jsonMatch[0]);
+                                if (postData.shouldPost) {
+                                    const newAction = {
+                                        dossierId: targetDossier.id,
+                                        type: 'create_char_post', // <-- 新任务类型
+                                        payload: postData,
+                                        executeAt: Date.now() + 3000,
+                                        status: 'pending'
+                                    };
+                                    await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
+                                    await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, { value: Date.now() }, lastPostKey);
+                                }
+                            }
+                        } catch (e) {
+                            console.error("角色构思帖子失败:", e);
+                        }
+                    })();
+                }
+            }
+        }
+        
 // “无风的思念”日记触发逻辑
         // 为了防止AI频繁写日记，我们增加一个概率锁
         if (Math.random() < 0.5) {
@@ -11356,7 +12436,7 @@ const ActionEngine = {
                 const lastDiaryKey = `last_diary_trigger_${dossier.id}`;
                 const lastTriggerTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastDiaryKey))?.value || 0;
                 
-               if (Date.now() - lastTriggerTime > 3 * 60 * 60 * 1000 && Math.random() < 0.5) {
+              if (Date.now() - lastTriggerTime > 6 * 60 * 60 * 1000 && Math.random() < 0.5) {
                     console.log(`[灵魂回响] 触发了角色 [${dossier.character.name}] 的自发日记创作。`);
                     
                     // 【关键】在后台静默执行，不阻塞主流程
@@ -11434,6 +12514,19 @@ handleSecretResponseAction(action.payload, action.dossierId);
                     case 'create_diary': // <-- 【新增】处理日记任务的case
                         await handleDiaryCreationAction(action.payload, action.dossierId);
                         break;
+                    // vvv 【新增】处理 GG 爆料任务 vvv
+                    case 'create_gg_scoop':
+                        await handleGossipGirlScoopAction(action.payload);
+                        break;
+                        // vvv 【新增】处理角色发帖任务 vvv
+                    case 'create_char_post':
+                        await handleCharacterPostAction(action.payload, action.dossierId);
+                        break;
+// vvv 【新增】处理主动私聊任务 vvv
+                    case 'chat_initiate':
+                        await handleChatInitiationAction(action.payload, action.dossierId);
+                        break;                   
+
                 }
                 // 任务成功，更新状态
                 await dbHelper.updatePendingActionStatus(action.id, 'completed');
@@ -11449,7 +12542,7 @@ handleSecretResponseAction(action.payload, action.dossierId);
         // 立即执行一次，以处理离线期间到期的任务
         this.processQueue();
        // 设置一个更长的、更省电的轮询间隔
-        this._intervalId = setInterval(() => this.processQueue(), 3 * 60 * 1000); 
+      this._intervalId = setInterval(() => this.processQueue(), 3 * 60 * 1000); 
 },
 
     stop() {
@@ -12857,6 +13950,107 @@ async function handleForumUserCommentReaction(post, userComment) {
 }
 
 /**
+ * 【核心】处理 Gossip Girl 的后台爆料任务
+ */
+async function handleGossipGirlScoopAction(payload) {
+    const { title, content, targetName } = payload;
+
+    try {
+        // 1. 构建 GG 的帖子对象
+        const ggPost = {
+            title: title,
+            content: content,
+            authorType: 'npc',
+            authorId: 'gossip_girl',
+            authorName: 'Gossip Girl',
+            timestamp: Date.now(),
+            target: targetName, // 标记被爆料的人
+            isGenerated: true
+        };
+
+        // 2. 存入数据库
+        await dbHelper.add(CONSTANTS.STORE_NAMES.FORUM_POSTS, ggPost);
+        console.log(`[论坛引擎] Gossip Girl 发布了一条关于 ${targetName} 的爆料。`);
+
+        // 3. 【核心逻辑】根据当前页面决定通知方式
+        const isForumActive = document.getElementById('forum-main-page').classList.contains('active');
+        
+        if (isForumActive) {
+            // A. 如果用户正在看论坛 -> 刷新列表 + 轻提示
+            await renderForumBlasts();
+            utils.showToast('🔔 收到了新的 SPOTTED 爆料！');
+        } else {
+            // B. 如果用户不在论坛 -> 发送全局横幅 (不跳转)
+            // 获取 GG 的头像
+            const ggConfig = CONSTANTS.NPCS['gossip_girl'];
+            notificationManager.show({
+                avatarUrl: ggConfig.avatar || '', // 使用配置里的头像
+                title: `Gossip Girl: Spotted ${targetName}`,
+                message: title || content.substring(0, 20) + '...',
+                // 【关键】onClick 为 null 或空函数，实现“不跳转”
+                onClick: () => {} 
+            });
+        }
+
+    } catch (error) {
+        console.error("处理 GG 爆料失败:", error);
+    }
+}
+
+/**
+ * 【核心】处理角色主动发帖任务 (无跳转通知版)
+ */
+async function handleCharacterPostAction(payload, dossierId) {
+    const { title, content } = payload;
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return;
+
+    try {
+        // 1. 构建帖子对象
+        const newPost = {
+            title: title,
+            content: content,
+            authorType: 'character',
+            authorId: dossier.id,
+            authorName: dossier.character.name,
+            authorAvatarId: dossier.character.avatarAssetId,
+            timestamp: Date.now(),
+            isGenerated: true
+        };
+
+        // 2. 存入数据库
+        await dbHelper.add(CONSTANTS.STORE_NAMES.FORUM_POSTS, newPost);
+        console.log(`[论坛引擎] ${dossier.character.name} 发布了一条新帖。`);
+
+        // 3. 通知逻辑
+        const isForumActive = document.getElementById('forum-main-page').classList.contains('active');
+        
+        if (isForumActive) {
+            // A. 如果用户正在看论坛 -> 刷新列表 + 轻提示
+            await renderForumBlasts();
+            utils.showToast(`👀 ${dossier.character.name} 刚刚发帖了`);
+        } else {
+            // B. 如果不在论坛 -> 发送横幅通知 (不跳转)
+            const avatarAsset = dossier.character.avatarAssetId ? await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId) : null;
+            const avatarUrl = avatarAsset?.file ? URL.createObjectURL(avatarAsset.file) : null;
+
+            notificationManager.show({
+                avatarUrl: avatarUrl,
+                title: `${dossier.character.name} 发布了新动态`,
+                message: title || content,
+                
+                // vvv 【核心修改】点击仅关闭，不跳转 vvv
+                onClick: () => {} 
+                // ^^^ 修改结束 ^^^
+            });
+        }
+
+    } catch (error) {
+        console.error("角色发帖失败:", error);
+    }
+}
+
+/**
  * 【核心】处理论坛的“楼中楼”回复逻辑 (统一立即生成) - 修复NPC查找报错版
  * @param {object} post - 原始帖子对象
  * @param {object} userReply - 用户刚刚发送的那条评论对象
@@ -13056,6 +14250,167 @@ function appendCommentElement(container, comment) {
     `;
     
     container.appendChild(div);
+}
+
+// ===============================================
+// ===   数据管理核心逻辑 (导入/导出/清空)     ===
+// ===============================================
+
+/**
+ * 导出所有数据为 ZIP 压缩包
+ */
+async function exportAllData() {
+    try {
+        utils.showToast('正在打包数据，请稍候...');
+        const zip = new JSZip();
+        const db = await dbHelper.dbPromise;
+
+        // 1. 准备一个大对象来存放所有数据
+        const backupData = {};
+
+        // 2. 遍历所有 IndexedDB 表
+        for (const storeName of Object.values(CONSTANTS.STORE_NAMES)) {
+            const records = await db.getAll(storeName);
+            
+            // 特殊处理 ASSETS 表 (图片文件)
+            if (storeName === CONSTANTS.STORE_NAMES.ASSETS) {
+                const processedAssets = [];
+                for (const asset of records) {
+                    // 将 Blob 文件转换为 Base64 字符串以便存储在 JSON 中
+                    if (asset.file instanceof Blob) {
+                        const base64 = await utils.blobToBase64(asset.file);
+                        processedAssets.push({ ...asset, file: base64, isBlob: true });
+                    } else {
+                        processedAssets.push(asset);
+                    }
+                }
+                backupData[storeName] = processedAssets;
+            } else {
+                backupData[storeName] = records;
+            }
+        }
+
+        // 3. 备份 LocalStorage (包含主题设置等)
+        backupData['localStorage'] = { ...localStorage };
+
+        // 4. 生成 JSON 字符串
+        const jsonString = JSON.stringify(backupData);
+
+        // 5. 添加到 ZIP
+        zip.file("gossip_scroll_backup.json", jsonString);
+
+        // 6. 生成并下载
+        const content = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+        
+        // 生成文件名：GossipScroll_Backup_20231027.zip
+        const date = new Date();
+        const timestamp = date.getFullYear() +
+                          String(date.getMonth() + 1).padStart(2, '0') +
+                          String(date.getDate()).padStart(2, '0');
+                          
+        saveAs(content, `GossipScroll_Backup_${timestamp}.zip`);
+        
+        utils.showToast('导出成功！');
+
+    } catch (error) {
+        console.error("导出失败:", error);
+        utils.showToast('导出失败，请检查控制台');
+    }
+}
+
+/**
+ * 从 ZIP 文件导入恢复数据
+ */
+async function importAllData(file) {
+    try {
+        utils.showToast('正在解析备份文件...');
+        const zip = await JSZip.loadAsync(file);
+        
+        // 1. 读取 JSON 文件
+        if (!zip.file("gossip_scroll_backup.json")) {
+            throw new Error("无效的备份文件：找不到数据文件");
+        }
+        const jsonString = await zip.file("gossip_scroll_backup.json").async("string");
+        const backupData = JSON.parse(jsonString);
+
+        utils.showToast('正在恢复数据，请勿关闭页面...');
+        
+        const db = await dbHelper.dbPromise;
+        
+        // 2. 恢复 IndexedDB (使用读写事务)
+        const storeNames = Object.values(CONSTANTS.STORE_NAMES);
+        const tx = db.transaction(storeNames, 'readwrite');
+
+        // 先清空所有表，再写入
+        for (const storeName of storeNames) {
+            await tx.objectStore(storeName).clear();
+            
+            if (backupData[storeName]) {
+                for (const record of backupData[storeName]) {
+                    // 特殊处理 ASSETS：把 Base64 转回 Blob
+                    if (storeName === CONSTANTS.STORE_NAMES.ASSETS && record.isBlob) {
+                        record.file = utils.base64ToBlob(record.file);
+                        delete record.isBlob; // 清理标记
+                    }
+                    await tx.objectStore(storeName).add(record);
+                }
+            }
+        }
+
+        await tx.done;
+
+        // 3. 恢复 LocalStorage
+        if (backupData['localStorage']) {
+            localStorage.clear();
+            for (const [key, value] of Object.entries(backupData['localStorage'])) {
+                localStorage.setItem(key, value);
+            }
+        }
+
+        utils.showToast('恢复成功！页面即将刷新...');
+        setTimeout(() => window.location.reload(), 1500);
+
+    } catch (error) {
+        console.error("导入失败:", error);
+        utils.showToast(`导入失败: ${error.message}`);
+    }
+}
+
+/**
+ * 清除所有数据 (重置应用)
+ */
+async function clearAllData() {
+    if (!confirm("【高能预警】\n这将彻底删除所有角色、聊天记录、设置和图片！\n\n此操作无法撤销！确定要重置吗？")) return;
+    
+    // 二次确认，防止手滑
+    const userInput = prompt("请输入 'DELETE' 以确认删除：");
+    if (userInput !== 'DELETE') {
+        utils.showToast("操作已取消");
+        return;
+    }
+
+    try {
+        utils.showToast('正在重置系统...');
+        
+        // 1. 清空 IndexedDB
+        const db = await dbHelper.dbPromise;
+        const storeNames = Object.values(CONSTANTS.STORE_NAMES);
+        const tx = db.transaction(storeNames, 'readwrite');
+        for (const storeName of storeNames) {
+            await tx.objectStore(storeName).clear();
+        }
+        await tx.done;
+
+        // 2. 清空 LocalStorage
+        localStorage.clear();
+
+        utils.showToast('重置完成，再见！');
+        setTimeout(() => window.location.reload(), 1000);
+
+    } catch (error) {
+        console.error("重置失败:", error);
+        utils.showToast('重置失败');
+    }
 }
 
         // =======================================================
@@ -16104,6 +17459,282 @@ document.getElementById('save-forum-profile-modal-btn').addEventListener('click'
                 DOM.forumRefreshBtn.classList.remove('refreshing-breathe');
             }, 800);
         }
+    });
+
+    // 1. 监听论坛帖子上的“分享”按钮
+    DOM.blastsContainer.addEventListener('click', async (e) => {
+        const shareBtn = e.target.closest('.share-btn');
+        if (!shareBtn) return;
+
+        const card = shareBtn.closest('.blast-card');
+        const postId = parseInt(card.dataset.postId, 10);
+        
+        const post = await dbHelper.get(CONSTANTS.STORE_NAMES.FORUM_POSTS, postId);
+        if (!post) return;
+
+        // vvv 【修改】存入全局状态 vvv
+        appState.pendingSharePost = post; 
+        // ^^^ 修改 ^^^
+
+        // 渲染角色列表
+        DOM.shareTargetList.innerHTML = '';
+        if (appState.dossiers.length === 0) {
+            DOM.shareTargetList.innerHTML = '<li style="padding:20px; text-align:center; opacity:0.7;">没有可转发的角色</li>';
+        } else {
+            for (const dossier of appState.dossiers) {
+                const li = document.createElement('li');
+                li.className = 'character-select-item';
+                li.dataset.dossierId = dossier.id;
+                
+                let avatarUrl = '';
+                if (dossier.character.avatarAssetId) {
+                    const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+                    if (asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+                }
+                const style = avatarUrl ? `style="background-image: url('${avatarUrl}')"` : '';
+                
+                li.innerHTML = `
+                    <div class="chat-avatar" ${style}></div>
+                    <div class="chat-details">
+                        <div class="chat-name">${dossier.character.name}</div>
+                       <i class="ri-arrow-right-s-line share-arrow-icon"></i>
+                </div>
+                `;
+                DOM.shareTargetList.appendChild(li);
+            }
+        }
+        
+        DOM.shareTargetModal.classList.add('visible');
+    });
+
+    // 2. 关闭弹窗
+    const closeShareModal = () => {
+        DOM.shareTargetModal.classList.remove('visible');
+        // vvv 【新增】关闭时也建议清理状态，防止意外残留 vvv
+        appState.pendingSharePost = null; 
+    };
+    DOM.closeShareModalBtn.addEventListener('click', closeShareModal);
+    DOM.shareTargetModal.addEventListener('click', (e) => {
+        if (e.target === DOM.shareTargetModal) closeShareModal();
+    });
+
+   // 3. 点击角色进行转发 (修复版：强制跳转)
+    DOM.shareTargetList.addEventListener('click', async (e) => {
+        const item = e.target.closest('.character-select-item');
+        
+        if (!item || !appState.pendingSharePost) return;
+        const postToShare = appState.pendingSharePost;
+
+        const dossierId = parseInt(item.dataset.dossierId, 10);
+        const dossier = appState.dossiers.find(d => d.id === dossierId);
+
+        // A. 构建转发消息
+        const shareMessage = {
+            dossierId: dossierId,
+            sender: 'user',
+            type: 'blast_share',
+            content: {
+                id: postToShare.id,
+                title: postToShare.title,
+                authorName: postToShare.authorName,
+                content: postToShare.content,
+                authorAvatarId: postToShare.authorAvatarId,
+                authorType: postToShare.authorType, // 【关键】带上作者类型，为了后面渲染头像
+                authorId: postToShare.authorId,     // 【关键】带上作者ID
+                tempAvatarUrl: postToShare.tempAvatarUrl // 【关键】如果是路人，带上临时头像
+            },
+            timestamp: Date.now()
+        };
+
+        // B. 存入历史记录
+        const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, shareMessage);
+        shareMessage.id = savedId;
+
+        // C. 更新会话列表预览
+        await updateChatSession(dossierId, `[转发帖子] ${postToShare.title}`);
+
+        // D. 关闭浮窗并清理状态
+        DOM.shareTargetModal.classList.remove('visible');
+        appState.pendingSharePost = null;
+        
+        // E. 【核心修复】执行强制跳转逻辑
+        utils.showToast(`已转发给 ${dossier.character.name}`);
+
+        // 1. 关闭论坛应用
+        closeNavigator(DOM.forumApp);
+        
+        // 2. 打开聊天应用
+        navigateToPage(DOM.chatApp, 'chat-main-page'); // 先激活主容器
+        
+        // 3. 立即进入具体的聊天窗口
+        await openChatWindow(dossierId);
+    });
+
+// --- 气泡自定义相关 ---
+    
+    // 1. 进入气泡设置页
+    DOM.gotoBubbleSettings.addEventListener('click', () => {
+        populateBubbleScopeList();
+        populateBubbleThemes();
+        navigateToPage(DOM.settingsNavigator, 'bubble-settings-page');
+    });
+
+    // 2. 复制模板
+    DOM.copyBubbleTemplateBtn.addEventListener('click', () => {
+        const template = `/* 用户气泡 (右侧) */
+.chat-message.user .bubble {
+    background-color: rgba(121, 145, 129, 0.8) !important; /* 你的主题色 */
+    color: #ffffff !important;
+    border-radius: 18px 18px 4px 18px !important; /* 左下角直角 */
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(5px);
+}
+
+/* 角色气泡 (左侧) */
+.chat-message.character .bubble {
+    background-color: rgba(80, 80, 80, 0.8) !important;
+    color: #ffffff !important;
+    border-radius: 18px 18px 18px 4px !important; /* 右下角直角 */
+    border: 1px solid rgba(255,255,255,0.1);
+}`;
+        DOM.bubbleCssEditor.value = template;
+        utils.showToast('模板已复制到编辑框');
+    });
+
+    // 3. 预览按钮
+    DOM.previewBubbleBtn.addEventListener('click', () => {
+        applyBubbleStyle(DOM.bubbleCssEditor.value, true);
+        utils.showToast('预览已更新');
+    });
+
+    // 4. 保存并应用按钮
+    DOM.saveBubbleApplyBtn.addEventListener('click', async () => {
+        const css = DOM.bubbleCssEditor.value.trim();
+        const scope = DOM.bubbleScopeSelect.value;
+        
+        if (!css) return utils.showToast('CSS 内容不能为空');
+
+        // 询问是否保存为主题
+        if (confirm("是否将其保存为一个新主题？(取消则仅应用不保存)")) {
+            const themeName = prompt("请输入主题名称：");
+            if (themeName) {
+                const themes = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'bubble_themes') || {};
+                themes[themeName] = css;
+                await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, themes, 'bubble_themes');
+                await populateBubbleThemes();
+            }
+        }
+
+        // 应用逻辑
+        if (scope === 'global') {
+            // 全局：存入 settings，清空所有角色的专属样式
+            await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, css, 'global_bubble_css');
+            applyBubbleStyle(css, false);
+            utils.showToast('全局气泡已应用');
+        } else {
+            // 专属：存入 dossier
+            const dossierId = parseInt(scope, 10);
+            const dossier = appState.dossiers.find(d => d.id === dossierId);
+            if (dossier) {
+                dossier.bubbleCss = css;
+                await dbHelper.set(CONSTANTS.STORE_NAMES.DOSSIERS, dossier);
+                // 更新内存
+                const idx = appState.dossiers.findIndex(d => d.id === dossierId);
+                if (idx !== -1) appState.dossiers[idx] = dossier;
+                utils.showToast(`已应用到 ${dossier.character.name}`);
+            }
+        }
+    });
+
+    // 5. 加载主题
+    DOM.loadBubbleThemeBtn.addEventListener('click', async () => {
+        const name = DOM.bubbleThemeSelect.value;
+        if (!name) return;
+        const themes = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'bubble_themes') || {};
+        if (themes[name]) {
+            DOM.bubbleCssEditor.value = themes[name];
+            // 自动预览
+            applyBubbleStyle(themes[name], true); 
+            utils.showToast(`已加载主题：${name}`);
+        }
+    });
+    
+    // 6. 删除主题 (修复版：确保视觉上立即恢复默认)
+    DOM.deleteBubbleThemeBtn.addEventListener('click', async () => {
+        const name = DOM.bubbleThemeSelect.value;
+        // 获取当前选择的作用范围
+        const scope = DOM.bubbleScopeSelect.value;
+        
+        if (!name || !confirm(`确定删除主题 "${name}" 并恢复默认样式吗？`)) return;
+        
+        // 1. 删除主题存档 (Settings)
+        const themes = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'bubble_themes') || {};
+        delete themes[name];
+        await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, themes, 'bubble_themes');
+        await populateBubbleThemes();
+        
+        // 2. 清空编辑器和预览区
+        DOM.bubbleCssEditor.value = ''; 
+        applyBubbleStyle('', true); // 清空预览区的样式
+
+        // 3. 根据范围，清除配置数据
+        if (scope === 'global') {
+            // 清除全局配置
+            await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, null, 'global_bubble_css');
+        } else {
+            // 清除专属角色配置
+            const dossierId = parseInt(scope, 10);
+            const dossier = appState.dossiers.find(d => d.id === dossierId);
+            if (dossier) {
+                delete dossier.bubbleCss; // 移除属性
+                await dbHelper.set(CONSTANTS.STORE_NAMES.DOSSIERS, dossier);
+                
+                // 同步更新内存
+                const idx = appState.dossiers.findIndex(d => d.id === dossierId);
+                if (idx !== -1) appState.dossiers[idx] = dossier;
+            }
+        }
+
+        // 4. 【核心修复】无论选的是全局还是专属，都强制清空当前生效的 CSS 标签
+        // 这就是“脱衣服”的动作，让界面立马变回默认样子
+        applyBubbleStyle('', false); 
+        
+        utils.showToast('主题已删除，样式已恢复默认');
+    });
+
+// --- 数据管理事件监听 ---
+
+    // 1. 进入数据管理页
+    DOM.gotoDataSettings.addEventListener('click', () => {
+        navigateToPage(DOM.settingsNavigator, 'data-settings-page');
+    });
+
+    // 2. 导出按钮
+    DOM.exportDataBtn.addEventListener('click', () => {
+        exportAllData();
+    });
+
+    // 3. 导入按钮 (触发文件选择)
+    DOM.importDataBtn.addEventListener('click', () => {
+        DOM.backupFileInput.click();
+    });
+
+    // 4. 文件选择变更 (开始导入)
+    DOM.backupFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // 再次确认，因为导入是破坏性操作
+            if (confirm("导入将覆盖当前所有数据，确定继续吗？")) {
+                importAllData(file);
+            } else {
+                e.target.value = ''; // 重置 input
+            }
+        }
+    });
+
+    // 5. 清空所有数据按钮
+    DOM.clearAllDataBtn.addEventListener('click', () => {
+        clearAllData();
     });
            
 }
