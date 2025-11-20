@@ -84,7 +84,7 @@
         .widget-large-horizontal { grid-column: 1 / 3; min-height: 160px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-around; }
         .widget-square-top-left { grid-column: 1 / 2; grid-row: 2 / 3; aspect-ratio: 1 / 1; }
         .app-grid { grid-column: 1 / 2; grid-row: 3 / 5; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 20px; }
-        .widget-small-vertical { grid-column: 2 / 3; grid-row: 3 / 5; min-height: 180px; }
+        .widget-small-vertical { grid-column: 2 / 3; grid-row: 3 / 5; aspect-ratio: 1 / 1; min-height:auto; }
         .p2-app-grid { grid-column: 2 / 3; grid-row: 3 / 5; }
         .app-navigator, .settings-navigator { position: fixed; top: 0; left: 0; width: 100vw; height: 100dvh; z-index: 15; pointer-events: none; overflow: hidden; }
         .app-navigator.active, .settings-navigator.active { pointer-events: auto; }
@@ -3955,6 +3955,15 @@ body.light-mode #share-target-list .chat-avatar {
 body.light-mode .chat-last-message.unread {
     color: #d32f2f !important; /* 深红色 */
 }
+
+/* === 针对第二页（日历页）的特殊位置调整 === */
+        .page:nth-child(2) {
+            /* 关键：强制改为顶部对齐，不再垂直居中 */
+            justify-content: flex-start !important; 
+            
+            /* 控制红线的位置：数字越大，日历越往下挪；数字越小，越往上 */
+            padding-top: 40px; 
+        }
 
     </style>
 </head>
