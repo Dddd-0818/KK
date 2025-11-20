@@ -14257,7 +14257,8 @@ function appendCommentElement(container, comment) {
 // ===============================================
 
 /**
- * 导出所有数据为 ZIP 压缩包
+ * 【修复版】导出所有数据为 ZIP 压缩包
+ * 修复了 user_settings 和 player_state 丢失键导致无法导入的问题
  */
 async function exportAllData() {
     try {
@@ -14270,13 +14271,23 @@ async function exportAllData() {
 
         // 2. 遍历所有 IndexedDB 表
         for (const storeName of Object.values(CONSTANTS.STORE_NAMES)) {
-            const records = await db.getAll(storeName);
             
-            // 特殊处理 ASSETS 表 (图片文件)
-            if (storeName === CONSTANTS.STORE_NAMES.ASSETS) {
+            // --- 针对 Key-Value 类型表的特殊处理 (修复核心) ---
+            if (storeName === CONSTANTS.STORE_NAMES.USER_SETTINGS || storeName === CONSTANTS.STORE_NAMES.PLAYER_STATE) {
+                const keys = await db.getAllKeys(storeName);
+                const values = await db.getAll(storeName);
+                // 将键和值配对保存，并打上标记
+                backupData[storeName] = keys.map((key, i) => ({ 
+                    __isKV: true, // 标记这是键值对数据
+                    key: key, 
+                    value: values[i] 
+                }));
+            }
+            // --- 针对 ASSETS 表的特殊处理 (转 Base64) ---
+            else if (storeName === CONSTANTS.STORE_NAMES.ASSETS) {
+                const records = await db.getAll(storeName);
                 const processedAssets = [];
                 for (const asset of records) {
-                    // 将 Blob 文件转换为 Base64 字符串以便存储在 JSON 中
                     if (asset.file instanceof Blob) {
                         const base64 = await utils.blobToBase64(asset.file);
                         processedAssets.push({ ...asset, file: base64, isBlob: true });
@@ -14285,32 +14296,28 @@ async function exportAllData() {
                     }
                 }
                 backupData[storeName] = processedAssets;
-            } else {
-                backupData[storeName] = records;
+            } 
+            // --- 普通表的处理 ---
+            else {
+                backupData[storeName] = await db.getAll(storeName);
             }
         }
 
-        // 3. 备份 LocalStorage (包含主题设置等)
+        // 3. 备份 LocalStorage
         backupData['localStorage'] = { ...localStorage };
 
-        // 4. 生成 JSON 字符串
+        // 4. 生成并下载
         const jsonString = JSON.stringify(backupData);
-
-        // 5. 添加到 ZIP
         zip.file("gossip_scroll_backup.json", jsonString);
-
-        // 6. 生成并下载
         const content = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
         
-        // 生成文件名：GossipScroll_Backup_20231027.zip
         const date = new Date();
         const timestamp = date.getFullYear() +
                           String(date.getMonth() + 1).padStart(2, '0') +
                           String(date.getDate()).padStart(2, '0');
                           
         saveAs(content, `GossipScroll_Backup_${timestamp}.zip`);
-        
-        utils.showToast('导出成功！');
+        utils.showToast('导出成功！这个备份可以正常恢复了。');
 
     } catch (error) {
         console.error("导出失败:", error);
@@ -14319,14 +14326,14 @@ async function exportAllData() {
 }
 
 /**
- * 从 ZIP 文件导入恢复数据
+ * 【修复版】从 ZIP 文件导入恢复数据
+ * 兼容修复了 Key-Value 数据的导入逻辑
  */
 async function importAllData(file) {
     try {
         utils.showToast('正在解析备份文件...');
         const zip = await JSZip.loadAsync(file);
         
-        // 1. 读取 JSON 文件
         if (!zip.file("gossip_scroll_backup.json")) {
             throw new Error("无效的备份文件：找不到数据文件");
         }
@@ -14336,30 +14343,46 @@ async function importAllData(file) {
         utils.showToast('正在恢复数据，请勿关闭页面...');
         
         const db = await dbHelper.dbPromise;
-        
-        // 2. 恢复 IndexedDB (使用读写事务)
         const storeNames = Object.values(CONSTANTS.STORE_NAMES);
         const tx = db.transaction(storeNames, 'readwrite');
 
-        // 先清空所有表，再写入
+        // 遍历清空并写入
         for (const storeName of storeNames) {
             await tx.objectStore(storeName).clear();
             
             if (backupData[storeName]) {
                 for (const record of backupData[storeName]) {
-                    // 特殊处理 ASSETS：把 Base64 转回 Blob
-                    if (storeName === CONSTANTS.STORE_NAMES.ASSETS && record.isBlob) {
-                        record.file = utils.base64ToBlob(record.file);
-                        delete record.isBlob; // 清理标记
+                    try {
+                        // --- 情况1：恢复 Key-Value 数据 (修复核心) ---
+                        if (record.__isKV === true) {
+                            await tx.objectStore(storeName).put(record.value, record.key);
+                        }
+                        // --- 情况2：恢复图片资源 ---
+                        else if (storeName === CONSTANTS.STORE_NAMES.ASSETS && record.isBlob) {
+                            record.file = utils.base64ToBlob(record.file);
+                            delete record.isBlob;
+                            await tx.objectStore(storeName).add(record);
+                        } 
+                        // --- 情况3：兼容旧坏数据的保护措施 ---
+                        // 如果是 KV 表但数据里没有 key (旧备份)，则跳过，防止报错崩溃
+                        else if ((storeName === CONSTANTS.STORE_NAMES.USER_SETTINGS || storeName === CONSTANTS.STORE_NAMES.PLAYER_STATE) && !record.key) {
+                            console.warn(`跳过无效的 ${storeName} 记录 (旧备份数据)`);
+                        }
+                        // --- 情况4：普通数据恢复 ---
+                        else {
+                            await tx.objectStore(storeName).add(record);
+                        }
+                    } catch (err) {
+                        console.error(`写入 ${storeName} 某条数据失败:`, err);
+                        // 继续执行，不因为一条数据坏了就全部停止
                     }
-                    await tx.objectStore(storeName).add(record);
                 }
             }
         }
 
         await tx.done;
 
-        // 3. 恢复 LocalStorage
+        // 恢复 LocalStorage
         if (backupData['localStorage']) {
             localStorage.clear();
             for (const [key, value] of Object.entries(backupData['localStorage'])) {
