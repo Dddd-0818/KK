@@ -8411,9 +8411,12 @@ async function openChatWindow(dossierId) {
     if (!dossier) { utils.showToast('错误：找不到该角色档案'); return; }
 
 // --- 【全新】表情包缓存逻辑 ---
+    // --- 【全新】表情包缓存逻辑 (已修复：合并用户表情) ---
     console.log("正在为当前会话构建表情包缓存...");
     appState.activeStickerMap.clear(); // 每次进入都清空重建
+
     try {
+        // 1. 加载图书馆/角色专属表情 (保持不变)
         const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
         const applicableBookIds = new Set(dossier.libraryBookIds || []);
         allBooks.forEach(book => { if (book.isGlobal) applicableBookIds.add(book.id); });
@@ -8425,7 +8428,17 @@ async function openChatWindow(dossierId) {
                 stickers.forEach((url, desc) => appState.activeStickerMap.set(desc, url));
             }
         }
-        console.log(`表情包缓存构建完毕，共加载了 ${appState.activeStickerMap.size} 个表情。`);
+
+        // 2. 【新增】加载用户个人的表情包 (这是修复的关键！)
+        const userStickersText = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'user_sticker_collection');
+        if (userStickersText) {
+            const userStickers = utils.parseStickerText(userStickersText);
+            // 将用户表情合并进去 (如果有重名，后加载的会覆盖先加载的，通常用户表情优先级高一点比较好)
+            userStickers.forEach((url, desc) => appState.activeStickerMap.set(desc, url));
+        }
+
+        console.log(`表情包缓存构建完毕，共加载了 ${appState.activeStickerMap.size} 个表情 (含用户个人表情)。`);
+
     } catch (error) {
         console.error("构建表情包缓存失败:", error);
     }
