@@ -7117,27 +7117,28 @@ ${historySection}
     },
 
 // --- 【最终兼容版】论坛混合评论生成 Prompt ---
-            createForumCommentGenerationPrompt(post, selectedCharacters, selectedNPCs, passerbyCount, allDossiers) {
-                
-                // 1. 构建角色信息块
-                const charProfiles = selectedCharacters.map(d => `
+           // 在 promptManager 对象内部替换此函数
+createForumCommentGenerationPrompt(post, selectedCharacters, selectedNPCs, passerbyCount, allDossiers) {
+    
+    // --- 1. 构建角色信息块 ---
+    const charProfiles = selectedCharacters.map(d => `
 ### 评论者角色: 【${d.character.name}】
 - **核心人设:** ${d.character.background}
-- **对博主(我)的看法:** ${d.user.background || '普通的社交圈关系'}
+- **对User(我)的看法:** ${d.user.background || '普通的社交圈关系'}
 `).join('\n\n');
 
-                // 2. 构建 NPC 信息
-                const npcProfiles = selectedNPCs.map(n => `- **NPC [${n.name}]:** 性格: "${n.personality}"`).join('\n');
+    // --- 2. 构建 NPC 信息 ---
+    const npcProfiles = selectedNPCs.map(n => `- **NPC [${n.name}]:** 性格: "${n.personality}"`).join('\n');
 
-                // 3. 绯闻女孩上帝视角
-                let gossipGirlContext = "";
-                const isGossipGirlPresent = selectedNPCs.some(n => n.id === 'gossip_girl');
-                if (isGossipGirlPresent) {
-                    const secretDatabase = allDossiers.map(d => 
-                        `- ${d.character.name}: ${d.character.background.substring(0, 150)}...` 
-                    ).join('\n');
+    // --- 3. 绯闻女孩上帝视角 (保持不变) ---
+    let gossipGirlContext = "";
+    const isGossipGirlPresent = selectedNPCs.some(n => n.id === 'gossip_girl');
+    if (isGossipGirlPresent) {
+        const secretDatabase = allDossiers.map(d => 
+            `- ${d.character.name}: ${d.character.background.substring(0, 150)}...` 
+        ).join('\n');
 
-                    gossipGirlContext = `
+        gossipGirlContext = `
 ## 👑 特殊指令：绯闻女孩 (Gossip Girl)
 你正在扮演 **Gossip Girl**。你拥有上帝视角，知道所有人的秘密。
 这是你的 **[秘密数据库]**：
@@ -7145,32 +7146,63 @@ ${secretDatabase}
 **要求：**
 1. 必须以 "Spotted:" 或 "Looks like..." 开头。
 2. 利用秘密数据库制造混乱。
-3. 语气全知全能、傲慢且挑逗。
+3.语气全知全能且傲慢挑逗。
 `;
-                }
+    }
 
-                // --- System Prompt: 只放规则和设定 ---
-                const systemPrompt = `
+    // --- 【核心修复】4. 构建发帖人身份上下文 ---
+    let authorContext = "";
+    if (post.authorType === 'user') {
+        authorContext = `
+**【重要】发帖人身份：User (我/主角)**
+- 这是你(所有评论者)的**熟人/暧昧对象/宿敌**。
+- **角色评论策略：** 必须体现出你们之间的特殊关系（亲密、调侃或深情）。
+- **NPC/路人策略：** 把User当作社交圈的话题人物。
+`;
+    } else if (post.authorType === 'npc') {
+        authorContext = `
+**【重要】发帖人身份：社区 NPC [${post.authorName}]**
+- 这是一个公共账号或知名人物。
+- **角色评论策略：** 不要对着它喊“亲爱的”！要像对待新闻媒体或八卦号一样评论。
+- **Gossip Girl:** 如果是 GG 发的帖，大家应该感到恐慌、兴奋或吃瓜。
+`;
+    } else if (post.authorType === 'character') {
+        authorContext = `
+**【重要】发帖人身份：另一个角色 [${post.authorName}]**
+- 这是你们圈子里的人。
+- **角色评论策略：** 像对待朋友、闺蜜或死对头一样互动。
+`;
+    } else {
+        authorContext = `
+**【重要】发帖人身份：路人 [${post.authorName}]**
+- 这是一个陌生的匿名用户。
+- **所有评论者：** 保持距离感，或是单纯的围观。
+`;
+    }
+
+    // --- System Prompt ---
+    const systemPrompt = `
 # 核心使命：模拟社交论坛评论区
 你是一个负责生成角色评论的 AI 引擎。
 
 # 语言规则 【铁律】 (Language Rules)
 1. **强制中文：** 所有生成的评论内容（content）必须主要使用【简体中文】。
-2. **风格化夹杂：** 对于像 "The Tastemaker" 或 "Gossip Girl" 这样洋气的人设，**允许且建议**夹杂少量英文单词（如 "Amazing", "Disaster", "So messy", "Darling"）以突显格调，但**句子结构和主体意思必须是中文**。
-   - *错误示例:* "What a disaster!"
-   - *正确示例:* "这简直是个 Disaster，品味太差了。"
+2. **风格化夹杂：** 对于像 "The Tastemaker" 或 "Gossip Girl" 这样洋气的人设，**允许且建议**夹杂少量英文单词。
 
 # 你的扮演任务
 请根据以下设定生成评论：
 
-## 1. 特定角色 (Key Characters)
+## 1. 帖子背景 (Post Context)
+${authorContext}
+
+## 2. 特定角色 (Key Characters)
 ${charProfiles}
 
-## 2. 社区 NPC (Community NPCs)
+## 3. 社区 NPC (Community NPCs)
 ${npcProfiles}
 ${gossipGirlContext} 
 
-## 3. 随机路人 (Random Passersby)
+## 4. 随机路人 (Random Passersby)
 虚构 ${passerbyCount} 个路人，昵称要符合社区氛围。
 
 # 输出格式规则 【铁律】
@@ -7181,11 +7213,11 @@ ${gossipGirlContext}
   { "type": "passerby", "name": "Name", "content": "..." }
 ]
 `;
-                return [
-                    { role: "system", content: systemPrompt },
-                    { role: "user", content: `当前帖子内容：\n"${post.content}"\n\n请立刻根据上述规则，生成评论列表 JSON。` }
-                ];
-            },
+    return [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `当前帖子内容：\n"${post.content}"\n\n请立刻根据发帖人身份和上述规则，生成评论列表 JSON。` }
+    ];
+},
 
 // --- 【新增】论坛楼中楼回复生成 Prompt ---
             createForumRecursiveReplyPrompt(post, parentComment, userReply, authorIdentity, allDossiers) {
