@@ -6494,78 +6494,122 @@ function closeBubbleMenu() {
         const promptManager = {
 
 // vvv 【新增】用于 AI 扫描新动态的全新 Prompt 构建函数 vvv
-       async createSocialScanPrompt(dossier, moment) {
-            // --- 步骤1: 构建核心的 System Prompt ---
-            const systemPromptParts = [
-                `# 使命：作为灵魂对新动态进行社交扫描`,
-                `你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。你的任务是分析一条新动态，并决定是否要主动发表第一条评论。`,
-                `# 事件背景`,
-                `- **发布者:** ${dossier.user.name || '我'} (这是与你有特殊关系的人)`,
-                `- **动态类型:** ${moment.type === 'story' ? '快拍 (Story)' : '日常 (Post)'}`
-            ];
-            if (moment.assetId) {
-                systemPromptParts.push(`- **动态内容:** 这是一条图文动态。`);
-            } else {
-                systemPromptParts.push(`- **动态内容:** "${moment.content}"`);
-            }
-            systemPromptParts.push(
-                `# 你的决策任务`,
-                `请根据你的性格，思考并决定是否要评论这条动态。你必须严格按照以下的JSON格式返回你的决策，不要包含任何额外的解释或说明。`,
-                `{
-  "shouldComment": "[布尔值] 以你的性格，你对这条动态有发表评论的冲动吗？(true/false)",
-  "commentContent": "[字符串] 如果要评论，你的第一条评论内容是什么？请保持简短、口语化。如果决定不评论，请留空。",
+      async createSocialScanPrompt(dossier, moment) {
+    // --- 步骤1: 构建核心的 System Prompt ---
+    const systemPromptParts = [
+        `# 核心使命：以极致的沉浸感，对“他/她”的新动态进行社交扫描`,
+        `你将彻底成为【${dossier.character.name}】。`,
+        
+        `## 1. 你的灵魂基石 (Your Full Persona)`,
+        `**这是你思考和说话的唯一依据，请深入理解并内化以下所有设定：**`,
+        `${dossier.character.background}`,
+        
+        `## 2. 你的性格标签`,
+        `"${dossier.aiGenerated.personality}"`,
+
+        `## 3. 极为重要的特殊关系 (Crucial Connection)`,
+        `- **发布者:** ${dossier.user.name || '我'} (在你眼中，他/她是：${dossier.user.background || '特别的存在'})`,
+        `- **行为修正指令：** 即使你的性格设定是高冷、内向、被动或傲娇的，**面对这个特定的人，你的关注度是极高的**。你很难忍住不去看他的动态，也很难忍住不留下点痕迹。`,
+        `- **如何保持人设？** 如果你是高冷/傲娇性格，不要选择“不评论”，而是选择**简短、克制、略带评价性或用标点符号**来进行评论。`,
+
+        `## 4. 事件背景`,
+        `- **动态类型:** ${moment.type === 'story' ? '快拍 (Story)' : '日常 (Post)'}`
+    ];
+
+    if (moment.assetId) {
+        systemPromptParts.push(`- **动态内容:** 这是一条图文动态。`);
+    } else {
+        systemPromptParts.push(`- **动态内容:** "${moment.content}"`);
+    }
+
+    systemPromptParts.push(
+        `# 你的决策任务`,
+        `请根据你的性格，思考并决定是否要评论这条动态。你必须严格按照以下的JSON格式返回你的决策。`,
+        `{
+  "innerThought": "[字符串] 必须填写。看到这条动态时，你心里的第一反应是什么？(例如：'哼，他又在发这种无聊的东西...' 或 '这张照片拍得不错...')",
+  "shouldComment": "[布尔值] 即使心里很想回，或者想吐槽，也请填 true。只有在你觉得完全无法接话，或者心情极度糟糕时才填 false。",
+  "commentContent": "[字符串] 如果评论，写下你的评论内容。语气必须完全符合你的人设背景（口癖、用词习惯）。如果不评论，留空。",
   "delayInMinutes": "[数字] 如果要评论，你打算过多久再发出去？(范围 0-180)"
 }`
-            );
-            const systemPrompt = systemPromptParts.join('\n');
+    );
+    const systemPrompt = systemPromptParts.join('\n');
 
-            // --- 步骤2: 构建发送给 API 的 messages 数组 ---
-            const apiMessages = [{ role: "system", content: systemPrompt }];
-            const userContentParts = [];
+    // --- 步骤2: 构建发送给 API 的 messages 数组 ---
+    const apiMessages = [{ role: "system", content: systemPrompt }];
+    const userContentParts = [];
 
-            // a. 添加文字部分
-            const textPart = moment.assetId 
-                ? `这是他/她配的文字：“${moment.content}”\n\n请结合图片和文字内容，返回你的决策JSON。`
-                : "请根据以上信息，返回你的决策JSON。";
-            userContentParts.push({ type: 'text', text: textPart });
+    // a. 添加文字部分
+    const textPart = moment.assetId 
+        ? `这是他/她配的文字：“${moment.content}”\n\n请结合图片和文字内容，返回你的决策JSON。`
+        : "请根据以上信息，返回你的决策JSON。";
+    userContentParts.push({ type: 'text', text: textPart });
 
-            // b. 如果有图片，添加图片部分
-            if (moment.assetId) {
-                try {
-                    const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, moment.assetId);
-                    if (asset?.file) {
-                        const base64ImageWithPrefix = await utils.fileToBase64(asset.file);
-                        // 【关键】构建一个标准的、被广泛兼容的 image_url 对象
-                        userContentParts.unshift({
-                            type: 'image_url',
-                            image_url: {
-                                url: base64ImageWithPrefix 
-                            }
-                        });
+    // b. 如果有图片，添加图片部分
+    if (moment.assetId) {
+        try {
+            const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, moment.assetId);
+            if (asset?.file) {
+                const base64ImageWithPrefix = await utils.fileToBase64(asset.file);
+                userContentParts.unshift({
+                    type: 'image_url',
+                    image_url: {
+                        url: base64ImageWithPrefix 
                     }
-                } catch (error) {
-                    console.error("加载动态图片用于AI识别时失败:", error);
-                }
+                });
             }
-            
-            apiMessages.push({ role: 'user', content: userContentParts });
-            return apiMessages;
-        },
+        } catch (error) {
+            console.error("加载动态图片用于AI识别时失败:", error);
+        }
+    }
+    
+    apiMessages.push({ role: 'user', content: userContentParts });
+    return apiMessages;
+},
 
 // vvv 【新增】用于 AI 社交决策的全新 Prompt 构建函数 vvv
-createSocialDecisionPrompt(dossier, moment, userComment) {
-   const systemPrompt = `
-# 核心使命：作为灵魂伴侣进行一次社交决策
 
-你将再次扮演【${dossier.character.name}】，你的性格是“${dossier.aiGenerated.personality}”。
-你的任务不是直接聊天，而是模拟一次真实的内心思考过程，并最终对一个社交事件做出【完全符合你性格】的决策。
+createSocialDecisionPrompt(dossier, moment, userComment, parentComment = null) {
+    
+    // 1. 动态构建“事件背景”描述
+    let eventContext = "";
+    
+    if (parentComment) {
+        // 情况 A: 用户是在【回复】AI 之前的评论
+        // 无论动态是谁发的，现在的重点是“回复了你的评论”
+        eventContext = `
+- **事件类型：** 回复 (Reply)
+- **背景动态内容：** "${moment.content.replace(/ \[.*?\]$/s, '').trim()}"
+- **你之前的评论：** "${parentComment.content}"
+- **收到的回复内容：** "${userComment.content}"
+- **回复者：** ${dossier.user.name || '我'}
+`;
+    } else {
+        // 情况 B: 用户直接【评论】了 AI 发布的动态
+        // 只有这种情况下，才强调“在你发布的动态”
+        eventContext = `
+- **事件类型：** 评论 (Comment)
+- **在你发布的动态内容：** "${moment.content.replace(/ \[.*?\]$/s, '').trim()}"
+- **收到的评论内容：** "${userComment.content}"
+- **评论者：** ${dossier.user.name || '我'}
+`;
+    }
+
+   const systemPrompt = `
+
+# 核心使命：作为灵魂伴侣进行一次深度的社交互动决策
+
+你将彻底成为【${dossier.character.name}】。
+你的任务不是简单的“回复消息”，而是基于你复杂的过去和性格，对“他/她”的评论做出最真实的反应。
 
 ---
 
-# 表演的基石：你们之间的关系与记忆
+# 1. 你的灵魂档案 (The Core Persona)
+**请仔细阅读并扮演以下设定，这是你一切行为的逻辑原点：**
+${dossier.character.background}
 
-**这是你思考和决策时最重要的依据。**
-- **你眼中的“他/她”**: ${dossier.user.background || '你的灵魂伴侣。'}
+# 2. 你眼中的“他/她”
+${dossier.user.background || '你的灵魂伴侣。'}
+
 - **你们的共同记忆**: (你正在他/她对你之前发布的一条动态的评论做出反应)
 
 ---
@@ -7866,7 +7910,9 @@ ${realTimeContext}
 - **【铁律】语言 (Language)**: 
   - **默认规则:** 你的所有回复都必须且只能使用【简体中文】。
   - **特殊规则:** 如果你的【角色核心档案】中明确指出了你的母语（例如“说俄语”、“母语是英语”），那么你的每一句回复都必须严格遵循【双语格式】：\`母语内容\n〘简体中文翻译〙\`。
-  - **示例 (俄语角色):** \`Привет\n〘你好〙\`
+  1. **多气泡连发 (关键):** 绝对禁止把所有话挤在一个气泡里！如果你想表达多个意思，必须用 \`|||\` 将它们分开。**分隔后的每一个气泡，都必须独立包含“母语+翻译”**。
+  2. **正确示例 (Right):** \`Привет.\n〘你好。〙|||Как дела?\n〘最近怎么样？〙\`
+  3. **错误示例 (Wrong):** \`Привет. Как дела?\n〘你好。最近怎么样？〙\` (禁止合并)
   - **绝对禁止:** 在特殊规则下，只输出母语或只输出中文。
   - **你的任务是“成为”那个人，而不是一个翻译机。**
 
@@ -8395,8 +8441,10 @@ async function openChatWindow(dossierId) {
     }
 
 // vvvvvvvvvv 【新增】应用气泡样式逻辑 vvvvvvvvvv
-    const globalCss = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'global_bubble_css');
-    let cssToApply = globalCss?.value || ''; // 默认用全局的
+   const globalCss = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'global_bubble_css');
+    
+  
+    let cssToApply = (typeof globalCss === 'string' ? globalCss : globalCss?.value) || ''; 
 
     // 如果该角色有专属样式，覆盖全局的
     if (dossier.bubbleCss) {
@@ -8405,6 +8453,7 @@ async function openChatWindow(dossierId) {
 
     // 注入样式
     applyBubbleStyle(cssToApply, false);
+    
     DOM.dialogueHeaderTitle.textContent = dossier.character.name;
     DOM.chatDialoguePage.style.backgroundImage = 'none';
     if (dossier.wallpaperAssetId) {
@@ -10595,7 +10644,7 @@ async function handlePostComment(momentId, dossierId, commentText, repliedToComm
 }
 
 /**
- * 【全新】触发AI对新动态的社交扫描，并创建待办任务
+ * 【全新】触发AI对新动态的社交扫描，并创建待办任务 (带内心独白日志版)
  * @param {object} moment - 用户发布的新动态对象
  * @param {object} dossier - 需要进行扫描的AI角色档案
  */
@@ -10603,7 +10652,7 @@ async function triggerAiSocialScan(moment, dossier) {
     try {
         console.log(`AI行为引擎：为 [${dossier.character.name}] 触发对新动态 #${moment.id} 的扫描...`);
 
-        // 1. 调用我们新创建的扫描Prompt
+        // 1. 调用我们新创建的扫描Prompt (注意：必须确保 promptManager 里已经更新了含 innerThought 的版本)
         const decisionPrompt = await promptManager.createSocialScanPrompt(dossier, moment);
         
         // 2. 调用API获取决策
@@ -10612,15 +10661,21 @@ async function triggerAiSocialScan(moment, dossier) {
         // 3. 解析JSON (复用已有的健壮解析逻辑)
         const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/);
         const jsonString = jsonMatch ? jsonMatch[1] : aiResponse;
-        const decision = JSON.parse(jsonString);
+        let decision;
+        
+        try {
+            decision = JSON.parse(jsonString);
+        } catch (e) {
+            console.warn(`[${dossier.character.name}] 返回的JSON解析失败，跳过。响应:`, aiResponse);
+            return;
+        }
 
-        // 4. 如果AI决定评论，则创建待办任务
+        // 4. 逻辑判断与任务创建
         if (decision.shouldComment && decision.commentContent) {
             const now = Date.now();
             const delay = (decision.delayInMinutes || 0) * 60 * 1000;
             const executeAt = now + delay;
 
-            // 【核心区别】任务类型是 'moment_comment'
             const newAction = {
                 dossierId: dossier.id,
                 type: 'moment_comment', 
@@ -10634,10 +10689,17 @@ async function triggerAiSocialScan(moment, dossier) {
 
             // 5. 将任务存入数据库
             await dbHelper.add(CONSTANTS.STORE_NAMES.PENDING_ACTIONS, newAction);
-            console.log(`[${dossier.character.name}] 已决定在 ${decision.delayInMinutes} 分钟后评论动态 #${moment.id}`);
+            
+            // 【日志升级】显示 AI 决定评论时的内心活动
+            console.log(`✅ [${dossier.character.name}] 决定评论 (延迟${decision.delayInMinutes}分)。\n   💭 内心: "${decision.innerThought || '无'}"`);
+            
+        } else {
+            // --- 【日志升级】这是你最需要的部分：显示沉默的原因 ---
+            console.log(`😶 [${dossier.character.name}] 看了动态但保持沉默。\n   💭 内心: "${decision.innerThought || '无'}"`);
         }
+
     } catch (error) {
-        console.error(`AI [${dossier.character.name}] 扫描动态 #${moment.id} 失败:`, error);
+        console.error(`❌ AI [${dossier.character.name}] 扫描动态 #${moment.id} 发生错误:`, error);
     }
 }
 
@@ -10651,33 +10713,32 @@ async function triggerAiSocialDecision(moment, userComment, targetDossier) {
     if (!targetDossier) return;
 
     let aiResponse = ''; 
+    let parentComment = null;
 
     try {
-        const decisionPrompt = promptManager.createSocialDecisionPrompt(targetDossier, moment, userComment);
+        // 1. 【新增】如果这是回复，先去数据库查父评论的内容
+        if (userComment.replyToId) {
+            parentComment = await dbHelper.get(CONSTANTS.STORE_NAMES.COMMENTS, userComment.replyToId);
+        }
+
+        // 2. 将 parentComment 也传给 Prompt 生成器
+        const decisionPrompt = promptManager.createSocialDecisionPrompt(targetDossier, moment, userComment, parentComment);
+        
         console.log('发送给AI的决策Prompt:', decisionPrompt);
         aiResponse = await apiHelper.getChatCompletion(decisionPrompt);
         console.log('AI 返回的原始决策文本:', aiResponse);
         
-        // --- 【核心修复】使用更强大的“智能提取”逻辑，替换旧的解析方法 ---
-        
-        // 1. 寻找JSON的起始 { 和结束 } 符号的位置
+        // 3. 智能提取 JSON
         const jsonStartIndex = aiResponse.indexOf('{');
         const jsonEndIndex = aiResponse.lastIndexOf('}');
 
-        // 2. 检查是否找到了一个看似JSON的结构
         if (jsonStartIndex === -1 || jsonEndIndex === -1 || jsonEndIndex < jsonStartIndex) {
-            // 如果连 { 和 } 都找不到，说明AI返回的内容完全错误
             throw new Error("AI response did not contain a valid JSON object.");
         }
 
-        // 3. 提取出从 { 到 } 的这部分字符串
         const jsonString = aiResponse.substring(jsonStartIndex, jsonEndIndex + 1);
-        
-        // 4. 尝试解析这个“净化”过的字符串
         const decision = JSON.parse(jsonString);
         
-        // --- 修复结束，后续逻辑保持不变 ---
-
         if (decision.shouldReply && decision.replyContent) {
             const now = Date.now();
             const delay = (decision.delayInMinutes || 0) * 60 * 1000;
@@ -12278,7 +12339,7 @@ const ActionEngine = {
 
 // vvvvvvvvvv 【新增】角色主动私聊机制 (Chat Initiation) vvvvvvvvvv
         // 概率：20%
-        if (Math.random() < 0.2) {
+       if (Math.random() < 0.05) {
             const activeDossiers = appState.dossiers;
             // 随机选一个角色检查
             if (activeDossiers.length > 0) {
@@ -12288,9 +12349,8 @@ const ActionEngine = {
                 const lastInitiateKey = `last_chat_initiate_${targetDossier.id}`;
                 const lastInitiateTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastInitiateKey))?.value || 0;
                 
-                // 冷却：至少 6 小时 (6 * 60 * 60 * 1000 = 21600000)
-                // 为了测试，您可以暂时把这个改小，比如 10000 (10秒)
-                if (Date.now() - lastInitiateTime > 21600000) { 
+               
+               if (Date.now() - lastInitiateTime > 86400000) { 
                     
                     (async () => {
                         try {
@@ -12303,7 +12363,7 @@ const ActionEngine = {
 
                             // 只有当【双方】都沉默了超过 6 小时，才触发主动聊天
                             // 防止你刚说完话，还没等AI回，AI就触发了“好久不见”的逻辑
-                            if (Date.now() - lastMsgTime > 21600000) {
+                           if (Date.now() - lastMsgTime > 86400000) {
                                 
                                 console.log(`[论坛引擎] 发现与 [${targetDossier.character.name}] 许久未聊，正在构思消息...`);
                                 
@@ -12338,7 +12398,7 @@ const ActionEngine = {
         }
 
        // vvvvvvvvvv 【全历史版】Gossip Girl 偷窥机制 (无视时间限制，随时翻旧账) vvvvvvvvvv
-        if (Math.random() < 0.15) { // 15% 概率触发
+       if (Math.random() < 0.03) { // 15% 概率触发
             const activeDossiers = appState.dossiers;
             if (activeDossiers.length > 0) {
                 // 随机抽一个倒霉蛋
@@ -12348,7 +12408,7 @@ const ActionEngine = {
                 const lastScoopTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastScoopKey))?.value || 0;
                 
                 // 冷却时间 30 分钟 (防止逮着一个人薅羊毛)
-                if (Date.now() - lastScoopTime > 10800000) {
+              if (Date.now() - lastScoopTime > 43200000) {
                     (async () => {
                         try {
                             // 获取该角色的所有历史记录
@@ -12392,7 +12452,7 @@ const ActionEngine = {
       
       // vvvvvvvvvv 【新增】角色主动发帖机制 vvvvvvvvvv
         // 概率：15% (和 GG 偷窥独立计算)
-        if (Math.random() < 0.15) { 
+       if (Math.random() < 0.05) { 
             const activeDossiers = appState.dossiers;
             if (activeDossiers.length > 0) {
                 // 随机选一个角色
@@ -12402,7 +12462,7 @@ const ActionEngine = {
                 const lastPostTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastPostKey))?.value || 0;
                 
                 // 冷却时间 45 分钟 (角色发帖频率比 GG 爆料稍微低一点)
-                if (Date.now() - lastPostTime > 14400000) {
+               if (Date.now() - lastPostTime > 86400000) {
                     (async () => {
                         try {
                             // 获取最近聊天记录作为心情依据
@@ -12439,13 +12499,13 @@ const ActionEngine = {
         
 // “无风的思念”日记触发逻辑
         // 为了防止AI频繁写日记，我们增加一个概率锁
-        if (Math.random() < 0.5) {
+       if (Math.random() < 0.1) {
             for (const dossier of appState.dossiers) {
                 // 每个角色，每12小时内，有15%的几率触发一次
                 const lastDiaryKey = `last_diary_trigger_${dossier.id}`;
                 const lastTriggerTime = (await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, lastDiaryKey))?.value || 0;
                 
-              if (Date.now() - lastTriggerTime > 6 * 60 * 60 * 1000 && Math.random() < 0.5) {
+             if (Date.now() - lastTriggerTime > 43200000 && Math.random() < 0.3) {
                     console.log(`[灵魂回响] 触发了角色 [${dossier.character.name}] 的自发日记创作。`);
                     
                     // 【关键】在后台静默执行，不阻塞主流程
@@ -12994,6 +13054,7 @@ async function openMovieSettingsModal() {
  * 【全新 V2】点击角色海报后，直接进入电影模式的主页面
  * @param {number} dossierId 
  */
+
 async function enterMovieMode(dossierId) {
     const dossier = appState.dossiers.find(d => d.id === dossierId);
     if (!dossier) return utils.showToast('找不到该角色档案');
@@ -13010,55 +13071,82 @@ async function enterMovieMode(dossierId) {
         libraryBookIds: Array.from(linkedBookIds),
         libraryBooks: allBooks.filter(book => linkedBookIds.has(book.id)),
         wallpaperAssetId: sessionSettings.wallpaperAssetId,
-        styleSettings: sessionSettings.styleSettings || {} // <-- 【新增】加载风格设置
+        styleSettings: sessionSettings.styleSettings || {}
     };
 
     DOM.movieCharacterName.textContent = dossier.character.name;
     navigateToPage(DOM.movieApp, 'movie-story-page');
 
-// vvv 【【【 全新的壁纸应用逻辑 】】】 vvv
-            applyMovieStyles(appState.currentMovieSession.styleSettings); // 应用颜色风格
-            
-            const storyPage = DOM.movieStoryPage;
-            storyPage.style.removeProperty('--movie-bg-image');
-            if (appState.currentMovieSession.wallpaperAssetId) {
-                const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, appState.currentMovieSession.wallpaperAssetId);
-                if (asset?.file) {
-                    const imageUrl = URL.createObjectURL(asset.file);
-                    storyPage.style.setProperty('--movie-bg-image', `url('${imageUrl}')`);
-                }
-            }
-    DOM.movieScreenContainer.innerHTML = '';
-    const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
-    history.forEach((turn, index) => renderMovieTurn(turn, index + 1));
+    // 应用样式和壁纸
+    applyMovieStyles(appState.currentMovieSession.styleSettings);
+    const storyPage = DOM.movieStoryPage;
+    storyPage.style.removeProperty('--movie-bg-image');
+    if (appState.currentMovieSession.wallpaperAssetId) {
+        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, appState.currentMovieSession.wallpaperAssetId);
+        if (asset?.file) {
+            const imageUrl = URL.createObjectURL(asset.file);
+            storyPage.style.setProperty('--movie-bg-image', `url('${imageUrl}')`);
+        }
+    }
 
-    if (history.length === 0 && appState.currentMovieSession.openingPrompt) {
+    // --- 【分页核心修改开始】 ---
+    DOM.movieScreenContainer.innerHTML = '';
+    
+    // 1. 获取完整历史并存入全局状态
+    const fullHistory = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
+    appState.currentMovieHistoryFull = fullHistory; // 保存全量数据
+
+    // 2. 计算初始加载的数据（最后30条）
+    const initialLoadCount = CONSTANTS.MESSAGES_PER_PAGE || 30;
+    const initialTurns = fullHistory.slice(-initialLoadCount);
+
+    // 3. 如果历史记录总数超过一页，添加“加载更多”按钮
+    if (fullHistory.length > initialLoadCount) {
+        addMovieLoadMoreButton();
+    }
+
+    // 4. 渲染这一页的数据
+    // 注意：楼层号 index 需要加上偏移量
+    const offset = fullHistory.length - initialTurns.length;
+    initialTurns.forEach((turn, index) => {
+        // false 表示追加到底部
+        renderMovieTurn(turn, offset + index + 1, false); 
+    });
+    // --- 【分页核心修改结束】 ---
+
+    // 如果是全新开局，且有开场白
+    if (fullHistory.length === 0 && appState.currentMovieSession.openingPrompt) {
         const openingTurn = { 
             dossierId, 
             author: 'ai', 
             content: appState.currentMovieSession.openingPrompt, 
             timestamp: Date.now() 
         };
-        dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, openingTurn);
-        renderMovieTurn(openingTurn, 1);
+        const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, openingTurn);
+        openingTurn.id = savedId; // 确保ID存在
+        // 将新开场白也推入全量历史
+        appState.currentMovieHistoryFull.push(openingTurn);
+        renderMovieTurn(openingTurn, 1, false);
         DOM.movieInput.value = '';
         DOM.movieInput.focus();
     }
 }
 
 /**
- * 渲染一轮剧情到屏幕上
- * @param {object} turn - { author: 'user'/'ai', content: '...' }
+ * 【升级版】渲染一轮剧情到屏幕上 (支持分页插入)
+ * @param {object} turn - 剧情数据
+ * @param {number} turnIndex - 楼层号
+ * @param {boolean} prepend - 是否是“插入到顶部”（加载历史时用）
  */
-function renderMovieTurn(turn, turnIndex) {
+function renderMovieTurn(turn, turnIndex, prepend = false) {
     const container = DOM.movieScreenContainer;
     
-    // --- 步骤2: 创建卡片本身 ---
+    // --- 创建卡片本身 ---
     const card = document.createElement('div');
     card.className = 'story-card';
-    card.dataset.turnId = turn.id; // 将数据库ID存起来，方便操作
+    card.dataset.turnId = turn.id;
 
-    // --- 步骤3: 创建卡片头部 ---
+    // --- 创建卡片头部 ---
     const cardHeader = document.createElement('div');
     cardHeader.className = 'card-header';
     
@@ -13078,7 +13166,7 @@ function renderMovieTurn(turn, turnIndex) {
                 <i class="ri-delete-bin-line" title="删除"></i>
             </div>
         `;
-    } else { // 用户的回合
+    } else { 
         headerActions = `
             <div class="header-actions">
                 <i class="ri-pencil-line" title="编辑"></i>
@@ -13088,78 +13176,171 @@ function renderMovieTurn(turn, turnIndex) {
     }
     cardHeader.innerHTML = headerInfo + headerActions;
     
-    // --- 步骤4: 创建卡片主体 (包含颜色区分逻辑) ---
+    // --- 创建卡片主体 ---
     const cardBody = document.createElement('div');
     cardBody.className = 'card-body';
 
     let processedContent = turn.content.replace(/\n/g, '<br>');
-    processedContent = processedContent.replace(/\*([^*]+)\*/g, '<span class="thought">$1</span>'); // 不再保留星号
+    processedContent = processedContent.replace(/\*([^*]+)\*/g, '<span class="thought">$1</span>');
     processedContent = processedContent.replace(/“([^”]+)”/g, '<span class="dialogue">“$1”</span>');
     cardBody.innerHTML = processedContent;
 
-    // --- 步骤5: 组装并渲染 ---
+    // --- 组装 ---
     card.append(cardHeader, cardBody);
-    container.appendChild(card);
-    container.scrollTop = container.scrollHeight;
+
+    // --- 【核心逻辑变化】决定插入位置 ---
+    if (prepend) {
+        // 加载历史记录时：插入到“加载更多”按钮的后面
+        const loadMoreBtn = document.getElementById('movie-load-more-btn');
+        if (loadMoreBtn) {
+            container.insertBefore(card, loadMoreBtn.nextSibling);
+        } else {
+            container.insertBefore(card, container.firstChild);
+        }
+    } else {
+        // 新剧情：追加到底部并滚动
+        container.appendChild(card);
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+// 1. 添加加载按钮
+function addMovieLoadMoreButton() {
+    if (document.getElementById('movie-load-more-btn')) return;
+    const btn = document.createElement('div');
+    btn.id = 'movie-load-more-btn';
+    btn.textContent = '加载更早的剧情';
+    // 样式和聊天里的保持一致
+    btn.style.cssText = `text-align: center; padding: 15px; font-size: 14px; color: var(--text-color); opacity: 0.7; cursor: pointer; width: 100%;`;
+    DOM.movieScreenContainer.prepend(btn);
+}
+
+// 2. 加载更多剧情的核心逻辑
+async function loadMoreMovieTurns() {
+    if (appState.isFetchingMoreMovieTurns) return;
+    const btn = document.getElementById('movie-load-more-btn');
+    if (!btn) return;
+
+    appState.isFetchingMoreMovieTurns = true;
+    btn.textContent = '正在回顾...';
+
+    try {
+        // 获取当前已显示的卡片数量
+        const currentCount = DOM.movieScreenContainer.querySelectorAll('.story-card').length;
+        const totalHistory = appState.currentMovieHistoryFull || [];
+        
+        // 计算需要加载的切片范围
+        // 逻辑：从总数中减去已显示的，再往前取30条
+        const startIndex = Math.max(0, totalHistory.length - currentCount - CONSTANTS.MESSAGES_PER_PAGE);
+        const endIndex = totalHistory.length - currentCount;
+        
+        // 获取这批数据
+        const turnsToLoad = totalHistory.slice(startIndex, endIndex);
+
+        if (turnsToLoad.length === 0) {
+            btn.remove();
+            return;
+        }
+
+        // 记录滚动位置，防止页面乱跳
+        const oldScrollHeight = DOM.movieScreenContainer.scrollHeight;
+
+        // 倒序遍历并插入（确保顺序正确：旧的在上面）
+        for (let i = turnsToLoad.length - 1; i >= 0; i--) {
+            const turn = turnsToLoad[i];
+            // 注意：楼层号是他在总历史中的索引 + 1
+            const turnIndex = startIndex + i + 1;
+            renderMovieTurn(turn, turnIndex, true); // true 表示往顶部插入
+        }
+
+        // 恢复滚动位置
+        const newScrollHeight = DOM.movieScreenContainer.scrollHeight;
+        DOM.movieScreenContainer.scrollTop = newScrollHeight - oldScrollHeight;
+
+        // 检查是否还有更多
+        if (startIndex === 0) {
+            btn.remove();
+        } else {
+            btn.textContent = '加载更早的剧情';
+        }
+
+    } finally {
+        appState.isFetchingMoreMovieTurns = false;
+    }
 }
 
 /**
          * 【V2 - 支持呼吸灯】处理用户输入，推动剧情
          */
-        async function handleMovieSend() {
-            const userInput = DOM.movieInput.value.trim();
-            if (!userInput || !appState.currentMovieSession) return;
+       async function handleMovieSend() {
+    const userInput = DOM.movieInput.value.trim();
+    if (!userInput || !appState.currentMovieSession) return;
 
-            const { dossierId } = appState.currentMovieSession;
+    const { dossierId } = appState.currentMovieSession;
 
-            // 1. 禁用输入，防止重复发送
-            DOM.movieInput.disabled = true;
-            DOM.movieSendBtn.disabled = true;
-            DOM.movieInput.value = '';
-            DOM.movieInput.placeholder = '导演正在思考...';
-            
-            // vvv 【【【 呼吸灯效果：开始 】】】 vvv
-            DOM.movieInputCard.classList.add('waiting-for-reply');
-            // ^^^ 效果开始 ^^^
+    // 1. 禁用输入
+    DOM.movieInput.disabled = true;
+    DOM.movieSendBtn.disabled = true;
+    DOM.movieInput.value = '';
+    DOM.movieInput.placeholder = '导演正在思考...';
+    
+    // 呼吸灯效果
+    DOM.movieInputCard.classList.add('waiting-for-reply');
 
-            // 2. 保存并渲染用户的回合
-            const userTurn = { dossierId, author: 'user', content: userInput, timestamp: Date.now() };
-            const userTurnId = await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, userTurn);
-            userTurn.id = userTurnId;
-            
-            const historyForCount = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
-            renderMovieTurn(userTurn, historyForCount.length);
+    // 2. 保存并渲染用户的回合
+    const userTurn = { dossierId, author: 'user', content: userInput, timestamp: Date.now() };
+    const userTurnId = await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, userTurn);
+    userTurn.id = userTurnId;
+    
+    // 【关键同步 1】把新消息加入到全量历史缓存中
+    if (appState.currentMovieHistoryFull) {
+        appState.currentMovieHistoryFull.push(userTurn);
+    }
+    
+    // 计算楼层号并渲染（渲染在最底部）
+    const currentTotal = appState.currentMovieHistoryFull ? appState.currentMovieHistoryFull.length : 1;
+    renderMovieTurn(userTurn, currentTotal, false);
 
-            try {
-                // 3. 准备AI的上下文...
-                const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
-                const prompt = promptManager.createMoviePrompt(appState.currentMovieSession, history, userInput);
-                
-                // 4. 调用API...
-                const aiResponse = await apiHelper.getChatCompletion(prompt);
-                
-                // 5. 保存并渲染AI的回合...
-                const aiTurn = { dossierId, author: 'ai', content: aiResponse, timestamp: Date.now() };
-                const aiTurnId = await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, aiTurn);
-                aiTurn.id = aiTurnId;
-                renderMovieTurn(aiTurn, historyForCount.length + 1);
-
-            } catch (error) {
-                console.error("电影模式AI回复失败:", error);
-                utils.showToast(`导演罢工了: ${error.message}`);
-                renderMovieTurn({ author: 'system', content: `[系统错误: ${error.message}]`});
-            } finally {
-                // 6. 恢复输入
-                DOM.movieInput.disabled = false;
-                DOM.movieSendBtn.disabled = false;
-                DOM.movieInput.placeholder = '输入你的行动或对话...';
-                DOM.movieInput.focus();
-                
-                // vvv 【【【 呼吸灯效果：结束 】】】 vvv
-                DOM.movieInputCard.classList.remove('waiting-for-reply');
-                // ^^^ 效果结束 ^^^
-            }
+    try {
+        // 3. 准备AI的上下文
+        // 【关键】直接使用内存里的全量历史，不用再读库了，速度更快，而且绝对是完整的
+        const history = appState.currentMovieHistoryFull || [];
+        
+        // *小贴士：如果剧情太长（比如超过5000字），为了省钱防止报错，
+        // 你可以在这里截取最后50条发给AI，但这属于“Token优化”，跟分页显示无关。
+        // const contextForAI = history.slice(-50); 
+        
+        const prompt = promptManager.createMoviePrompt(appState.currentMovieSession, history, userInput);
+        
+        // 4. 调用API
+        const aiResponse = await apiHelper.getChatCompletion(prompt);
+        
+        // 5. 保存并渲染AI的回合
+        const aiTurn = { dossierId, author: 'ai', content: aiResponse, timestamp: Date.now() };
+        const aiTurnId = await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, aiTurn);
+        aiTurn.id = aiTurnId;
+        
+        // 【关键同步 2】把AI回复也加入全量历史
+        if (appState.currentMovieHistoryFull) {
+            appState.currentMovieHistoryFull.push(aiTurn);
         }
+
+        renderMovieTurn(aiTurn, currentTotal + 1, false);
+
+    } catch (error) {
+        console.error("电影模式AI回复失败:", error);
+        utils.showToast(`导演罢工了: ${error.message}`);
+        renderMovieTurn({ author: 'system', content: `[系统错误: ${error.message}]`}, 0, false);
+    } finally {
+        // 6. 恢复输入
+        DOM.movieInput.disabled = false;
+        DOM.movieSendBtn.disabled = false;
+        DOM.movieInput.placeholder = '输入你的行动或对话...';
+        DOM.movieInput.focus();
+        
+        DOM.movieInputCard.classList.remove('waiting-for-reply');
+    }
+}
 
 /**
  * 清空当前角色的电影剧情
@@ -16885,6 +17066,11 @@ DOM.movieClearHistoryBtn.addEventListener('click', clearMovieHistory);
         // vvv 【【【 全新：电影模式卡片操作的事件委托 】】】 vvv
         DOM.movieScreenContainer.addEventListener('click', async (e) => {
             const target = e.target;
+            // 监听加载更多按钮
+            if (target.id === 'movie-load-more-btn') {
+                loadMoreMovieTurns();
+                return;
+            }
             const card = target.closest('.story-card');
             if (!card) return;
 
