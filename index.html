@@ -184,7 +184,28 @@
         #music-player-widget.has-bg-image, #calendar-todo-widget.has-bg-image { color: #FFFFFF !important; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6); }
         #music-player-widget.has-bg-image *:not(input):not(button), #calendar-todo-widget.has-bg-image *:not(input):not(button) { color: inherit; }
         #archive-app .app-page { background: rgba(0,0,0,0.3); }
-        #archive-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; padding: 20px 10px; overflow-y: auto; flex-grow: 1; justify-content: center; }
+        /* 找到 #archive-list 并替换为以下代码 */
+#archive-list {
+    /* --- 布局基础 --- */
+    display: grid;
+    
+    /* 【核心修复】强制分为两列，每列占 50% */
+    grid-template-columns: repeat(2, 1fr);
+    
+    /* 调整间距，让卡片排布更紧凑好看 */
+    gap: 15px;
+    
+    /* --- 滚动核心设置 (保持不变) --- */
+    flex-grow: 1;
+    overflow-y: auto;
+    min-height: 0;
+    
+    /* --- 对齐方式 --- */
+    align-content: start; /* 从顶部开始排 */
+    
+    /* --- 内边距 --- */
+    padding: 20px 20px 100px 20px; 
+}
         .dossier-folder { position: relative; aspect-ratio: 4 / 5; background: var(--button-bg-color); border: var(--frosted-glass-border); border-radius: var(--icon-border-radius); padding: 15px; box-sizing: border-box; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 12px; }
         .dossier-folder:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         .dossier-avatar-preview { width: 70px; height: 70px; border-radius: 50%; background-color: var(--input-bg-color); border: 2px solid var(--frosted-glass-border); background-size: cover; background-position: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: absolute; top: 40px; left: 50%; transform: translateX(-50%); }
@@ -4015,8 +4036,14 @@ body.light-mode .chat-last-message.unread {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* 内容少时居中 */
-    min-height: 100%;
+    /* 【核心修复】改为从顶部开始排列，防止长内容顶部被切掉 */
+    justify-content: flex-start; 
+    align-items: center;
+    position: relative;
+    /* 给上下留出足够的呼吸空间 */
+    padding-top: 30px;
+    padding-bottom: 60px;
+    min-height: 100%; /* 确保至少占满一屏 */
 }
 
 /* --- 状态A: 心跳连接动画 --- */
@@ -4204,7 +4231,10 @@ body.light-mode .chat-last-message.unread {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-top: 20px;
+    
+    /* 【核心】智能对齐：内容少时自动垂直居中，内容多时跟随文档流 */
+    margin: auto 0; 
+    
     animation: fade-in 0.5s ease;
 }
 
@@ -4219,9 +4249,10 @@ body.light-mode .chat-last-message.unread {
 
 #dream-character-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 一行三个 */
+    grid-template-columns: repeat(3, 1fr);
     gap: 25px;
     width: 100%;
+    padding-bottom: 20px; /* 底部防贴边 */
 }
 
 .dream-char-item {
@@ -4446,7 +4477,12 @@ body.light-mode .chat-last-message.unread {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    
+    /* 【核心】智能对齐 */
+    margin: auto 0;
+    
     animation: fade-in 0.5s ease;
+    padding-bottom: 20px; /* 底部防贴边 */
 }
 
 .history-header-title {
@@ -4463,7 +4499,7 @@ body.light-mode .chat-last-message.unread {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    padding-bottom: 20px;
+    width: 100%;
 }
 
 /* 单条记录卡片 */
@@ -8296,19 +8332,24 @@ createDreamGenPrompt(dossier, recentHistory) {
 # 核心使命：生成角色的【梦境碎片】与【完整潜意识叙事】
 你将彻底化身为【${dossier.character.name}】。此刻你正在做梦。
 
-# 1. 生成内容要求
+# 1. 梦境生成法则 (Aesthetic Dreamscape)
+**【核心基调】：唯美、迷离、电影感、意识流。**
+- **🚫 严禁：** 恐怖、惊悚、阴间、血腥、鬼怪元素。不要写成恐怖片！
+- **✅ 提倡：** 王家卫式的独白、塔可夫斯基式的画面、深海、极夜、雾气、旧胶片质感、易碎的玻璃、凝固的时间。
 
 ## A. 梦境碎片 (The Fragment) - 用于封面
-- **目标：** 这是一个模糊的、一闪而过的残影。
-- **字数：** **50 - 80 字**（严格控制，不要太长）。
-- **风格：** 像一首晦涩的散文诗。只描写一个核心意象（例如：一只着火的鸟、一片淹没脚踝的海）。不要有前因后果。
+- **字数：** 50 - 80 字。
+- **内容：** 一个极其唯美但略带忧伤的镜头特写。
+- **范例：** "世界下了一场无声的雪，我坐在空荡的电影院里，银幕上播放着你回头的慢动作。我想触碰那束光，指尖却开出了白色的山茶花。"
 
 ## B. 完整梦境 (The Full Dreamscape) - 用于沉浸阅读
-- **目标：** 这是梦境的完整全貌。
 - **字数：** **400 - 600 字**。
-- **内容：** **不要进行心理分析！不要解释梦的含义！** 直接用**第一人称**描写你在梦里看到了什么、听到了什么、感受到了什么。
-- **叙事逻辑：** 梦境应该是荒诞但连贯的。将你对"${dossier.user.name || '用户'}"的爱、恐惧、占有欲或不安全感，全部具象化为梦里的情节。
-    - *范例：* 不要说“我害怕失去她”，要写“我在迷宫里狂奔，每一扇门打开都是她的背影，但我伸出手，她就化作了一滩水，从我指缝流走，冰冷刺骨……”
+- **视角：** 第一人称“我”。
+- **叙事逻辑：**
+    - 将你对"${dossier.user.name || '用户'}"的**爱意、渴望、占有欲或患得患失**，转化为**温柔而超现实的情节**。
+    - 如果你感到不安，不要描写“被鬼追”，要描写“在迷雾中找不到你的手”。
+    - 如果你感到热烈，不要描写“燃烧”，要描写“整个宇宙都在为你融化”。
+    - **重点描写感官：** 空气的温度、光线的颜色、心跳的频率、触碰时的电流。
 
 # 2. 基础档案
 - **角色核心:** ${dossier.character.background}
@@ -8319,14 +8360,14 @@ ${historyContext}
 # 3. 输出格式
 你必须、且只能返回一个 **JSON 对象**。
 {
-  "fragment": "[字符串] 50-80字的梦境碎片。",
-  "full_dream": "[字符串] 400-600字的完整第一人称梦境叙事。请使用 <br> 标签进行分段，以便阅读。"
+  "fragment": "[字符串] 50-80字的唯美梦境碎片。",
+  "full_dream": "[字符串] 400-600字的完整第一人称唯美梦境。请使用 <br> 标签进行分段，以便阅读。"
 }
 `;
     
     return [
         { role: "system", content: systemPrompt },
-        { role: "user", content: "入睡时刻已到。请记录下我的梦境。" }
+        { role: "user", content: "入睡时刻已到。请为我编织一个关于你的、唯美而深沉的梦。" }
     ];
 },
             
