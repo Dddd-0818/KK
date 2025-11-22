@@ -3965,6 +3965,552 @@ body.light-mode .chat-last-message.unread {
             padding-top: 40px; 
         }
 
+/* === 梦境应用 (血色玫瑰·艺术版) CSS === */
+
+/* 1. 全局背景与字体 */
+#dream-app .app-page {
+    background-color: #050000; /* 纯黑略带红 */
+    color: #e0e0e0;
+    font-family: 'Times New Roman', "仿宋", "Songti SC", serif; /* 艺术字体 */
+}
+
+/* 模糊背景层 */
+#dream-bg-layer {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: radial-gradient(circle at 50% 30%, #4a0000 0%, #000000 70%);
+    opacity: 0.6;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* 页头美化 */
+.page-header.artistic-header {
+    background: transparent;
+    border-bottom: none;
+    z-index: 10;
+    padding-top: 50px; /* 沉浸式 */
+}
+.artistic-title {
+    font-family: 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 2px;
+    color: #ff4d4d; /* 血红色 */
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+/* 2. 布局容器 (修复重叠的关键) */
+.dream-full-content {
+    position: relative; z-index: 1;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0 25px 40px 25px; /* 底部留足空间 */
+    overflow-y: auto; /* 允许滚动 */
+    scrollbar-width: none;
+}
+
+/* 3. 视口 */
+.dream-viewport {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 内容少时居中 */
+    min-height: 100%;
+}
+
+/* --- 状态A: 心跳连接动画 --- */
+#dream-connecting-layer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+}
+.pulse-icon {
+    font-size: 48px;
+    color: #ff0033;
+    z-index: 2;
+    animation: heartbeat 1.5s infinite ease-in-out;
+}
+.pulse-circle {
+    position: absolute;
+    width: 100px; height: 100px;
+    border: 1px solid rgba(255, 0, 51, 0.5);
+    border-radius: 50%;
+    animation: ripple 2s infinite;
+}
+.pulse-circle.delay-1 { animation-delay: 0.6s; }
+
+@keyframes heartbeat {
+    0% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+    15% { transform: scale(1.3); text-shadow: 0 0 20px #ff0033; }
+    30% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+    45% { transform: scale(1.15); text-shadow: 0 0 10px #ff0033; }
+    60% { transform: scale(1); }
+}
+@keyframes ripple {
+    0% { transform: scale(0.8); opacity: 1; }
+    100% { transform: scale(3); opacity: 0; }
+}
+.status-text {
+    margin-top: 30px;
+    font-size: 14px;
+    color: #b3b3b3;
+    letter-spacing: 3px;
+    font-weight: 300;
+    opacity: 0.8;
+}
+
+/* --- 状态B: 结果展示 (解决重叠) --- */
+#dream-result-layer {
+    display: flex;
+    flex-direction: column;
+    gap: 30px; /* 模块间距 */
+    padding-top: 20px;
+    animation: fade-in-up 1s ease-out;
+}
+
+/* 梦境画面 (拍立得/油画风格) */
+.dream-visual-card {
+    width: 100%;
+    aspect-ratio: 4/5;
+    background: #1a1a1a;
+    border: 8px solid #fff;
+    border-bottom-width: 25px; /* 拍立得底部 */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    position: relative;
+    transform: rotate(-2deg); /* 微微倾斜，更有艺术感 */
+    margin: 0 auto;
+    max-width: 320px;
+    overflow: hidden;
+}
+#dream-image-display {
+    width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: sepia(0.3) contrast(1.1); /* 复古滤镜 */
+    transition: filter 1.5s ease;
+}
+
+/* 文字容器 */
+.dream-text-wrapper {
+    position: relative;
+    padding: 10px 20px;
+    text-align: center; /* 文字居中 */
+}
+.quote-mark {
+    display: block;
+    font-size: 24px;
+    color: #555;
+    margin-bottom: -10px;
+    text-align: left;
+}
+.quote-mark-end {
+    display: block;
+    font-size: 24px;
+    color: #555;
+    margin-top: -10px;
+    text-align: right;
+}
+#dream-text-content {
+    font-size: 17px;
+    line-height: 2; /* 宽松行高 */
+    color: #e0e0e0;
+    margin: 15px 0;
+    text-align: justify; /* 两端对齐 */
+    text-shadow: 0 0 2px rgba(0,0,0,0.5);
+    white-space: pre-wrap; /* 保留换行 */
+}
+
+/* 底部操作区 */
+.dream-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+/* 解析按钮 (唯美风格) */
+.dream-action-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 15px 0;
+    font-family: "仿宋", serif;
+    font-size: 16px;
+    letter-spacing: 5px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+.dream-action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s;
+}
+.dream-action-btn:hover {
+    border-color: #ff4d4d;
+    color: #ff4d4d;
+    box-shadow: 0 0 15px rgba(138, 3, 3, 0.3);
+}
+.dream-action-btn:hover::before { left: 100%; }
+
+/* 解析结果信纸 */
+.analysis-paper {
+    display: none; /* 默认隐藏 */
+    background: #fff0f0; /* 泛红的旧纸色 */
+    color: #5a0000; /* 深血红文字 */
+    padding: 20px;
+    margin-bottom: 20px; /* 底部留白 */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    position: relative;
+    transform: rotate(1deg); /* 微微不正 */
+    animation: unfold 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.analysis-paper::before { /* 胶带效果 */
+    content: '';
+    position: absolute;
+    top: -10px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 20px;
+    background: rgba(255,255,255,0.3);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.analysis-content {
+    font-size: 14px;
+    line-height: 1.7;
+    margin: 0;
+    font-weight: 500;
+}
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes unfold {
+    from { transform: scaleY(0) rotate(1deg); opacity: 0; }
+    to { transform: scaleY(1) rotate(1deg); opacity: 1; }
+}
+
+/* --- 新增：角色选择层样式 --- */
+#dream-selection-layer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 20px;
+    animation: fade-in 0.5s ease;
+}
+
+.selection-hint {
+    font-size: 14px;
+    color: #ff4d4d;
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+    opacity: 0.8;
+    font-family: "仿宋", serif;
+}
+
+#dream-character-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 一行三个 */
+    gap: 25px;
+    width: 100%;
+}
+
+.dream-char-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+.dream-char-item:hover {
+    transform: translateY(-5px);
+}
+
+.dream-char-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 77, 77, 0.3); /* 暗红边框 */
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.dream-char-item:hover .dream-char-avatar {
+    border-color: #ff4d4d;
+    box-shadow: 0 0 20px rgba(255, 77, 77, 0.4);
+}
+
+.dream-char-name {
+    font-size: 13px;
+    color: #ccc;
+    font-family: "仿宋", serif;
+}
+
+/* --- 修改：文字容器 (信笺风格) --- */
+/* --- 修改：文字容器 (呼吸边框版) --- */
+.dream-text-wrapper.paper-style {
+    position: relative;
+    padding: 40px 30px;
+    margin: 20px 0;
+    
+    /* 基础背景：深渊黑红 */
+    background: rgba(20, 0, 0, 0.7); 
+    
+    /* 初始边框 */
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    border-radius: 8px; /* 稍微圆润一点点 */
+    
+    /* 内部阴影保持深邃 */
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.9);
+    
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    /* 【核心】添加呼吸动画：4秒一次循环，缓慢沉浸 */
+    animation: blood-breathe 4s infinite ease-in-out;
+}
+
+/* 定义血色呼吸动画 */
+@keyframes blood-breathe {
+    0% {
+        /* 暗淡状态 */
+        border-color: rgba(255, 77, 77, 0.2);
+        box-shadow: 
+            0 0 0 rgba(255, 0, 0, 0), 
+            inset 0 0 60px rgba(0,0,0,0.9);
+    }
+    50% {
+        /* 高亮状态：边框变亮 + 外部红色光晕 */
+        border-color: rgba(255, 77, 77, 0.8);
+        box-shadow: 
+            0 0 25px rgba(220, 20, 60, 0.3), /* 外部红光 */
+            inset 0 0 60px rgba(0,0,0,0.9);
+    }
+    100% {
+        /* 回到暗淡 */
+        border-color: rgba(255, 77, 77, 0.2);
+        box-shadow: 
+            0 0 0 rgba(255, 0, 0, 0), 
+            inset 0 0 60px rgba(0,0,0,0.9);
+    }
+}
+
+/* 加大文字字号，更有冲击力 */
+#dream-text-content {
+    font-size: 18px; /* 变大 */
+    line-height: 2.2;
+    color: #e0e0e0;
+    text-align: justify;
+    margin: 10px 0;
+    font-weight: 300;
+}
+
+/* === 梦境解析·血色毛玻璃浮窗 CSS === */
+
+/* 1. 浮窗容器卡片 */
+.dream-glass-card {
+    width: 85%;
+    max-width: 340px;
+    
+    /* 【核心】暗红毛玻璃背景 */
+    background: rgba(30, 0, 5, 0.75); /* 深红黑色，带透明 */
+    backdrop-filter: blur(15px);      /* 强力磨砂 */
+    -webkit-backdrop-filter: blur(15px);
+    
+    /* 边框：细微的红光 */
+    border: 1px solid rgba(255, 50, 50, 0.15);
+    border-top: 1px solid rgba(255, 80, 80, 0.3); /* 顶部亮一点，模拟光照 */
+    
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 
+        0 20px 50px rgba(0, 0, 0, 0.8),  /* 深重阴影 */
+        0 0 30px rgba(100, 0, 20, 0.2),  /* 红色辉光 */
+        inset 0 0 20px rgba(50, 0, 0, 0.5); /* 内阴影增加厚度感 */
+        
+    color: #ffdede; /* 苍白的粉色文字 */
+    font-family: "仿宋", serif;
+    
+    transform: scale(0.95);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* 浮窗显示时的动画状态 */
+.modal-overlay.visible .dream-glass-card {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* 2. 头部 */
+.glass-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+.glass-title {
+    font-size: 16px;
+    letter-spacing: 3px;
+    color: #ff4d4d; /* 鲜血红 */
+    text-shadow: 0 0 8px rgba(255, 0, 0, 0.4);
+}
+
+#close-dream-analysis-btn {
+    font-size: 24px;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.3s;
+}
+#close-dream-analysis-btn:hover {
+    color: #fff;
+}
+
+/* 3. 内容区 */
+.glass-body {
+    position: relative;
+    max-height: 60vh; /* 增加最大高度，让视窗更大 */
+    overflow-y: auto; /* 允许垂直滚动 */
+    padding-right: 5px; /* 给滚动条留点位置 */
+    
+    /* 隐藏滚动条但保留功能 (Chrome/Safari) */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 77, 77, 0.3) transparent;
+}
+
+/* 美化滚动条 (Webkit) */
+.glass-body::-webkit-scrollbar {
+    width: 4px;
+}
+.glass-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+.glass-body::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 77, 77, 0.3);
+    border-radius: 2px;
+}
+
+/* 2. 优化长文本排版 */
+#dream-analysis-text-modal {
+    font-family: "仿宋", "Songti SC", serif; /* 必须是衬线体 */
+    font-size: 15px;      /* 字号适中 */
+    line-height: 1.8;     /* 增加行高，防止密集 */
+    text-align: justify;  /* 两端对齐，更有报刊感 */
+    color: #ffdede;       /* 苍白粉色 */
+    opacity: 0.95;
+    white-space: pre-wrap; /* 保留 AI 输出的换行格式 */
+    
+    /* 增加段落间距 */
+    padding-bottom: 20px; 
+}
+
+/* 可选：给长文增加一个首字下沉效果，更有艺术感 */
+#dream-analysis-text-modal::first-letter {
+    font-size: 150%;
+    color: #ff4d4d;
+    float: left;
+    margin-right: 3px;
+    line-height: 1;
+}
+
+/* 4. 装饰：血色光晕/墨迹 */
+.blood-decoration {
+    position: absolute;
+    top: -10px; left: -10px;
+    width: 100px; height: 100px;
+    background: radial-gradient(circle, rgba(255,0,0,0.15) 0%, transparent 70%);
+    z-index: 1;
+    pointer-events: none;
+    filter: blur(20px);
+}
+
+/* --- 新增：梦境历史记录样式 --- */
+#dream-history-layer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    animation: fade-in 0.5s ease;
+}
+
+.history-header-title {
+    text-align: center;
+    color: #ff4d4d;
+    font-family: "仿宋", serif;
+    font-weight: normal;
+    border-bottom: 1px solid rgba(255, 77, 77, 0.3);
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+#dream-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-bottom: 20px;
+}
+
+/* 单条记录卡片 */
+.dream-history-item {
+    background: rgba(30, 0, 5, 0.6);
+    border: 1px solid rgba(255, 77, 77, 0.1);
+    border-left: 3px solid #800000; /* 左侧红线 */
+    padding: 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.dream-history-item:hover {
+    background: rgba(50, 0, 10, 0.8);
+    border-left-color: #ff4d4d;
+    transform: translateX(5px); /* 悬浮时右移 */
+}
+
+.history-date {
+    font-size: 12px;
+    color: #ff4d4d;
+    opacity: 0.7;
+    margin-bottom: 5px;
+    font-family: monospace;
+}
+
+.history-fragment {
+    font-size: 14px;
+    color: #ccc;
+    line-height: 1.6;
+    font-family: "仿宋", serif;
+    
+    /* 限制显示两行 */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 底部的小返回按钮 */
+.dream-action-btn.small {
+    width: auto;
+    align-self: center;
+    padding: 8px 30px;
+    font-size: 14px;
+    margin-top: auto;
+}
     </style>
 </head>
 
@@ -4045,11 +4591,19 @@ body.light-mode .chat-last-message.unread {
                                 </div>
                             </div>
                             <div class="app-grid p2-app-grid">
-                                <div id="icon-p2-1" class="app-icon customizable-icon"></div>
-                                <div id="icon-p2-2" class="app-icon customizable-icon"></div>
-                                <div id="icon-p2-3" class="app-icon customizable-icon"></div>
-                                <div id="icon-p2-4" class="app-icon customizable-icon"></div>
-                            </div>
+    <!-- 1. 潜意识入口 (标准格式) -->
+    <div id="icon-dream" class="app-icon icon-with-text customizable-icon">
+        <i class="ri-moon-foggy-line"></i> <!-- 用一个有氛围感的图标 -->
+        <span>潜意识</span>
+    </div>
+    
+    <!-- 2. 占位 -->
+    <div id="icon-p2-2" class="app-icon customizable-icon"></div>
+    <!-- 3. 占位 -->
+    <div id="icon-p2-3" class="app-icon customizable-icon"></div>
+    <!-- 4. 占位 -->
+    <div id="icon-p2-4" class="app-icon customizable-icon"></div>
+</div>
                         </div>
                     </div>
                 </div>
@@ -4117,8 +4671,17 @@ body.light-mode .chat-last-message.unread {
         <!-- 图标设置页 -->
         <div id="icon-settings-page" class="settings-page">
             <div class="page-header"><i class="ri-arrow-left-s-line back-button" data-target="appearance-settings-page"></i><h2>图标设置</h2></div>
-            <div id="icon-settings-grid"></div>
-        </div>
+              <!-- 图标网格 (让它占据中间的空间) -->
+    <div id="icon-settings-grid" style="flex-grow: 1;"></div>
+
+    <!-- 【移到底部】恢复默认按钮 -->
+    <div style="padding: 15px 5px 5px 5px; margin-top: auto; flex-shrink: 0;">
+        <button id="reset-all-icons-btn" class="danger-button" style="width: 100%; padding: 12px; font-size: 14px;">
+            <i class="ri-refresh-line" style="vertical-align: middle; margin-right: 5px;"></i>
+            恢复所有默认图标
+        </button>
+    </div>
+</div>
         <!-- 字体设置页 -->
         <div id="font-settings-page" class="settings-page">
             <div class="page-header"><i class="ri-arrow-left-s-line back-button" data-target="appearance-settings-page"></i><h2>字体设置</h2></div>
@@ -4407,6 +4970,12 @@ body.light-mode .chat-last-message.unread {
                     <i class="ri-image-line"></i>
                     <span>设置聊天壁纸</span>
                 </div>
+<!-- 【新增】清除壁纸按钮 -->
+        <div id="clear-chat-wallpaper-btn" class="settings-item">
+            <i class="ri-camera-off-line"></i>
+            <span>恢复默认壁纸</span>
+        </div>
+
                 <div id="set-memory-rounds-item" class="settings-item">
                     <i class="ri-history-line"></i>
                     <span>记忆轮数</span>
@@ -4568,6 +5137,79 @@ body.light-mode .chat-last-message.unread {
         </div>
     </div>
 
+<!-- 梦境应用 (带历史记录 & 呼吸灯版) -->
+<div id="dream-app" class="app-navigator">
+    <div id="dream-main-page" class="app-page">
+        
+        <!-- 页头：透明艺术风格 -->
+        <div class="page-header artistic-header">
+            <i class="ri-arrow-left-line left-icon back-button" data-target="desktop"></i>
+            <h2 class="artistic-title">Subconscious</h2>
+            
+            <!-- 右上角：梦境日志入口 -->
+            <i id="dream-history-btn" class="ri-book-read-line right-icon"></i>
+        </div>
+
+        <!-- 全屏深红背景层 -->
+        <div id="dream-bg-layer"></div>
+
+        <!-- 应用主体内容容器 -->
+        <div class="dream-full-content">
+            <div class="dream-viewport">
+                
+                <!-- 状态0: 角色选择层 (默认显示) -->
+                <div id="dream-selection-layer">
+                    <p class="selection-hint">请选择要潜入的意识...</p>
+                    <div id="dream-character-grid">
+                        <!-- JS 会在这里动态填充角色头像 -->
+                    </div>
+                </div>
+
+                <!-- 状态A: 连接动画 (心跳特效) -->
+                <div id="dream-connecting-layer" style="display: none;">
+                    <div class="pulse-circle"></div>
+                    <div class="pulse-circle delay-1"></div>
+                    <div class="pulse-icon">
+                        <i class="ri-heart-pulse-fill"></i>
+                    </div>
+                    <p class="status-text">正在潜入 <span id="dream-target-name">...</span> 的梦境</p>
+                </div>
+
+                <!-- 状态B: 梦境结果展示 (文字信笺版) -->
+                <div id="dream-result-layer" style="display: none;">
+                    
+                    <!-- 梦境信笺 (带呼吸灯边框) -->
+                    <div class="dream-text-wrapper paper-style">
+                        <i class="ri-double-quotes-l quote-mark"></i>
+                        <p id="dream-text-content">
+                            <!-- JS 会在这里填入 50-80 字的梦境碎片 -->
+                        </p>
+                        <i class="ri-double-quotes-r quote-mark-end"></i>
+                    </div>
+
+                    <!-- 底部操作按钮 -->
+                    <div class="dream-controls">
+                        <button id="dream-analyze-btn" class="dream-action-btn">
+                            <span>潜 入 深 梦</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 状态C: 梦境历史记录层 (新增) -->
+                <div id="dream-history-layer" style="display: none;">
+                    <h3 class="history-header-title">梦境档案 · <span id="dream-history-char-name"></span></h3>
+                    
+                    <div id="dream-history-list">
+                        <!-- JS 会在这里动态填充历史条目 -->
+                    </div>
+                    
+                    <button id="back-from-history-btn" class="dream-action-btn small">返回</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
     <!-- 动态发布应用 -->
     <div id="moment-creator-app" class="app-navigator">
         <div id="moment-creation-page" class="app-page">
@@ -5147,6 +5789,22 @@ body.light-mode .chat-last-message.unread {
             </ul>
         </div>
     </div>
+
+<!-- 梦境解析专属浮窗 -->
+<div id="dream-analysis-modal" class="modal-overlay">
+    <div class="dream-glass-card">
+        <div class="glass-header">
+            <span class="glass-title">潜意识回响</span>
+            <i id="close-dream-analysis-btn" class="ri-close-line"></i>
+        </div>
+        <div class="glass-body">
+            <div class="blood-decoration"></div> <!-- 装饰性血痕/光晕 -->
+            <p id="dream-analysis-text-modal">
+                <!-- JS 填入内容 -->
+            </p>
+        </div>
+    </div>
+</div>
     <!-- 查看撤回消息详情弹窗 -->
     <div id="withdrawn-details-modal" class="modal-overlay">
         <div class="modal-content" style="max-width: 380px;">
@@ -5302,7 +5960,7 @@ body.light-mode .chat-last-message.unread {
 
         const CONSTANTS = {
     DB_NAME: 'MyDesktopDB',
-    DB_VERSION: 13, // <-- 【核心改动】版本号提升
+    DB_VERSION: 14, // <-- 【核心改动】版本号提升
        MESSAGES_PER_PAGE: 30,
     STORE_NAMES: {
         API_PRESETS: 'api_presets',
@@ -5327,6 +5985,7 @@ body.light-mode .chat-last-message.unread {
               MOVIE_HISTORY: 'movie_history',   // <-- 【新增】电影历史记录表
 FORUM_POSTS: 'forum_posts',     // 论坛帖子表
 FORUM_COMMENTS: 'forum_comments', // 论坛评论表
+DREAMS: 'dreams', // <--- 【新增】梦境表
     },
 
     // vvvv 【新增】NPC 档案注册表 vvvv
@@ -5472,6 +6131,8 @@ currentMovieSession: null,
 currentEditingMovieTurnId: null,
 tempForumReplyTarget: null,
 pendingSharePost: null,
+currentDreamingDossierId: null,
+isDreamHistoryMode: false,
 
         };
 
@@ -5537,6 +6198,7 @@ pendingSharePost: null,
             gotoIconSettings: document.getElementById('goto-icon-settings'),
             gotoFontSettings: document.getElementById('goto-font-settings'),
             iconSettingsGrid: document.getElementById('icon-settings-grid'),
+            resetAllIconsBtn: document.getElementById('reset-all-icons-btn'),
             fontPresetSelect: document.getElementById('font-preset-select'),
             loadFontButton: document.getElementById('load-font-button'),
             deleteFontButton: document.getElementById('delete-font-button'),
@@ -5592,6 +6254,7 @@ pendingSharePost: null,
             sendFinalBtn: document.getElementById('send-final-btn'),
             // vvv 在这里新增一行 vvv
     setChatWallpaperItem: document.getElementById('set-chat-wallpaper-item'),
+     clearChatWallpaperBtn: document.getElementById('clear-chat-wallpaper-btn'),
      // vvv 新增这一行 vvv
 chatWallpaperUploader: document.getElementById('chat-wallpaper-uploader'),
           // vvv 在末尾添加以下引用 vvv
@@ -5846,6 +6509,32 @@ gotoDataSettings: document.getElementById('goto-data-settings'),
             importDataBtn: document.getElementById('import-data-btn'),
             backupFileInput: document.getElementById('backup-file-input'),
             clearAllDataBtn: document.getElementById('clear-all-data-btn'),
+iconDream: document.getElementById('icon-dream'),
+dreamApp: document.getElementById('dream-app'),
+dreamBackBtn: document.querySelector('#dream-app .back-button'),
+// 注意：这个按钮是在 HTML header 里新加的
+dreamBackToSelectBtn: document.getElementById('dream-back-to-select-btn'), 
+
+// 页面层级
+dreamSelectionLayer: document.getElementById('dream-selection-layer'),
+dreamCharacterGrid: document.getElementById('dream-character-grid'),
+dreamConnectingLayer: document.getElementById('dream-connecting-layer'),
+dreamResultLayer: document.getElementById('dream-result-layer'),
+
+// 元素
+dreamTargetName: document.getElementById('dream-target-name'),
+dreamTextContent: document.getElementById('dream-text-content'),
+dreamAnalyzeBtn: document.getElementById('dream-analyze-btn'),
+
+// 解析浮窗相关
+dreamAnalysisModal: document.getElementById('dream-analysis-modal'),
+closeDreamAnalysisBtn: document.getElementById('close-dream-analysis-btn'),
+dreamAnalysisTextModal: document.getElementById('dream-analysis-text-modal'),
+dreamHistoryBtn: document.getElementById('dream-history-btn'),       
+    dreamHistoryLayer: document.getElementById('dream-history-layer'),   
+    dreamHistoryCharName: document.getElementById('dream-history-char-name'), 
+    dreamHistoryList: document.getElementById('dream-history-list'),  
+    dreamBackFromHistoryBtn: document.getElementById('back-from-history-btn'), 
             // 颜色选择器
             styleInputs: {
                 normal: document.getElementById('style-color-normal'),
@@ -5928,6 +6617,10 @@ const allStores = {
         options: { keyPath: 'id', autoIncrement: true },
         indexes: { 'by_postId': 'postId' }
     },
+
+[CONSTANTS.STORE_NAMES.DREAMS]: { options: { keyPath: 'id', autoIncrement: true }, indexes: { 'by_dossierId': 'dossierId' } 
+    },
+
 };
 
 for (const storeName in allStores) {
@@ -7009,6 +7702,10 @@ ${historySection}
 **8. 川端康成**
 - **核心:** 物哀之美, 空灵幽玄。
 - **技法:** 传统日本美学；自然意象密集(雪、月、花)；善用省略与留白；死亡与美并置。适合表达一种极致的、纤细的、带有淡淡悲伤的美感。
+
+**9. 张晓风**
+- **核心:** 温柔感伤, 克制抒情,。
+- **技法:** 散文笔法,句式舒缓优美;善用排比、对偶营造韵律感;自然意象承载情感(雨、风、落叶、流水);日常小事中提炼哲思;时间流逝感与青春易逝的感怀;淡淡的遗憾与释然并存;不直接说"痛苦"而是"有一种说不出的感觉";情绪点到即止,不过分渲染;知识分子式的温柔与体面;适合写初恋、离别、成长等青春主题。
 ---
 
 # 你的最终创作任务
@@ -7584,6 +8281,54 @@ ${historyContext}
                     { role: "user", content: "请根据现在的时间和我们的关系，主动给我发消息（如果是多条，记得用 ||| 分隔）。" }
                 ];
             },
+
+createDreamGenPrompt(dossier, recentHistory) {
+    // 1. 整理最近的对话氛围
+    let historyContext = "（暂无最近对话，基于原始人设生成）";
+    if (recentHistory.length > 0) {
+        historyContext = recentHistory.map(msg => {
+            const speaker = msg.sender === 'user' ? (dossier.user.name || 'User') : '我';
+            return `${speaker}: ${msg.content}`;
+        }).join('\n');
+    }
+
+    const systemPrompt = `
+# 核心使命：生成角色的【梦境碎片】与【完整潜意识叙事】
+你将彻底化身为【${dossier.character.name}】。此刻你正在做梦。
+
+# 1. 生成内容要求
+
+## A. 梦境碎片 (The Fragment) - 用于封面
+- **目标：** 这是一个模糊的、一闪而过的残影。
+- **字数：** **50 - 80 字**（严格控制，不要太长）。
+- **风格：** 像一首晦涩的散文诗。只描写一个核心意象（例如：一只着火的鸟、一片淹没脚踝的海）。不要有前因后果。
+
+## B. 完整梦境 (The Full Dreamscape) - 用于沉浸阅读
+- **目标：** 这是梦境的完整全貌。
+- **字数：** **400 - 600 字**。
+- **内容：** **不要进行心理分析！不要解释梦的含义！** 直接用**第一人称**描写你在梦里看到了什么、听到了什么、感受到了什么。
+- **叙事逻辑：** 梦境应该是荒诞但连贯的。将你对"${dossier.user.name || '用户'}"的爱、恐惧、占有欲或不安全感，全部具象化为梦里的情节。
+    - *范例：* 不要说“我害怕失去她”，要写“我在迷宫里狂奔，每一扇门打开都是她的背影，但我伸出手，她就化作了一滩水，从我指缝流走，冰冷刺骨……”
+
+# 2. 基础档案
+- **角色核心:** ${dossier.character.background}
+- **对"他/她"的看法:** ${dossier.user.background}
+- **现实经历素材:**
+${historyContext}
+
+# 3. 输出格式
+你必须、且只能返回一个 **JSON 对象**。
+{
+  "fragment": "[字符串] 50-80字的梦境碎片。",
+  "full_dream": "[字符串] 400-600字的完整第一人称梦境叙事。请使用 <br> 标签进行分段，以便阅读。"
+}
+`;
+    
+    return [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: "入睡时刻已到。请记录下我的梦境。" }
+    ];
+},
             
     async createChatPrompt(dossier, chatHistory, finalUserInput, quotedMessage = null) {
     
@@ -14487,6 +15232,94 @@ function appendCommentElement(container, comment) {
     container.appendChild(div);
 }
 
+/**
+ * 【核心】执行潜意识深潜逻辑 (完整修复版：含自动保存 + 预填内容)
+ * @param {object} dossier - 目标角色档案
+ */
+async function handleDreamDive(dossier) {
+    // 1. 准备 UI 状态
+    const selectionLayer = document.getElementById('dream-selection-layer');
+    const connectingLayer = document.getElementById('dream-connecting-layer');
+    const resultLayer = document.getElementById('dream-result-layer');
+    const analyzeBtn = document.getElementById('dream-analyze-btn'); 
+    const targetNameSpan = document.getElementById('dream-target-name');
+    const textDisplay = document.getElementById('dream-text-content');
+    
+    // 重置解析浮窗内容
+    DOM.dreamAnalysisTextModal.innerHTML = '';
+
+    // 切换到连接动画
+    selectionLayer.style.display = 'none';
+    resultLayer.style.display = 'none';
+    connectingLayer.style.display = 'flex';
+    targetNameSpan.textContent = dossier.character.name;
+    
+    // 更新按钮文字
+    analyzeBtn.style.display = 'block';
+    analyzeBtn.querySelector('span').textContent = "潜 入 深 梦"; 
+
+    appState.currentDreamingDossierId = dossier.id;
+
+    try {
+        // 2. 并行执行：API请求 + 动画等待
+        const apiRequestPromise = (async () => {
+            const history = await dbHelper.getHistoryForDossier(dossier.id);
+            const recentHistory = history.slice(-15);
+            const prompt = promptManager.createDreamGenPrompt(dossier, recentHistory);
+            const response = await apiHelper.getChatCompletion(prompt);
+            
+            const jsonMatch = response.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) throw new Error("梦境生成格式错误");
+            return JSON.parse(jsonMatch[0]);
+        })();
+
+        const animationDelayPromise = new Promise(resolve => setTimeout(resolve, 3000));
+
+        // 等待两者都完成
+        const [dreamData, _] = await Promise.all([apiRequestPromise, animationDelayPromise]);
+
+        // --- 【核心新增】自动保存到数据库 ---
+        const newDreamEntry = {
+            dossierId: dossier.id,
+            timestamp: Date.now(),
+            fragment: dreamData.fragment,
+            full_dream: dreamData.full_dream
+        };
+        await dbHelper.add(CONSTANTS.STORE_NAMES.DREAMS, newDreamEntry);
+        console.log(`[梦境系统] ${dossier.character.name} 的梦境已自动归档。`);
+        // ----------------------------------
+
+        // 3. 渲染结果
+        
+        // A. 封面只显示短小的碎片
+        textDisplay.textContent = dreamData.fragment;
+        
+        // B. 【你找回的这段逻辑】预填入浮窗内容 (标题 + 正文)
+        const dreamTitle = `—— ${dossier.character.name} 的第 ${Math.floor(Math.random() * 999)} 号深层梦境`;
+        DOM.dreamAnalysisTextModal.innerHTML = `
+            <div style="text-align:center; margin-bottom:20px; color:#ff4d4d; font-size:12px; letter-spacing:2px; opacity:0.8;">
+                ${dreamTitle}
+            </div>
+            ${dreamData.full_dream}
+        `;
+
+        // C. 同时更新按钮 dataset，以防万一后续逻辑需要读取
+        analyzeBtn.dataset.fullDream = dreamData.full_dream;
+        analyzeBtn.dataset.charName = dossier.character.name;
+
+        // 4. 切换界面
+        connectingLayer.style.display = 'none';
+        resultLayer.style.display = 'flex';
+
+    } catch (error) {
+        console.error("梦境生成失败:", error);
+        utils.showToast("潜入失败：信号中断");
+        // 出错时退回选择页
+        connectingLayer.style.display = 'none';
+        selectionLayer.style.display = 'flex';
+    }
+}
+
 // ===============================================
 // ===   数据管理核心逻辑 (导入/导出/清空)     ===
 // ===============================================
@@ -15025,6 +15858,30 @@ libraryBookIds: [] // <-- 【新增】为新档案初始化一个空数组
                 const targetItem = e.target.closest('.icon-setting-item');
                 if (targetItem) { appState.currentIconUploadTargetId = targetItem.dataset.iconId; appState.currentWidgetUploadTarget = null; DOM.imageUploader.click(); }
             });
+//【新增】恢复默认图标按钮逻辑
+            DOM.resetAllIconsBtn.addEventListener('click', async () => {
+                if (confirm("确定要清除所有自定义图标，恢复默认样式吗？此操作无法撤销。")) {
+                    try {
+                        // A. 从数据库清除设置
+                        await dbHelper.delete(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'icon_overrides');
+
+                        // B. 立即重置桌面上的所有图标样式
+                        DOM.customizableIcons.forEach(icon => {
+                            icon.style.backgroundImage = ''; // 清除背景图
+                            icon.classList.remove('has-bg-image'); // 移除自定义标记
+                        });
+
+                        // C. 刷新当前页面的网格预览
+                        await populateIconGrid();
+
+                        utils.showToast('所有图标已恢复默认');
+
+                    } catch (error) {
+                        console.error("重置图标失败:", error);
+                        utils.showToast('重置失败');
+                    }
+                }
+            });
             DOM.gotoFontSettings.addEventListener('click', () => { navigateToPage(DOM.settingsNavigator, 'font-settings-page'); populateFontPresets(); });
             DOM.applyFontButton.addEventListener('click', async () => {
                 const name = DOM.fontNameInput.value.trim(), url = DOM.fontUrlInput.value.trim();
@@ -15152,6 +16009,40 @@ DOM.chatDialoguePage.style.backgroundPosition = 'center'; // <-- 修改目标
                 }
                 // 重置上传器
                 e.target.value = '';
+            });
+// 【新增】清除当前聊天壁纸
+            DOM.clearChatWallpaperBtn.addEventListener('click', async () => {
+                const dossierId = appState.currentChattingDossierId;
+                if (!dossierId) return;
+
+                if (confirm("确定要移除当前背景，恢复默认样式吗？")) {
+                    try {
+                        // 1. 获取档案
+                        const dossierToUpdate = await dbHelper.get(CONSTANTS.STORE_NAMES.DOSSIERS, dossierId);
+                        
+                        if (dossierToUpdate) {
+                            // 2. 删除壁纸字段
+                            delete dossierToUpdate.wallpaperAssetId;
+                            
+                            // 3. 保存回数据库
+                            await dbHelper.set(CONSTANTS.STORE_NAMES.DOSSIERS, dossierToUpdate);
+
+                            // 4. 同步更新内存状态
+                            const idx = appState.dossiers.findIndex(d => d.id === dossierId);
+                            if (idx > -1) {
+                                appState.dossiers[idx] = dossierToUpdate;
+                            }
+
+                            // 5. 立即清除界面上的背景
+                            DOM.chatDialoguePage.style.backgroundImage = '';
+                            
+                            utils.showToast('背景已恢复默认');
+                        }
+                    } catch (error) {
+                        console.error("清除壁纸失败:", error);
+                        utils.showToast('操作失败');
+                    }
+                }
             });
 
 // 监听“记忆轮数”按钮点击，用于打开浮窗
@@ -17998,6 +18889,237 @@ document.getElementById('save-forum-profile-modal-btn').addEventListener('click'
     // 5. 清空所有数据按钮
     DOM.clearAllDataBtn.addEventListener('click', () => {
         clearAllData();
+    });
+
+// ===========================================
+// === 梦境应用 (Subconscious) 完整监听逻辑 ===
+// ===========================================
+
+// 1. 辅助函数：渲染角色列表 (双模式版)
+    const renderDreamCharacterList = async () => {
+        const grid = DOM.dreamCharacterGrid;
+        const hintText = document.querySelector('.selection-hint'); // 获取提示文字元素
+        const historyBtn = DOM.dreamHistoryBtn;
+
+        grid.innerHTML = '';
+
+        // --- 模式状态处理 ---
+        if (appState.isDreamHistoryMode) {
+            // 历史模式样式
+            hintText.textContent = "请选择要阅读的档案...";
+            hintText.style.color = "#ccc"; // 变灰，表示冷静的阅读
+            historyBtn.style.opacity = "1"; // 图标高亮
+            historyBtn.style.color = "#fff";
+        } else {
+            // 潜入模式样式 (默认)
+            hintText.textContent = "请选择要潜入的意识...";
+            hintText.style.color = "#ff4d4d"; // 变红，表示危险/活跃
+            historyBtn.style.opacity = "0.5"; // 图标变暗
+            historyBtn.style.color = ""; // 恢复默认色
+        }
+
+        if (appState.dossiers.length === 0) {
+            grid.innerHTML = '<p style="grid-column: 1/-1; text-align:center; opacity:0.5; color: #ff4d4d;">暂无角色档案</p>';
+            return;
+        }
+
+        for (const dossier of appState.dossiers) {
+            const item = document.createElement('div');
+            item.className = 'dream-char-item';
+            
+            let avatarUrl = '';
+            if (dossier.character.avatarAssetId) {
+                const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+                if (asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+            }
+            const bgStyle = avatarUrl ? `background-image: url('${avatarUrl}')` : 'background-color: #333';
+
+            // 如果是历史模式，我们可以加一个小图标区分
+            const historyBadge = appState.isDreamHistoryMode ? '<i class="ri-book-read-line" style="position:absolute; bottom:-5px; right:-5px; background:#000; border-radius:50%; padding:2px; font-size:12px; color:#ccc;"></i>' : '';
+
+            item.innerHTML = `
+                <div class="dream-char-avatar" style="${bgStyle}; position:relative;">
+                    ${historyBadge}
+                </div>
+                <span class="dream-char-name">${dossier.character.name}</span>
+            `;
+            
+            // 【核心分流逻辑】
+            item.addEventListener('click', () => {
+                if (appState.isDreamHistoryMode) {
+                    // 模式B: 直接看历史
+                    openHistoryView(dossier);
+                } else {
+                    // 模式A: 生成新梦境
+                    handleDreamDive(dossier);
+                }
+            });
+
+            grid.appendChild(item);
+        }
+    };
+
+    // 辅助函数：专门用于打开历史层 (抽离出来，代码更清晰)
+    const openHistoryView = (dossier) => {
+        // 记录当前选中的人
+        appState.currentDreamingDossierId = dossier.id;
+        
+        // 切换 UI 层级
+        DOM.dreamSelectionLayer.style.display = 'none';
+        DOM.dreamConnectingLayer.style.display = 'none';
+        DOM.dreamResultLayer.style.display = 'none';
+        
+        // 显示历史层
+        DOM.dreamHistoryLayer.style.display = 'flex';
+        
+        // 渲染列表
+        renderDreamHistory(dossier.id);
+    };
+
+ // 1.5 辅助函数：渲染梦境历史
+    const renderDreamHistory = async (dossierId) => {
+        const listContainer = DOM.dreamHistoryList; // 使用 DOM 引用
+        const charNameSpan = DOM.dreamHistoryCharName; // 使用 DOM 引用
+        
+        listContainer.innerHTML = '<p style="text-align:center; opacity:0.5;">加载档案中...</p>';
+        
+        const dossier = appState.dossiers.find(d => d.id === dossierId);
+        if (dossier) charNameSpan.textContent = dossier.character.name;
+
+        // 从数据库获取
+        const db = await dbHelper.dbPromise;
+        const dreams = await db.getAllFromIndex(CONSTANTS.STORE_NAMES.DREAMS, 'by_dossierId', dossierId);
+        
+        // 按时间倒序
+        dreams.sort((a, b) => b.timestamp - a.timestamp);
+
+        listContainer.innerHTML = '';
+        if (dreams.length === 0) {
+            listContainer.innerHTML = '<p style="text-align:center; opacity:0.5; padding:20px;">暂无梦境记录</p>';
+            return;
+        }
+
+        for (const dream of dreams) {
+            const item = document.createElement('div');
+            item.className = 'dream-history-item';
+            
+            const dateStr = new Date(dream.timestamp).toLocaleString('zh-CN', { hour12:false });
+            
+            item.innerHTML = `
+                <div class="history-date">${dateStr}</div>
+                <div class="history-fragment">${dream.fragment}</div>
+            `;
+            
+            // 点击历史条目 -> 直接打开完整梦境浮窗
+            item.addEventListener('click', () => {
+                // 既然是历史记录，标题就不带“第几号”了，直接用唯美标题
+                const dreamTitle = `—— ${dossier.character.name} 的记忆回响`;
+                
+                DOM.dreamAnalysisTextModal.innerHTML = `
+                    <div style="text-align:center; margin-bottom:20px; color:#ff4d4d; font-size:12px; letter-spacing:2px; opacity:0.8;">
+                        ${dreamTitle}
+                    </div>
+                    ${dream.full_dream}
+                `;
+                DOM.dreamAnalysisModal.classList.add('visible');
+            });
+
+            listContainer.appendChild(item);
+        }
+    };
+
+// 2. 点击桌面图标 -> 进入应用 (默认进入生成模式)
+    DOM.iconDream.addEventListener('click', () => {
+        navigateToPage(DOM.dreamApp, 'dream-main-page');
+        
+        // 重置 UI
+        DOM.dreamSelectionLayer.style.display = 'flex';
+        DOM.dreamConnectingLayer.style.display = 'none';
+        DOM.dreamResultLayer.style.display = 'none';
+        DOM.dreamHistoryLayer.style.display = 'none'; // 确保历史层隐藏
+        
+        // 重置为“潜入模式”
+        appState.isDreamHistoryMode = false;
+        
+        renderDreamCharacterList();
+    });
+
+
+// 3. 左上角返回按钮 -> 退出应用 (回到桌面)
+DOM.dreamBackBtn.addEventListener('click', () => {
+    closeNavigator(DOM.dreamApp);
+});
+
+// 4. 右上角“梦境日志”按钮 (替代了旧的“返回选人”逻辑)
+    if (DOM.dreamHistoryBtn) {
+        DOM.dreamHistoryBtn.addEventListener('click', () => {
+            const currentLayer = DOM.dreamResultLayer.style.display;
+            
+            // 如果当前正在看结果页，点击这个按钮直接看该角色的历史
+            if (currentLayer === 'flex' && appState.currentDreamingDossierId) {
+                const dossier = appState.dossiers.find(d => d.id === appState.currentDreamingDossierId);
+                openHistoryView(dossier);
+                return;
+            }
+
+            // 否则，在选人界面切换“生成/阅读”模式
+            appState.isDreamHistoryMode = !appState.isDreamHistoryMode;
+            renderDreamCharacterList(); // 重新渲染列表以更新点击事件和UI
+            
+            if (appState.isDreamHistoryMode) {
+                utils.showToast('切换至：阅读模式');
+            } else {
+                utils.showToast('切换至：潜入模式');
+            }
+        });
+    }
+
+    // 4.5 历史层底部的“返回”按钮
+    if (DOM.dreamBackFromHistoryBtn) {
+        DOM.dreamBackFromHistoryBtn.addEventListener('click', () => {
+            DOM.dreamHistoryLayer.style.display = 'none';
+            DOM.dreamSelectionLayer.style.display = 'flex';
+            
+            // 这里不清除 currentDreamingDossierId 也没事，或者清除也行
+            // 关键是不改变 appState.isDreamHistoryMode，让用户继续选人看历史
+            renderDreamCharacterList();
+        });
+    }
+
+    // 5. “潜入深梦”按钮 (逻辑升级：从 dataset 读取内容)
+    DOM.dreamAnalyzeBtn.addEventListener('click', (e) => {
+        // 获取按钮上暂存的数据 (在 handleDreamDive 中存入的)
+        const btn = e.currentTarget;
+        const fullDream = btn.dataset.fullDream;
+        const charName = btn.dataset.charName;
+        
+        if (fullDream) {
+            const dreamTitle = `—— ${charName} 的深层梦境`;
+            
+            // 动态填入浮窗内容
+            DOM.dreamAnalysisTextModal.innerHTML = `
+                <div style="text-align:center; margin-bottom:20px; color:#ff4d4d; font-size:12px; letter-spacing:2px; opacity:0.8;">
+                    ${dreamTitle}
+                </div>
+                ${fullDream}
+            `;
+            // 显示浮窗
+            DOM.dreamAnalysisModal.classList.add('visible');
+        } else {
+            // 如果按钮上没数据（比如刚刷新页面），提示一下
+            utils.showToast('数据已过期，请重新生成');
+        }
+    });
+
+    // 6. 关闭解析浮窗的逻辑 (保持不变)
+    const closeDreamAnalysis = () => DOM.dreamAnalysisModal.classList.remove('visible');
+
+    DOM.closeDreamAnalysisBtn.addEventListener('click', closeDreamAnalysis);
+
+    DOM.dreamAnalysisModal.addEventListener('click', (e) => {
+        if (e.target === DOM.dreamAnalysisModal) {
+            closeDreamAnalysis();
+        }
     });
            
 }
