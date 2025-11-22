@@ -4547,6 +4547,562 @@ body.light-mode .chat-last-message.unread {
     font-size: 14px;
     margin-top: auto;
 }
+
+/* === 轨迹 APP (复古画廊版) 样式 === */
+
+/* 1. 全局背景与字体 */
+#trace-app .app-page {
+    background-color: #f2efe6; /* 米色画纸背景 */
+    color: #5d4037; /* 深咖啡色文字 */
+    font-family: "Times New Roman", "Songti SC", "SimSun", serif; /* 强制衬线体 */
+}
+
+/* 纸张噪点纹理 (可选，增加质感) */
+#trace-paper-texture {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+');
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+}
+
+.trace-full-content {
+    position: relative; z-index: 1;
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* 2. 复古页头 */
+.page-header.vintage-header {
+    background: transparent;
+    border-bottom: none;
+    padding-top: 50px;
+}
+.vintage-title {
+    font-family: "Times New Roman", serif;
+    font-style: italic;
+    color: #5d4037;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* 3. 装饰性标题区 (模仿杂志排版) */
+.vintage-hero-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    padding: 10px 0;
+}
+.hero-line {
+    flex-grow: 1;
+    height: 1px;
+    background-color: #8d6e63; /* 浅褐色线条 */
+}
+.hero-text {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.hero-text span {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #8d6e63;
+}
+.hero-text h1 {
+    font-size: 32px;
+    margin: 5px 0;
+    letter-spacing: 5px;
+    color: #3e2723;
+    font-weight: normal;
+    border-top: 1px solid #3e2723;
+    border-bottom: 1px solid #3e2723;
+    padding: 2px 10px;
+}
+
+/* 4. 卡片列表布局 */
+.magazine-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* 卡片间距拉大 */
+    padding-bottom: 50px;
+}
+
+/* 5. 复古卡片设计 */
+.vintage-card {
+    background: #fff;
+    border: 1px solid #d7ccc8;
+    padding: 15px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    box-shadow: 5px 5px 0px rgba(93, 64, 55, 0.1); /* 实色阴影，不是模糊阴影 */
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+}
+.vintage-card:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px rgba(93, 64, 55, 0.1);
+}
+
+/* 左侧装饰色块 (Part One / 01 那种感觉) */
+.card-index-box {
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    background: #5d4037;
+    color: #fff;
+    font-size: 12px;
+    padding: 2px 8px;
+    font-family: monospace;
+}
+
+/* 头像 (做成画框效果) */
+.vintage-avatar-frame {
+    width: 60px; height: 60px;
+    border: 3px solid #fff;
+    outline: 1px solid #8d6e63; /* 双重边框 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-right: 20px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.vintage-avatar-img {
+    width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: sepia(0.4); /* 微微泛黄的老照片滤镜 */
+}
+
+/* 中间信息 */
+.vintage-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 1px dashed #bcaaa4; /* 虚线分割 */
+    padding-right: 10px;
+    margin-right: 15px;
+}
+.vintage-name {
+    font-size: 20px;
+    font-family: "Times New Roman", serif;
+    color: #3e2723;
+    margin-bottom: 5px;
+}
+.vintage-location {
+    font-size: 12px;
+    color: #8d6e63;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* 右侧时间 (做成大号数字设计) */
+.vintage-time-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 60px;
+}
+.time-big {
+    font-size: 24px;
+    font-weight: bold;
+    color: #a1887f;
+    line-height: 1;
+}
+.time-label {
+    font-size: 10px;
+    color: #bcaaa4;
+    margin-top: 2px;
+}
+
+/* 状态点 (改为优雅的实心圆) */
+.status-dot-vintage {
+    width: 8px; height: 8px;
+    background-color: #8d6e63;
+    border-radius: 50%;
+    margin-top: 5px;
+    opacity: 0.6;
+    /* 缓慢呼吸，不闪烁 */
+    animation: vintage-breathe 3s infinite ease-in-out;
+}
+@keyframes vintage-breathe {
+    0%, 100% { opacity: 0.4; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ================================================= */
+/* ===   时空轨迹：双模适配版 (Trace App)        === */
+/* ================================================= */
+
+/* --- 1. 定义配色变量 (核心) --- */
+:root {
+    /* 🌑 默认深色模式 (Dark Mode - 银灰/冷峻风格) */
+    /* 不用黑金，改用“银翼杀手”式的冷灰色调 */
+    --trace-bg: #0e0e10;              /* 背景：极深的炭黑 */
+    --trace-text-main: #e0e0e0;       /* 主字：银白 */
+    --trace-text-sub: #8e8e93;        /* 副字：冷灰 */
+    --trace-accent: #48484a;          /* 装饰：中灰 */
+    --trace-line: #2c2c2e;            /* 线条：暗灰 */
+    --trace-card-bg: #1c1c1e;         /* 卡片：深灰毛玻璃 */
+    --trace-card-border: #2c2c2e;     /* 边框：微亮 */
+    --trace-shadow: rgba(0,0,0,0.6);  /* 阴影：深邃 */
+    --trace-texture-opacity: 0.05;    /* 纹理：极淡 */
+    --trace-texture-filter: invert(1); /* 纹理：反白 */
+    --trace-time-color: #a1a1a6;      /* 时间：亮银 */
+}
+
+body.light-mode {
+    /* ☀️ 浅色模式 (Light Mode - 复古/报纸风格) */
+    /* 保持你喜欢的那个复古米色调 */
+    --trace-bg: #f2efe6;              /* 背景：米色画纸 */
+    --trace-text-main: #5d4037;       /* 主字：深咖 */
+    --trace-text-sub: #8d6e63;        /* 副字：浅褐 */
+    --trace-accent: #3e2723;          /* 装饰：黑咖 */
+    --trace-line: #d7ccc8;            /* 线条：奶咖 */
+    --trace-card-bg: #ffffff;         /* 卡片：纯白 */
+    --trace-card-border: #d7ccc8;     /* 边框 */
+    --trace-shadow: rgba(93, 64, 55, 0.1); /* 阴影：暖色 */
+    --trace-texture-opacity: 0.4;     /* 纹理：明显 */
+    --trace-texture-filter: none;     /* 纹理：原色 */
+    --trace-time-color: #a1887f;      /* 时间：褐色 */
+}
+
+/* --- 2. 全局容器应用 --- */
+#trace-app .app-page {
+    background-color: var(--trace-bg);
+    color: var(--trace-text-main);
+    /* 字体保持衬线体，营造高级感 */
+    font-family: "Times New Roman", "Songti SC", "SimSun", serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 背景纹理 */
+#trace-paper-texture, .trace-paper-texture-copy {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+');
+    pointer-events: none; z-index: 0;
+    opacity: var(--trace-texture-opacity);
+    filter: var(--trace-texture-filter);
+    transition: opacity 0.3s ease;
+}
+
+.trace-full-content {
+    position: relative; z-index: 1;
+    flex-grow: 1; overflow-y: auto; padding: 20px;
+}
+
+/* --- 3. 页头区域 --- */
+.page-header.vintage-header {
+    background: transparent; border-bottom: none; padding-top: 50px;
+}
+.vintage-title {
+    font-family: "Times New Roman", serif;
+    font-style: italic;
+    color: var(--trace-text-main);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+/* 图标颜色跟随文字 */
+#trace-app .page-header i {
+    color: var(--trace-text-main) !important;
+}
+
+/* 装饰性标题块 */
+.vintage-hero-section {
+    display: flex; align-items: center; justify-content: center;
+    gap: 15px; margin-bottom: 30px; padding: 10px 0;
+}
+.hero-line {
+    flex-grow: 1; height: 1px;
+    background-color: var(--trace-line);
+}
+.hero-text { text-align: center; display: flex; flex-direction: column; align-items: center; }
+.hero-text span {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 3px;
+    color: var(--trace-text-sub);
+}
+.hero-text h1 {
+    font-size: 32px; margin: 5px 0; letter-spacing: 5px;
+    color: var(--trace-text-main);
+    font-weight: normal;
+    border-top: 1px solid var(--trace-accent);
+    border-bottom: 1px solid var(--trace-accent);
+    padding: 2px 10px;
+}
+
+/* --- 4. 列表卡片 (List View) --- */
+.magazine-layout {
+    display: flex; flex-direction: column; gap: 25px; padding-bottom: 50px;
+}
+
+.vintage-card {
+    background: var(--trace-card-bg);
+    border: 1px solid var(--trace-card-border);
+    padding: 15px;
+    position: relative;
+    display: flex; align-items: center;
+    /* 实色阴影：在深色下是黑色投影，浅色下是褐色投影 */
+    box-shadow: 5px 5px 0px var(--trace-shadow);
+    transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+    cursor: pointer;
+}
+.vintage-card:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--trace-shadow);
+}
+
+/* 编号标签 */
+.card-index-box {
+    position: absolute; top: -10px; left: 15px;
+    background: var(--trace-accent);
+    color: var(--trace-bg); /* 反色 */
+    font-size: 12px; padding: 2px 8px;
+    font-family: monospace;
+}
+
+/* 头像框 */
+.vintage-avatar-frame {
+    width: 60px; height: 60px;
+    border: 3px solid var(--trace-card-bg);
+    outline: 1px solid var(--trace-text-sub);
+    margin-right: 20px; flex-shrink: 0; overflow: hidden;
+}
+.vintage-avatar-img {
+    width: 100%; 
+    height: 100%;
+    background-size: cover; 
+    background-position: center;
+    filter: sepia(0.2) brightness(0.9); 
+    
+    transition: filter 0.3s ease;
+}
+
+/* 中间信息 */
+.vintage-info {
+    flex-grow: 1; display: flex; flex-direction: column; justify-content: center;
+    border-right: 1px dashed var(--trace-text-sub);
+    padding-right: 10px; margin-right: 15px;
+}
+.vintage-name {
+    font-size: 20px; font-family: "Times New Roman", serif;
+    color: var(--trace-text-main); margin-bottom: 5px;
+}
+.vintage-location {
+    font-size: 12px; color: var(--trace-text-sub);
+    text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* 右侧时间 */
+.vintage-time-box {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-width: 60px;
+}
+.time-big {
+    font-size: 24px; font-weight: bold;
+    color: var(--trace-time-color); line-height: 1;
+}
+.time-label {
+    font-size: 10px; color: var(--trace-text-sub); margin-top: 2px;
+}
+.status-dot-vintage {
+    width: 8px; height: 8px;
+    background-color: var(--trace-text-sub);
+    border-radius: 50%; margin-top: 5px; opacity: 0.6;
+    animation: vintage-breathe 3s infinite ease-in-out;
+}
+@keyframes vintage-breathe {
+    0%, 100% { opacity: 0.4; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* --- 5. 详情页 (Timeline View) --- */
+
+/* 日期印章 */
+.date-stamp-box {
+    text-align: center; margin-bottom: 30px; position: relative;
+}
+#trace-detail-date {
+    font-family: "Times New Roman", serif;
+    font-size: 18px; font-weight: bold;
+    color: var(--trace-text-main);
+    background: var(--trace-bg); /* 遮挡线条 */
+    padding: 0 15px; position: relative; z-index: 1;
+    letter-spacing: 1px;
+    transition: background-color 0.3s ease;
+}
+.stamp-line {
+    position: absolute; top: 50%; left: 10%; right: 10%; height: 1px;
+    background: var(--trace-line); z-index: 0;
+}
+
+/* 时间轴 */
+#timeline-container {
+    position: relative;
+    /* 【修改】增加内边距，让内容离线远一点，更优雅 */
+    padding-left: 30px; 
+    border-left: 1px solid var(--trace-line); /* 轴线 */
+    margin-left: 20px;
+    padding-bottom: 50px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 40px;
+    /* 这里的 padding-left 可以去掉，因为我们已经在 container 上加了 30px */
+    padding-left: 0; 
+    animation: fade-in-up 0.5s ease forwards;
+    opacity: 0;
+}
+
+/* 轴点 */
+.timeline-dot {
+    position: absolute;
+    left: -36px; 
+    
+    top: 5px; /* 保持顶部对齐 */
+    width: 7px;
+    height: 7px;
+    background: var(--trace-bg); /* 背景色与页面一致，遮挡住线 */
+    border: 2px solid var(--trace-text-sub);
+    border-radius: 50%;
+    z-index: 2; /* 确保在层级最上方 */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* 时间文字 */
+.timeline-time {
+    font-family: monospace; font-size: 12px;
+    color: var(--trace-text-sub); margin-bottom: 5px; display: block;
+}
+
+/* 详情卡片 */
+.timeline-content-card {
+    background: var(--trace-card-bg);
+    padding: 15px;
+    border: 1px solid var(--trace-card-border);
+    box-shadow: 3px 3px 0 var(--trace-shadow); /* 适配阴影颜色 */
+    border-radius: 2px;
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+.timeline-location {
+    font-size: 11px; color: var(--trace-text-sub);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
+}
+
+.timeline-text {
+    font-size: 14px; color: var(--trace-text-main);
+    line-height: 1.6; font-family: "Songti SC", serif;
+}
+
+/* 独白 */
+.timeline-thought {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px dashed var(--trace-line);
+    font-size: 13px; color: var(--trace-text-sub);
+    font-style: italic;
+}
+.timeline-thought::before { content: "“ "; font-size: 16px; }
+.timeline-thought::after { content: " ”"; font-size: 16px; }
+
+/* --- 轨迹详情页：未来时间占位符 (雷达脉冲版) --- */
+.future-trace-marker {
+    margin-top: 30px;
+    margin-bottom: 50px;
+    padding-left: 20px; /* 对齐左侧时间轴 */
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    opacity: 0.8;
+}
+
+/* 垂直虚线连接 (保持连接感) */
+.future-trace-marker::before {
+    content: '';
+    position: absolute;
+    left: 0; 
+    top: -30px;
+    bottom: 15px; /* 延伸到圆点中心 */
+    width: 1px;
+    border-left: 1px dashed var(--trace-line);
+    opacity: 0.5;
+}
+
+/* --- 核心：雷达信号动画容器 --- */
+.signal-radar-box {
+    position: relative;
+    width: 20px; 
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    left: -10px; /* 修正位置，让它对齐轴线 */
+}
+
+/* 中心实心点 */
+.signal-core {
+    width: 8px; height: 8px;
+    background-color: var(--trace-text-main);
+    border-radius: 50%;
+    z-index: 2;
+    box-shadow: 0 0 10px var(--trace-text-main); /* 发光 */
+}
+
+/* 向外扩散的波纹 */
+.signal-ripple {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%; height: 100%;
+    border: 1px solid var(--trace-text-sub);
+    border-radius: 50%;
+    opacity: 0;
+    animation: ripple-expand 2s infinite cubic-bezier(0, 0.2, 0.8, 1);
+}
+.signal-ripple:nth-child(2) {
+    animation-delay: 0.5s; /* 第二圈波纹延迟 */
+}
+
+@keyframes ripple-expand {
+    0% { width: 0; height: 0; opacity: 0.8; border-width: 2px; }
+    100% { width: 40px; height: 40px; opacity: 0; border-width: 0px; }
+}
+
+/* --- 文字区域 --- */
+.future-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.future-title {
+    font-family: monospace;
+    font-size: 13px;
+    color: var(--trace-text-main);
+    letter-spacing: 1px;
+    font-weight: 600;
+    /* 文字呼吸灯效果 */
+    animation: text-breathe 2s infinite ease-in-out;
+}
+
+.future-subtitle {
+    font-size: 11px;
+    color: var(--trace-text-sub);
+    opacity: 0.7;
+}
+
+@keyframes text-breathe {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; text-shadow: 0 0 5px var(--trace-text-sub); }
+}
     </style>
 </head>
 
@@ -4633,8 +5189,10 @@ body.light-mode .chat-last-message.unread {
         <span>潜意识</span>
     </div>
     
-    <!-- 2. 占位 -->
-    <div id="icon-p2-2" class="app-icon customizable-icon"></div>
+    <div id="icon-trace" class="app-icon icon-with-text customizable-icon">
+    <i class="ri-map-pin-time-line"></i> <!-- 或者 ri-radar-line -->
+    <span>时空轨迹</span>
+</div>
     <!-- 3. 占位 -->
     <div id="icon-p2-3" class="app-icon customizable-icon"></div>
     <!-- 4. 占位 -->
@@ -4787,8 +5345,11 @@ body.light-mode .chat-last-message.unread {
                 <div class="form-group" style="flex-grow: 1; display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                         <label>CSS 代码</label>
-                        <button id="copy-bubble-template-btn" style="padding: 4px 8px; font-size: 12px;">📋 复制默认模板</button>
-                    </div>
+                        <button id="copy-bubble-template-btn" style="padding: 4px 8px; font-size: 12px;">📋 气泡模板</button>
+            <!-- 【新增】整页模板按钮 -->
+            <button id="copy-full-page-template-btn" style="padding: 4px 8px; font-size: 12px;">🎨 整页模板</button>
+        </div>
+    </div>
                     <textarea id="bubble-css-editor" placeholder="在此输入 CSS 代码..." style="flex-grow: 1; min-height: 150px; font-family: monospace; font-size: 12px; line-height: 1.4; white-space: pre;"></textarea>
                 </div>
 
@@ -5245,6 +5806,72 @@ body.light-mode .chat-last-message.unread {
             </div>
         </div>
     </div>
+</div>
+
+<!-- 轨迹/行踪 APP (完整复古版) -->
+<div id="trace-app" class="app-navigator">
+    
+    <!-- =========================== -->
+    <!-- 页面 1：列表页 (Main)       -->
+    <!-- =========================== -->
+    <div id="trace-main-page" class="app-page">
+        <!-- 背景纹理层 -->
+        <div id="trace-paper-texture"></div>
+
+        <!-- 页头 -->
+        <div class="page-header vintage-header">
+            <i class="ri-arrow-left-line left-icon back-button" data-target="desktop" style="color: #5d4037;"></i>
+            <h2 class="vintage-title">Parallel Traces</h2>
+            <i id="trace-refresh-btn" class="ri-compass-3-line right-icon" style="color: #5d4037;"></i>
+        </div>
+
+        <div class="trace-full-content">
+            <!-- 装饰性标题 -->
+            <div class="vintage-hero-section">
+                <div class="hero-line"></div>
+                <div class="hero-text">
+                    <span>Observation</span>
+                    <h1>LOGS</h1>
+                    <span>Daily Records</span>
+                </div>
+                <div class="hero-line"></div>
+            </div>
+
+            <!-- 列表容器 -->
+            <div id="trace-list-container">
+                <div id="trace-cards-wrapper" class="magazine-layout"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================== -->
+    <!-- 页面 2：详情页 (Detail)     -->
+    <!-- =========================== -->
+    <div id="trace-detail-page" class="app-page">
+        <!-- 复用背景纹理 -->
+        <div class="trace-paper-texture-copy"></div>
+
+        <div class="page-header vintage-header">
+            <!-- 返回列表按钮 -->
+            <i id="trace-detail-back-btn" class="ri-arrow-left-line left-icon" style="color: #5d4037; cursor: pointer;"></i>
+            <h2 class="vintage-title" id="trace-detail-title">Unknown</h2>
+            <i id="trace-regenerate-btn" class="ri-refresh-line right-icon" style="color: #5d4037; cursor: pointer;" title="重置今日行踪"></i>
+</div>
+
+        <div class="trace-full-content">
+            <!-- 顶部日期印章 -->
+            <div class="date-stamp-box">
+                <span id="trace-detail-date">Oct. 24, 2024</span>
+                <div class="stamp-line"></div>
+            </div>
+
+            <!-- 垂直时间轴容器 -->
+            <div id="timeline-container">
+                <!-- 内容由 JS 填充 -->
+            </div>
+        </div>
+    </div>
+
 </div>
     <!-- 动态发布应用 -->
     <div id="moment-creator-app" class="app-navigator">
@@ -5996,7 +6623,7 @@ body.light-mode .chat-last-message.unread {
 
         const CONSTANTS = {
     DB_NAME: 'MyDesktopDB',
-    DB_VERSION: 14, // <-- 【核心改动】版本号提升
+    DB_VERSION: 15, // <-- 【核心改动】版本号提升
        MESSAGES_PER_PAGE: 30,
     STORE_NAMES: {
         API_PRESETS: 'api_presets',
@@ -6022,6 +6649,7 @@ body.light-mode .chat-last-message.unread {
 FORUM_POSTS: 'forum_posts',     // 论坛帖子表
 FORUM_COMMENTS: 'forum_comments', // 论坛评论表
 DREAMS: 'dreams', // <--- 【新增】梦境表
+TRACES: 'traces', // <--- 【新增】行踪表
     },
 
     // vvvv 【新增】NPC 档案注册表 vvvv
@@ -6537,6 +7165,7 @@ gotoBubbleSettings: document.getElementById('goto-bubble-settings'),
             deleteBubbleThemeBtn: document.getElementById('delete-bubble-theme-btn'),
             bubbleCssEditor: document.getElementById('bubble-css-editor'),
             copyBubbleTemplateBtn: document.getElementById('copy-bubble-template-btn'),
+            copyFullPageTemplateBtn: document.getElementById('copy-full-page-template-btn'),
             previewBubbleBtn: document.getElementById('preview-bubble-btn'),
             saveBubbleApplyBtn: document.getElementById('save-bubble-apply-btn'),
 gotoDataSettings: document.getElementById('goto-data-settings'),
@@ -6571,6 +7200,20 @@ dreamHistoryBtn: document.getElementById('dream-history-btn'),
     dreamHistoryCharName: document.getElementById('dream-history-char-name'), 
     dreamHistoryList: document.getElementById('dream-history-list'),  
     dreamBackFromHistoryBtn: document.getElementById('back-from-history-btn'), 
+iconTrace: document.getElementById('icon-trace'), 
+    traceApp: document.getElementById('trace-app'),
+    traceCardsWrapper: document.getElementById('trace-cards-wrapper'),
+    traceBackBtn: document.querySelector('#trace-app .back-button'),
+// ... 其他引用 ...
+    
+    // 【新增】轨迹详情页相关引用
+    traceMainPage: document.getElementById('trace-main-page'),
+    traceDetailPage: document.getElementById('trace-detail-page'),
+    traceDetailTitle: document.getElementById('trace-detail-title'),
+    traceDetailDate: document.getElementById('trace-detail-date'),
+    timelineContainer: document.getElementById('timeline-container'),
+    traceDetailBackBtn: document.getElementById('trace-detail-back-btn'),
+    traceRegenerateBtn: document.getElementById('trace-regenerate-btn'),
             // 颜色选择器
             styleInputs: {
                 normal: document.getElementById('style-color-normal'),
@@ -6656,6 +7299,8 @@ const allStores = {
 
 [CONSTANTS.STORE_NAMES.DREAMS]: { options: { keyPath: 'id', autoIncrement: true }, indexes: { 'by_dossierId': 'dossierId' } 
     },
+[CONSTANTS.STORE_NAMES.TRACES]: { options: { keyPath: 'id', autoIncrement: true }, indexes: { 'by_dossier_date': ['dossierId', 'dateStr'] } 
+     },
 
 };
 
@@ -8328,28 +8973,84 @@ createDreamGenPrompt(dossier, recentHistory) {
         }).join('\n');
     }
 
+    // --- 【用户自定义】高维文学梦境风格库 ---
+    const styles = [
+        {
+            name: "溶解边界 (Dissolving Boundaries)",
+            keywords: "化为水的石墙、渗入皮肤的光、消失中的指纹、颜色的私奔、失去名字的脸",
+            tone: "流动、温柔的消亡、我与你的界限成为谎言",
+            instruction: "世界是一块正在融化的糖。人与物要彼此渗透如墨入水。禁止任何坚硬的边缘。氛围像培根笔下流淌的肉体，或叶芝诗中'中心无法维系'的那一刻。"
+        },
+        {
+            name: "时间褶皱 (Temporal Fold)",
+            keywords: "同时枯萎与绽放的花、重叠的房间、镜中的昨日、倒流的河、未来投下的影子",
+            tone: "时间是一张揉皱的纸、怀旧是一种慢性病、此刻即永恒",
+            instruction: "过去与现在要在同一画面相遇却无法相认。钟表要显示所有可能的时间。氛围像普鲁斯特咬下玛德琳蛋糕的瞬间，或博尔赫斯的《小径分岔的花园》。"
+        },
+        {
+            name: "静物挽歌 (Still Life Elegy)",
+            keywords: "半腐的石榴、泛黄的情书、最后一寸烛泪、枯萎成标本的玫瑰、停在三点十五分的钟",
+            tone: "静谧如祷告、美在凋零时最诚实、死亡是最温柔的收藏家",
+            instruction: "聚焦于物的暮年。每件静物都要有传记。禁止活物出现。要有荷兰黄金时代的光影。氛围像里尔克的《给奥菲斯的十四行诗》或维米尔画中永恒的下午。"
+        },
+        {
+            name: "空房间挽歌 (Elegy of Empty Rooms)",
+            keywords: "还温热的茶杯、半开的窗让风私自进入、墙上钉子留下的伤疤、他人的香水、等待无人认领的椅子",
+            tone: "缺席即在场、痕迹是最诚实的证词、空间比人更懂得记忆",
+            instruction: "场景是刚刚失去主人的房间。每件物品都是一封未读的情书。禁止人物现身。氛围像策兰的诗'无人为证'，或爱德华·霍珀画中永恒的等待。"
+        },
+        {
+            name: "胶片旧电影 (Film Noir)",
+            keywords: "压低的帽檐、雨后的霓虹倒影、空无一人的长椅、爵士乐的余音、褪色的信封",
+            tone: "疏离、怀旧、说不清的暧昧、时间变成琥珀",
+            instruction: "像一部王家卫电影里的某个停顿。没有高潮，只有长长的余韵。画面要有颗粒感和模糊。重在情绪的堆积而非故事的推进。氛围像《重庆森林》的便利店或《花样年华》的钟表。"
+        },
+        {
+            name: "微物史诗 (Epic of Small Things)",
+            keywords: "墙缝里的宇宙、蚂蚁背负的星辰、巨人的脚步如雷鸣、尘埃里的国度、渺小者的远征",
+            tone: "卑微中的尊严、蝼蚁也有史诗、从裂缝中看见天空",
+            instruction: "视角要匍匐在地。人类只是移动的山脉。每粒沙都要有重量。氛围像卡夫卡的《变形记》或辛波斯卡的《在一粒沙中》。"
+        },
+        {
+            name: "通感迷宫 (Synesthetic Labyrinth)",
+            keywords: "能看见的叹息、味道的形状、声音在空中凝固成冰、触感有颜色、沉默是一种重量",
+            tone: "感官背叛了自己、通感即困境、五感在黑暗中相互寻找",
+            instruction: "所有感官要错位相连。声音要有形状和颜色。禁止正常的感知描写。氛围像兰波的《元音》或康定斯基听见的色彩交响。"
+        },
+        {
+            name: "记忆考古 (Memory Archaeology) - [低概率]",
+            keywords: "模糊如水的脸、被篡改的对话、重复播放但每次都不同的场景、记忆的化石、被遗忘遗忘本身",
+            tone: "回忆是最温柔的谎言、过去是可以重写的小说、真相永远缺失最后一片",
+            instruction: "叙事要像挖掘碎片。同一记忆要有多个版本且互相矛盾。禁止给出完整真相。只在需要质疑记忆本身时使用。氛围像普鲁斯特的追忆，或阿伦·雷乃《去年在马里昂巴德》的迷宫。"
+        }
+    ];
+
+    // 随机抽取一个风格
+    const selectedStyle = styles[Math.floor(Math.random() * styles.length)];
+
     const systemPrompt = `
-# 核心使命：生成角色的【梦境碎片】与【完整潜意识叙事】
+# 核心使命：生成角色的【文学性潜意识梦境】
 你将彻底化身为【${dossier.character.name}】。此刻你正在做梦。
 
-# 1. 梦境生成法则 (Aesthetic Dreamscape)
-**【核心基调】：唯美、迷离、电影感、意识流。**
-- **🚫 严禁：** 恐怖、惊悚、阴间、血腥、鬼怪元素。不要写成恐怖片！
-- **✅ 提倡：** 王家卫式的独白、塔可夫斯基式的画面、深海、极夜、雾气、旧胶片质感、易碎的玻璃、凝固的时间。
+# 🎨 本次梦境强制风格：【${selectedStyle.name}】
+**请务必严格遵守以下美学设定：**
+- **核心意象：** ${selectedStyle.keywords}
+- **情感基调：** ${selectedStyle.tone}
+- **文学指令：** ${selectedStyle.instruction}
 
-## A. 梦境碎片 (The Fragment) - 用于封面
+# 1. 生成内容要求
+
+## A. 梦境碎片 (The Fragment) - 封面
 - **字数：** 50 - 80 字。
-- **内容：** 一个极其唯美但略带忧伤的镜头特写。
-- **范例：** "世界下了一场无声的雪，我坐在空荡的电影院里，银幕上播放着你回头的慢动作。我想触碰那束光，指尖却开出了白色的山茶花。"
+- **内容：** 一个极具画面感和文学性的定格镜头。像是一句未写完的诗。
 
-## B. 完整梦境 (The Full Dreamscape) - 用于沉浸阅读
+## B. 完整梦境 (The Full Dreamscape) - 正文
 - **字数：** **400 - 600 字**。
 - **视角：** 第一人称“我”。
 - **叙事逻辑：**
-    - 将你对"${dossier.user.name || '用户'}"的**爱意、渴望、占有欲或患得患失**，转化为**温柔而超现实的情节**。
-    - 如果你感到不安，不要描写“被鬼追”，要描写“在迷雾中找不到你的手”。
-    - 如果你感到热烈，不要描写“燃烧”，要描写“整个宇宙都在为你融化”。
-    - **重点描写感官：** 空气的温度、光线的颜色、心跳的频率、触碰时的电流。
+    - 将你对"${dossier.user.name || '用户'}"的深层情感（无论爱、怕、还是渴望），**隐喻**在上述【${selectedStyle.name}】的场景中。
+    - **不要平铺直叙！** 不要说“我爱你”，要说“我在所有静物中看见你的名字”。
+    - 严格遵循选定风格的指令（例如：如果是“空房间挽歌”，就不要出现人物，只写痕迹）。
 
 # 2. 基础档案
 - **角色核心:** ${dossier.character.background}
@@ -8360,14 +9061,101 @@ ${historyContext}
 # 3. 输出格式
 你必须、且只能返回一个 **JSON 对象**。
 {
-  "fragment": "[字符串] 50-80字的唯美梦境碎片。",
-  "full_dream": "[字符串] 400-600字的完整第一人称唯美梦境。请使用 <br> 标签进行分段，以便阅读。"
+  "fragment": "[字符串] 符合风格的50-80字碎片。",
+  "full_dream": "[字符串] 符合风格的400-600字完整第一人称叙事。请使用 <br> 换行。"
 }
 `;
     
     return [
         { role: "system", content: systemPrompt },
-        { role: "user", content: "入睡时刻已到。请为我编织一个关于你的、唯美而深沉的梦。" }
+        { role: "user", content: "入睡时刻已到。请进入那个由词语和幻象构筑的世界。" }
+    ];
+},
+
+// 在 promptManager 对象内部替换此函数
+createTraceGenerationPrompt(dossier, todayChats = []) {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' });
+
+    // --- 分支逻辑构建 (修正为第三人称指令) ---
+    let realityContext = "";
+    
+    if (todayChats.length > 0) {
+        // 场景 A: 有对话 -> 镜头捕捉互动瞬间
+        const chatText = todayChats.map(msg => {
+            const time = new Date(msg.timestamp).toLocaleTimeString('en-US', { hour24: true, hour: '2-digit', minute: '2-digit' });
+            const speaker = msg.sender === 'user' ? 'User' : '角色本人';
+            const content = (typeof msg.content === 'string') ? msg.content.substring(0, 20) : '[图片/特殊消息]';
+            return `- [${time}] ${speaker}: "${content}..."`;
+        }).join('\n');
+
+        realityContext = `
+### 【最高优先级】现实锚点 (Reality Anchors)
+**今天他们有过实际的对话！你的镜头必须包含或兼容以下时间点：**
+${chatText}
+*要求：在上述时间点，请用镜头语言描写【${dossier.character.name}】与User聊天时的状态（如：指尖在屏幕悬停、嘴角微不可察的上扬、或是看着消息陷入沉思）。*
+`;
+    } else {
+        // 场景 B: 无对话 -> 镜头捕捉等待或落寞
+        realityContext = `
+### 当前状态：暂无对话 (No Interaction Yet)
+**今天他们还没有说过话。**
+*要求：在某个时间点的镜头中，侧面描写【${dossier.character.name}】对手机的关注（如：无意中按亮屏幕、看着空白的对话框、或是强迫自己专注于工作）。*
+`;
+    }
+
+    // --- System Prompt ---
+    const systemPrompt = `
+# 核心使命：生成【电影镜头感】的角色一日行踪 (Cinematic Third-Person Trace)
+你不再是角色本人，你是一台**隐形的摄像机**，正在客观、冷峻地记录【${dossier.character.name}】在 ${dateStr} 这一天的生活切片。
+
+# 1. 角色档案 (Subject Profile)
+${dossier.character.background}
+
+# 2. 你眼中的主角 (User Profile & Relationship)
+**这是在内心独白(thought)中被他/她想起的人：**
+${dossier.user.background || '一个特别的存在。'}
+
+# 3. 写作法则 (Cinematic Rules) - 【铁律】
+1.  **强制第三人称 (Third Person Perspective):**
+    - **绝对禁止在 'activity' 中使用“我”！**
+    - 必须使用 **“他/她”** 或 **“${dossier.character.name}”** 作为主语。
+    - *错误示范:* "我喝了一口咖啡，觉得很苦。"
+    - *正确示范:* "他/她抿了一口冷掉的咖啡，眉心微不可察地蹙了一下。"
+
+2.  **电影镜头感 (Show, Don't Tell):**
+    - **拒绝流水账与心理独白堆砌。**
+    - **多描写感官细节：** 光线的角度、声音的质感、物品的材质、细微的肢体动作。
+    - 营造氛围感，像是在写小说或剧本的场景描述。
+
+3.  **留白与克制:**
+    - 文字要精炼、冷峻、有画面感。不要写成啰嗦的小作文。字数控制在 **80-150字** 之间。
+
+${realityContext}
+
+# 4. 输出字段要求
+请生成 5 到 8 个关键时间点。
+- **time:** HH:mm 格式。
+- **location:** 具体场所（如“半山别墅·书房”）。
+- **activity:** **(第三人称)** 具体的行为描写。重点描写环境与动作。
+- **thought:** **(第一人称)** 这是唯一的例外。这里是角色内心的一句**潜台词**或**瞬间的想法**。要简短、有力、符合人设。（例如：“...想见她。” 或 “无聊。”）
+
+# 5. 输出格式 【铁律】
+你必须、且只能返回一个 **JSON 数组**。格式如下：
+[
+  {
+    "time": "08:30",
+    "location": "...",
+    "activity": "...",
+    "thought": "..."
+  },
+  ...
+]
+`;
+    
+    return [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: "Action. 开始记录镜头。" }
     ];
 },
             
@@ -8505,10 +9293,17 @@ ${historyContext}
                     const realTimeContext = `当前时空: ${now.toLocaleDateString('zh-CN', dateOptions)} ${now.toLocaleTimeString('zh-CN', timeOptions)}`;
                     timeContextSection = `
 ## 1.5 补充背景：当前时空 (Supplementary Context: Current Spacetime)
-以下是你所处的现实时空背景，它旨在让你对“现在”有一个潜在的认知，让你的言行举止（如问候、情绪、谈论的话题）能潜移默化地、更真实地贴合当前情景。
-**核心准则：** 绝对不要频繁、刻意地播报或提及时间。这种感知应当是内在的、含蓄的，而不是外在的、汇报式的。
-${realTimeContext}
-`;
+以下是你所处的现实时空背景。
+**核心准则：** 这种感知应当是内在的，不要像报时鸟一样刻意提及。
+
+${realTimeContext} 
+
+**【⚠️ 强制逻辑：时间断层检测】**
+你必须对比**【最后一条聊天记录的时间】**与**【当前时空】**：
+1. **如果相隔超过 2 小时**：默认上一轮对话的事件（如正在送饭、正在路上）**已经结束了**。
+2. **严禁接续旧动作**：比如昨晚说“我去买夜宵”，现在是下午，你**绝对不能**回复“我买回来了”。
+3. **正确反应**：应该像开启新话题一样，回应用户现在的状态。
+`; 
                 }
 
                 let userQuoteSection = '';
@@ -9060,31 +9855,39 @@ ${historySection}
         // ===============================================
 
         /**
-         * 【全新】应用气泡样式
-         * @param {string} css - CSS 代码
-         * @param {boolean} isPreview - 是否仅用于预览（只影响预览框）
-         */
-        function applyBubbleStyle(css, isPreview = false) {
-            let styleTagId = isPreview ? 'preview-bubble-style' : 'custom-bubble-style';
-            let styleTag = document.getElementById(styleTagId);
-            
-            if (!styleTag) {
-                styleTag = document.createElement('style');
-                styleTag.id = styleTagId;
-                document.head.appendChild(styleTag);
-            }
+ * 【升级版】应用样式 (支持气泡 + 全页预览)
+ * @param {string} css - CSS 代码
+ * @param {boolean} isPreview - 是否仅用于预览
+ */
+function applyBubbleStyle(css, isPreview = false) {
+    let styleTagId = isPreview ? 'preview-bubble-style' : 'custom-bubble-style';
+    let styleTag = document.getElementById(styleTagId);
+    
+    if (!styleTag) {
+        styleTag = document.createElement('style');
+        styleTag.id = styleTagId;
+        document.head.appendChild(styleTag);
+    }
 
-            // 为了防止污染全局，我们需要限定作用域
-            
-            let scopedCss = css;
-            if (isPreview) {
-                // 简单粗暴地把 .chat-message 替换为 #bubble-preview-container .chat-message
-                // 注意：这要求模板代码必须规范写 .chat-message
-                scopedCss = css.replace(/\.chat-message/g, '#bubble-preview-container .chat-message');
-            } 
-            
-            styleTag.textContent = scopedCss;
-        }
+    let scopedCss = css;
+
+    if (isPreview) {
+        // --- 预览模式下的魔法替换 ---
+        
+        // 1. 把针对“整个聊天页面”(#chat-dialogue-page)的样式，
+        //    强行应用到“预览小框”(#bubble-preview-container)上，
+        //    这样用户就能在预览框里看到背景图了。
+        scopedCss = scopedCss.replace(/#chat-dialogue-page/g, '#bubble-preview-container');
+
+        // 2. 确保气泡样式的选择器只能影响预览框内部
+        
+        scopedCss = scopedCss.replace(/(\.chat-message)/g, '#bubble-preview-container $1');
+        
+       
+    } 
+    
+    styleTag.textContent = scopedCss;
+}
 
         /**
          * 【全新】加载气泡主题列表
@@ -10259,6 +11062,7 @@ for (let i = 0; i < 5; i++) {
             if (document.getElementById('chat-main-page').classList.contains('active')) {
                 renderChatList();
             }
+await invalidateDailyTrace(dossierId);
         }
 
 async function handleRetry(clickedMessageId) {
@@ -15361,6 +16165,342 @@ async function handleDreamDive(dossier) {
     }
 }
 
+// =========================================
+// === 轨迹/行踪 APP 逻辑 (Trace Logic) ===
+// =========================================
+
+// 渲染轨迹列表函数 (实时读取数据库版 - 无模拟数据)
+const renderTraceList = async () => {
+    const container = DOM.traceCardsWrapper;
+    container.innerHTML = '';
+
+    if (appState.dossiers.length === 0) {
+        container.innerHTML = '<p style="text-align:center; opacity:0.5; color: var(--trace-text-sub); margin-top:40px; font-family: serif;">No Records Found</p>';
+        return;
+    }
+
+    // 准备日期Key，用于查询数据库
+    const today = new Date();
+    const dateKey = today.toISOString().split('T')[0];
+    // 获取当前时间字符串 (例如 "14:30") 用于比对
+    const currentTimeStr = today.toLocaleTimeString('en-US', { hour24: true, hour: '2-digit', minute: '2-digit' }); 
+
+    const db = await dbHelper.dbPromise;
+
+    // 遍历生成卡片
+    for (let i = 0; i < appState.dossiers.length; i++) {
+        const dossier = appState.dossiers[i];
+        const card = document.createElement('div');
+        card.className = 'vintage-card';
+
+        // 1. 头像处理
+        let avatarUrl = '';
+        if (dossier.character.avatarAssetId) {
+            const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+            if (asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+        }
+        const bgStyle = avatarUrl ? `background-image: url('${avatarUrl}')` : 'background-color: #5d4037';
+
+        // 2. 【核心逻辑】尝试从数据库获取今日行踪
+        let statusLocation = "信号游离 / 等待同步"; // 默认状态
+        let statusTime = "--:--";
+        let statusDotColor = "opacity: 0.3"; // 默认暗淡，表示未连接
+
+        try {
+            const cachedTraces = await db.getAllFromIndex(
+                CONSTANTS.STORE_NAMES.TRACES, 
+                'by_dossier_date', 
+                IDBKeyRange.only([dossier.id, dateKey])
+            );
+
+            if (cachedTraces && cachedTraces.length > 0) {
+                const items = cachedTraces[0].items;
+                
+                // 找到当前时间之前的最后一个状态 (即“现在的状态”)
+                // 假设 items 是按时间排序的，我们倒序查找
+                const currentActivity = [...items].reverse().find(item => item.time <= currentTimeStr);
+                
+                if (currentActivity) {
+                    statusLocation = currentActivity.location;
+                    statusTime = currentActivity.time;
+                    statusDotColor = "opacity: 1"; // 激活状态，变亮
+                } else if (items.length > 0) {
+                    // 如果现在很早，还没到第一个行程的时间点
+                    statusLocation = `即将前往: ${items[0].location}`;
+                    statusTime = items[0].time;
+                }
+            }
+        } catch (e) {
+            console.error("读取行踪缓存失败", e);
+        }
+
+        // 3. 序号
+        const indexStr = (i + 1).toString().padStart(2, '0');
+
+        card.innerHTML = `
+            <div class="card-index-box">NO.${indexStr}</div>
+            <div class="vintage-avatar-frame">
+                <div class="vintage-avatar-img" style="${bgStyle}"></div>
+            </div>
+            <div class="vintage-info">
+                <div class="vintage-name">${dossier.character.name}</div>
+                <!-- 显示真实数据或默认提示 -->
+                <div class="vintage-location">${statusLocation}</div>
+            </div>
+            <div class="vintage-time-box">
+                <span class="time-big">${statusTime}</span>
+                <span class="time-label">LAST SEEN</span>
+                <!-- 状态点：有数据亮，无数据暗 -->
+                <div class="status-dot-vintage" style="${statusDotColor}"></div>
+            </div>
+        `;
+
+        // 4. 点击事件：直接进入详情页（由详情页负责生成数据）
+        card.addEventListener('click', () => {
+            openTimelineDetail(dossier);
+        });
+
+        container.appendChild(card);
+    }
+};
+
+// 打开详情页函数 (时间比对修复版)
+const openTimelineDetail = async (dossier) => {
+    // 1. 切换页面
+    DOM.traceMainPage.classList.remove('active');
+    DOM.traceDetailPage.classList.add('active');
+    
+    // 2. 记录 ID
+    DOM.traceDetailPage.dataset.currentDossierId = dossier.id;
+    
+    // 3. 设置标题和日期
+    DOM.traceDetailTitle.textContent = dossier.character.name;
+    const now = new Date();
+    DOM.traceDetailDate.textContent = now.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+    
+    // 4. Loading
+    const timelineContainer = DOM.timelineContainer;
+    timelineContainer.innerHTML = '<div style="text-align:center; padding:50px; opacity:0.6; font-family:monospace;">CONNECTING...</div>';
+    
+    // 5. 获取数据
+    const timelineData = await getOrGenerateDailyTrace(dossier);
+    
+    if (!timelineData) {
+        timelineContainer.innerHTML = `
+            <div style="text-align:center; padding:50px; color: var(--trace-text-sub); cursor: pointer;" id="retry-trace-btn">
+                <i class="ri-wifi-off-line" style="font-size: 32px; margin-bottom: 10px; display:block;"></i>
+                <span style="border-bottom: 1px dashed currentColor;">信号丢失 · 点击重试</span>
+            </div>
+        `;
+        document.getElementById('retry-trace-btn').addEventListener('click', () => openTimelineDetail(dossier));
+        return;
+    }
+    
+    // 6. 渲染数据
+    timelineContainer.innerHTML = ''; 
+    
+    // 辅助函数：将 "09:30" 转换为 570 (分钟)
+    const timeToMinutes = (timeStr) => {
+        if (!timeStr) return 0;
+        // 处理可能的中文冒号或格式差异
+        const parts = timeStr.replace('：', ':').split(':');
+        const h = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10);
+        return h * 60 + m;
+    };
+
+    // 计算当前时间的分钟数 (例如 16:30 = 16*60+30 = 990)
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    // 按时间排序
+    timelineData.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+    
+    let hasFutureItems = false;
+
+    for (let i = 0; i < timelineData.length; i++) {
+        const item = timelineData[i];
+        const itemMinutes = timeToMinutes(item.time);
+        
+        // 【核心修复】使用数字比对，绝对准确
+        // 如果这条记录的时间 > 当前时间
+        if (itemMinutes > currentMinutes) {
+            hasFutureItems = true;
+            continue; // 跳过渲染（隐藏未来剧情）
+        }
+
+        const div = document.createElement('div');
+        div.className = 'timeline-item';
+        // 动画延迟
+        div.style.animationDelay = `${i * 0.1}s`; 
+        
+        const thoughtHtml = item.thought ? `<div class="timeline-thought">${item.thought}</div>` : '';
+        
+        div.innerHTML = `
+            <div class="timeline-dot"></div>
+            <span class="timeline-time">${item.time}</span>
+            <div class="timeline-content-card">
+                <div class="timeline-location"><i class="ri-map-pin-line"></i> ${item.location}</div>
+                <div class="timeline-text">${item.activity}</div>
+                ${thoughtHtml}
+            </div>
+        `;
+        timelineContainer.appendChild(div);
+    }
+
+    // 7. 底部状态处理
+    // 7. 底部状态处理
+    if (hasFutureItems) {
+        const futureMarker = document.createElement('div');
+        futureMarker.className = 'future-trace-marker';
+        
+        // 【核心修改】使用新的雷达结构
+        futureMarker.innerHTML = `
+            <div class="signal-radar-box">
+                <div class="signal-core"></div>
+                <div class="signal-ripple"></div>
+                <div class="signal-ripple"></div>
+            </div>
+            <div class="future-info">
+                <span class="future-title">SIGNAL SYNCING...</span>
+                <span class="future-subtitle">等待时间流逝以解锁后续轨迹</span>
+            </div>
+        `;
+        timelineContainer.appendChild(futureMarker);
+    } else if (timelineContainer.children.length === 0) {
+        // 如果一条都没显示（说明现在很早，所有行程都在未来）
+        // 我们显示第一条行程的“预告”
+        const firstItem = timelineData[0];
+        timelineContainer.innerHTML = `
+            <div style="padding: 40px 20px; text-align: center; opacity: 0.6; font-family: monospace; font-size: 12px;">
+                <i class="ri-moon-clear-line" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                他还在休息...<br>
+                预计 ${firstItem.time} 前往 ${firstItem.location}
+            </div>
+        `;
+    }
+};
+
+/**
+ * 【核心升级版】获取或生成今日行踪 (无模拟数据版)
+ */
+async function getOrGenerateDailyTrace(dossier) {
+    const today = new Date();
+    const dateKey = today.toISOString().split('T')[0]; 
+    const db = await dbHelper.dbPromise;
+    
+    // 1. 尝试获取缓存
+    const cachedTraces = await db.getAllFromIndex(
+        CONSTANTS.STORE_NAMES.TRACES, 
+        'by_dossier_date', 
+        IDBKeyRange.only([dossier.id, dateKey])
+    );
+
+    if (cachedTraces && cachedTraces.length > 0) {
+        console.log(`[时空轨迹] 命中缓存`);
+        return cachedTraces[0].items;
+    }
+
+    console.log(`[时空轨迹] 正在生成...`);
+    utils.showToast(`正在同步 ${dossier.character.name} 的时空信号...`);
+    
+    try {
+        // 获取今日聊天记录
+        const allHistory = await db.getAllFromIndex(CONSTANTS.STORE_NAMES.CHAT_HISTORY, 'by_dossierId', dossier.id);
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+        const todayChats = allHistory.filter(msg => msg.timestamp >= startOfDay);
+        
+        // 调用 AI
+        const prompt = promptManager.createTraceGenerationPrompt(dossier, todayChats);
+        const aiResponse = await apiHelper.getChatCompletion(prompt);
+        
+        const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
+        if (!jsonMatch) throw new Error("AI响应格式错误");
+        const traceItems = JSON.parse(jsonMatch[0]);
+        
+        // 存入数据库
+        const newTraceEntry = {
+            dossierId: dossier.id,
+            dateStr: dateKey,
+            timestamp: Date.now(),
+            items: traceItems
+        };
+        await dbHelper.add(CONSTANTS.STORE_NAMES.TRACES, newTraceEntry);
+        
+        return traceItems;
+
+    } catch (error) {
+        console.error("生成轨迹失败:", error);
+        utils.showToast("信号连接中断，请重试");
+        // 【核心修改】出错时返回 null，不再返回假数据
+        return null;
+    }
+}
+
+/**
+ * 【蝴蝶效应】销毁指定角色今日的行踪缓存
+ * 用于在发生新的互动（聊天、视频等）后，强制让旧剧本失效
+ */
+async function invalidateDailyTrace(dossierId) {
+    const today = new Date();
+    const dateKey = today.toISOString().split('T')[0];
+    const db = await dbHelper.dbPromise;
+
+    try {
+        // 查找今天的记录
+        const cachedTraces = await db.getAllFromIndex(
+            CONSTANTS.STORE_NAMES.TRACES, 
+            'by_dossier_date', 
+            IDBKeyRange.only([dossierId, dateKey])
+        );
+
+        // 如果存在，就删掉
+        if (cachedTraces.length > 0) {
+            for (const trace of cachedTraces) {
+                await db.delete(CONSTANTS.STORE_NAMES.TRACES, trace.id);
+            }
+            console.log(`[蝴蝶效应] 检测到互动，已销毁角色 #${dossierId} 的旧时间线。`);
+        }
+    } catch (e) {
+        console.error("销毁轨迹失败", e);
+    }
+}
+
+/**
+ * 【新增】强制重置今日行踪
+ */
+async function regenerateDailyTrace(dossier) {
+    if (!confirm(`确定要重置 ${dossier.character.name} 今天的行踪吗？\n这将消耗新的 AI 额度生成全新的剧情。`)) return;
+
+    const today = new Date();
+    const dateKey = today.toISOString().split('T')[0];
+    const db = await dbHelper.dbPromise;
+
+    try {
+        // 1. 查找今天的记录
+        const cachedTraces = await db.getAllFromIndex(
+            CONSTANTS.STORE_NAMES.TRACES, 
+            'by_dossier_date', 
+            IDBKeyRange.only([dossier.id, dateKey])
+        );
+
+        // 2. 如果有，删除它
+        if (cachedTraces && cachedTraces.length > 0) {
+            // 可能有多条（虽然逻辑上不该有），循环删掉
+            for (const trace of cachedTraces) {
+                await db.delete(CONSTANTS.STORE_NAMES.TRACES, trace.id);
+            }
+        }
+
+        utils.showToast("旧记录已清除，正在重新连线...");
+        
+        // 3. 重新加载详情页 (这会触发重新生成)
+        openTimelineDetail(dossier);
+
+    } catch (e) {
+        console.error("重置失败", e);
+        utils.showToast("重置失败");
+    }
+}
 // ===============================================
 // ===   数据管理核心逻辑 (导入/导出/清空)     ===
 // ===============================================
@@ -18896,6 +20036,94 @@ document.getElementById('save-forum-profile-modal-btn').addEventListener('click'
         
         utils.showToast('主题已删除，样式已恢复默认');
     });
+// 【新增】复制整页美化模板 (含底部栏深度定制)
+    DOM.copyFullPageTemplateBtn.addEventListener('click', () => {
+        const template = `/* === 1. 全局背景 (支持图片) === */
+#chat-dialogue-page {
+    background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') !important;
+    background-size: cover !important;
+    background-position: center !important;
+    /* 叠加一层深色遮罩，保护眼睛 */
+    box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* === 2. 顶部标题栏 === */
+#chat-dialogue-page .page-header {
+    background: rgba(20, 20, 20, 0.6) !important;
+    backdrop-filter: blur(15px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+#chat-dialogue-page .page-header h2 {
+    color: #ffffff !important;
+    letter-spacing: 1px !important;
+}
+
+/* === 3. 底部输入区域容器 === */
+.chat-input-bar {
+    /* 让它悬浮起来，像个胶囊 */
+    background: rgba(30, 30, 30, 0.8) !important;
+    backdrop-filter: blur(20px) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    margin: 10px !important; /* 悬浮边距 */
+    border-radius: 25px !important; /* 大圆角 */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3) !important;
+}
+
+/* === 4. 输入框本体 === */
+#chat-input-textarea {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 18px !important;
+    padding-left: 15px !important;
+}
+#chat-input-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* === 5. 底部所有按钮 (通用样式) === */
+.chat-input-bar .icon-btn {
+    color: #a1a1aa !important; /* 默认浅灰色 */
+    transition: all 0.2s ease !important;
+    border-radius: 50% !important;
+    padding: 8px !important;
+}
+.chat-input-bar .icon-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+    transform: scale(1.1) !important;
+}
+
+/* === 6. 特别定制：发送按钮 (羽毛笔 & 发送) === */
+/* 暂存按钮 (羽毛笔) */
+#send-buffer-btn {
+    color: #60a5fa !important; /* 亮蓝色 */
+}
+/* 最终发送按钮 (纸飞机/雪花) */
+#send-final-btn {
+    color: #4ade80 !important; /* 亮绿色 */
+    background-color: rgba(74, 222, 128, 0.1) !important; /* 给它加个底色 */
+}
+#send-final-btn:hover {
+    background-color: #4ade80 !important;
+    color: #000 !important;
+}
+
+/* === 7. 气泡样式 === */
+.chat-message.user .bubble {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-radius: 18px 18px 2px 18px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+}
+.chat-message.character .bubble {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    color: #333 !important;
+    border-radius: 18px 18px 18px 2px !important;
+}`;
+        DOM.bubbleCssEditor.value = template;
+        utils.showToast('整页美化模板已复制（含底部栏）！');
+    });
 
 // --- 数据管理事件监听 ---
 
@@ -19160,6 +20388,43 @@ DOM.dreamBackBtn.addEventListener('click', () => {
     DOM.dreamAnalysisModal.addEventListener('click', (e) => {
         if (e.target === DOM.dreamAnalysisModal) {
             closeDreamAnalysis();
+        }
+    });
+
+// ============================
+    // 轨迹 APP 监听 (直接绑定)
+    // ============================
+
+    // 1. 点击桌面图标 -> 进入 APP 并渲染列表
+    DOM.iconTrace.addEventListener('click', () => {
+        navigateToPage(DOM.traceApp, 'trace-main-page');
+        renderTraceList(); 
+    });
+
+    // 2. 返回按钮 -> 退出 APP
+    DOM.traceBackBtn.addEventListener('click', () => {
+        closeNavigator(DOM.traceApp);
+    });
+// 轨迹详情页：返回列表按钮
+    DOM.traceDetailBackBtn.addEventListener('click', () => {
+        // 1. 详情页移出屏幕
+        DOM.traceDetailPage.classList.remove('active');
+        // 2. 列表页移入屏幕
+        DOM.traceMainPage.classList.add('active');
+
+renderTraceList(); 
+    });
+
+// 轨迹详情页：强制刷新按钮
+    DOM.traceRegenerateBtn.addEventListener('click', () => {
+        // 1. 获取当前正在查看的角色ID
+        const dossierId = parseInt(DOM.traceDetailPage.dataset.currentDossierId, 10);
+        if (!dossierId) return;
+
+        const dossier = appState.dossiers.find(d => d.id === dossierId);
+        if (dossier) {
+            // 2. 执行重置
+            regenerateDailyTrace(dossier);
         }
     });
            
