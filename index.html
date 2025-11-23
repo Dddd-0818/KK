@@ -5103,6 +5103,643 @@ body.light-mode {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; text-shadow: 0 0 5px var(--trace-text-sub); }
 }
+
+/* ============================================================
+   === Cloud Sync (云端同步) V4.2: 完整最终版 ===
+   ============================================================ */
+
+/* --- 1. APP 基础容器 --- */
+#cloud-sync-app .app-page {
+    /* 深色模式：深邃暗房背景 */
+    background: #050505;
+    color: #e0e0e0;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+/* 浅色模式：柔和灰白 */
+body.light-mode #cloud-sync-app .app-page {
+    background: #F2F2F7;
+    color: #1c1c1e;
+}
+
+/* --- 2. 设备列表页 (List Page) --- */
+.cloud-content-scroll {
+    padding: 20px;
+    overflow-y: auto;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.cloud-section-header {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 5px;
+    text-transform: uppercase;
+}
+body.light-mode .cloud-section-header { 
+    color: rgba(0,0,0,0.4); 
+    border-color: rgba(0,0,0,0.1); 
+}
+
+/* 列表项容器 */
+#cloud-device-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 单个设备条目 */
+.cloud-device-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+.cloud-device-item:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+    transform: translateX(5px);
+}
+body.light-mode .cloud-device-item {
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+body.light-mode .cloud-device-item:hover {
+    background: #fafafa;
+    transform: translateX(5px);
+}
+
+.cloud-device-info { flex-grow: 1; margin-left: 15px; }
+.cloud-device-name { font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
+.cloud-device-model { font-size: 12px; opacity: 0.5; margin-top: 3px; }
+.cloud-device-status { font-size: 12px; color: #34C759; display: flex; align-items: center; gap: 5px; margin-right: 10px; }
+.cloud-device-item .arrow { font-size: 18px; opacity: 0.3; }
+
+
+/* --- 3. 仪表盘详情页 (Dashboard) --- */
+.cloud-dashboard-content {
+    padding: 0 20px 40px 20px;
+    overflow-y: auto;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* 沉浸式头部卡片 */
+.cloud-cinematic-header {
+    position: relative;
+    height: 180px;
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 25px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6); /* 深色模式重阴影 */
+    border: 1px solid rgba(255,255,255,0.1);
+}
+body.light-mode .cloud-cinematic-header {
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* 浅色模式柔和阴影 */
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* 头像模糊背景层 */
+.header-bg-layer {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(15px) brightness(0.5) contrast(1.1);
+    transform: scale(1.1);
+    z-index: 0;
+}
+/* 噪点叠加 */
+.header-bg-layer::after {
+    content: "";
+    position: absolute; top:0; left:0; width:100%; height:100%;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+');
+    opacity: 0.3;
+}
+
+/* 头部文字层 (强制白色，保证可读性) */
+.header-info-layer { position: relative; z-index: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+.cloud-cinematic-header * { color: #ffffff !important; }
+
+.device-meta { 
+    font-size: 10px; letter-spacing: 2px; opacity: 0.8; 
+    text-transform: uppercase; margin-bottom: 5px; display: flex; justify-content: space-between; 
+}
+.character-signature {
+    font-family: "Times New Roman", "Songti SC", serif;
+    font-size: 36px; font-weight: 700; font-style: italic;
+    margin-bottom: 8px;
+}
+.header-quote { font-size: 12px; opacity: 0.9; font-weight: 300; font-style: italic; }
+
+
+/* --- 4. 叙事碎片容器 (Bento Grid) --- */
+.cloud-grid-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 两列布局 */
+    gap: 15px;
+    padding-bottom: 40px;
+}
+
+/* 核心卡片样式 */
+.cloud-card {
+    /* 深色：增加底色不透明度，提高文字对比度 */
+    background: rgba(35, 35, 35, 0.7);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    min-height: 140px;
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+/* 浅色模式卡片 */
+body.light-mode .cloud-card {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.cloud-card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.3); }
+body.light-mode .cloud-card:hover { border-color: rgba(0,0,0,0.1); }
+.cloud-card:active { transform: scale(0.98); }
+
+/* 跨两列的长卡片 */
+.cloud-card.wide { grid-column: span 2; }
+
+/* 卡片小标题 */
+.card-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    color: rgba(255,255,255,0.5); /* 提高亮度 */
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+body.light-mode .card-label { color: #8E8E93; }
+
+/* 待同步状态 (锁/图标) */
+.cloud-card-body.placeholder-state {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    opacity: 0.8; /* 提高亮度 */
+    transition: opacity 0.3s;
+}
+.cloud-card-body.placeholder-state i { font-size: 26px; color: rgba(255,255,255,0.9); }
+body.light-mode .cloud-card-body.placeholder-state i { color: #333; }
+
+.cinematic-placeholder {
+    font-family: "Songti SC", serif;
+    font-size: 13px;
+    font-style: italic;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.7);
+}
+body.light-mode .cinematic-placeholder { color: #666; }
+
+/* 加载动画 */
+.cloud-card.loading i { animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* 内容显示区 */
+.cloud-card-content { max-height: 100%; /* 不允许超过父容器 */
+    overflow: hidden; /* 溢出隐藏 */
+}
+.cloud-card-content.hidden { display: none; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+
+/* === 5. 各模块内容专属样式 === */
+
+/* [A] 搜索历史 */
+.search-item {
+    font-family: monospace; font-size: 13px;
+    border-left: 2px solid rgba(255,255,255,0.2);
+    padding-left: 10px; margin-bottom: 10px;
+    color: rgba(255,255,255,0.9);
+}
+body.light-mode .search-item { 
+    border-left-color: #007AFF; 
+    color: #333; 
+    background: rgba(0,0,0,0.03);
+    padding: 8px 10px;
+    border-radius: 0 4px 4px 0;
+}
+.search-time.late-night { color: #FF453A; font-weight: bold; }
+
+/* [B] 购物车 */
+.cart-item {
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px dashed rgba(255,255,255,0.2);
+}
+body.light-mode .cart-item { border-bottom-color: rgba(0,0,0,0.1); }
+
+.cart-name { font-size: 14px; font-weight: bold; display: block; color: #fff; }
+body.light-mode .cart-name { color: #000; }
+.cart-reason {
+    font-size: 11px; 
+    font-style: italic; 
+    opacity: 0.6; 
+    font-family: "Songti SC", serif; 
+    margin-top: 2px; 
+    
+    /* vvv 核心截断代码 vvv */
+    display: -webkit-box;
+    -webkit-line-clamp: 1; /* 只显示 1 行，保持列表整洁 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* [C] 草稿箱 */
+.cloud-card.paper-texture { background: rgba(255, 250, 240, 0.1); }
+body.light-mode .cloud-card.paper-texture { background: #fff; }
+
+.draft-item {
+    font-family: "KaiTi", serif; 
+    font-size: 14px; 
+    line-height: 1.5;
+    color: rgba(255,255,255,0.9); 
+    margin-bottom: 10px; 
+    position: relative;
+    padding: 5px;
+    border-left: 2px solid rgba(255,255,255,0.3);
+    padding-left: 10px;
+
+    /* vvv 核心截断代码 vvv */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* 最多显示 3 行 */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+body.light-mode .draft-item { color: #333; border-left-color: #333; }
+
+/* [D] 隐秘空间 */
+.cloud-card.danger-zone { 
+    border: 1px solid rgba(255, 59, 48, 0.4); 
+    background: rgba(40, 10, 10, 0.6); 
+}
+body.light-mode .cloud-card.danger-zone { background: #FFF0F0; border-color: #FFDddd; }
+
+.secret-memo {
+    font-family: "Songti SC", serif; 
+    color: #ff9a9e;
+    font-size: 13px; 
+    line-height: 1.6; 
+    text-align: justify;
+    
+    /* vvv 【核心修复】 vvv */
+    height: 100%; /* 填满卡片高度 */
+    overflow: hidden; /* 隐藏溢出部分 */
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* 最多显示 4 行 */
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis; /* 显示省略号 */
+    
+    /* 增加一个渐变遮罩，提示下面还有内容 */
+    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+}
+
+/* 浅色模式适配 */
+body.light-mode .secret-memo { 
+    color: #D32F2F; 
+}
+
+/* [E] 音乐 */
+/* 列表容器 */
+.music-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+/* 单个歌曲行 */
+.music-item-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: background 0.2s;
+    margin-bottom: 10px !important;
+}
+body.light-mode .music-item-row {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+.music-item-row:hover {
+    background: rgba(255, 255, 255, 0.08);margin-bottom: 0 !important;
+}
+
+/* 迷你封面 */
+.mini-cover {
+    width: 36px; 
+    height: 36px; 
+    border-radius: 6px; 
+    background: #111;
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+/* 给封面加一点伪胶片质感 */
+.mini-cover::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent);
+}
+
+.mini-cover i {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* 歌曲信息 */
+.music-info-col {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0; /* 防止文字溢出 */
+}
+
+.music-row-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+body.light-mode .music-row-title { color: #000; }
+
+.music-row-artist {
+    font-size: 11px;
+    opacity: 0.6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: sans-serif;
+}
+
+/* 正在播放的波形动画 (装饰用) */
+.playing-icon {
+    display: flex;
+    gap: 2px;
+    height: 10px;
+    align-items: flex-end;
+    margin-left: 10px;
+    opacity: 0.6;
+}
+.playing-bar {
+    width: 2px;
+    background-color: #FA2D48;
+    animation: equalier 1s infinite ease-in-out;
+}
+.playing-bar:nth-child(2) { animation-delay: 0.2s; height: 60%; }
+.playing-bar:nth-child(3) { animation-delay: 0.4s; height: 30%; }
+
+@keyframes equalier {
+    0%, 100% { height: 20%; }
+    50% { height: 100%; }
+}
+
+/* [F] 屏幕使用 */
+.screen-time-row { 
+    display: flex; justify-content: space-between; 
+    margin-bottom: 8px; font-size: 13px; 
+    border-bottom: 1px solid rgba(255,255,255,0.05); 
+    padding-bottom: 4px;
+}
+body.light-mode .screen-time-row { border-bottom-color: rgba(0,0,0,0.05); }
+.st-app { font-weight: 600; color: #bcaaa4; }
+body.light-mode .st-app { color: #5856D6; }
+.st-note { 
+    opacity: 0.7; 
+    font-size: 11px;
+    /* 单行截断 */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    max-width: 120px; /* 限制最大宽度 */
+}
+
+/* === 云端详情浮窗 (Cinematic Detail Modal) === */
+
+.cloud-detail-card {
+    width: 85%;
+    max-width: 320px;
+    /* 深色磨砂玻璃背景 */
+    background: rgba(20, 20, 20, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+    transform: scale(0.95);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 浅色模式适配 */
+body.light-mode .cloud-detail-card {
+    background: rgba(255, 255, 255, 0.95);
+    color: #1c1c1e;
+    border-color: rgba(0,0,0,0.1);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+/* 激活状态 */
+.modal-overlay.visible .cloud-detail-card {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* 头部 */
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+}
+body.light-mode .detail-header { border-bottom-color: rgba(0,0,0,0.1); }
+
+.detail-type {
+    font-size: 10px;
+    letter-spacing: 2px;
+    opacity: 0.5;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+#close-cloud-detail-btn {
+    cursor: pointer;
+    font-size: 20px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+#close-cloud-detail-btn:hover { opacity: 1; }
+
+/* 内容区 */
+.detail-main-text {
+    font-size: 18px;
+    font-weight: 600;
+    font-family: "Times New Roman", serif;
+    line-height: 1.4;
+    color: #fff;
+}
+body.light-mode .detail-main-text { color: #000; }
+
+.detail-sub-text {
+    font-size: 14px;
+    line-height: 1.6;
+    opacity: 0.8;
+    font-family: "Songti SC", serif; /* 宋体，增加叙事感 */
+    text-align: justify;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 8px;
+}
+body.light-mode .detail-sub-text { background: rgba(0,0,0,0.03); }
+
+/* 底部元数据 */
+.detail-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10px;
+    opacity: 0.4;
+    justify-content: flex-end;
+}
+
+/* =========================================
+   === Cloud Sync: 呼吸灯交互特效 ===
+   ========================================= */
+
+/* 加载中状态：不改变内容，只改变容器样式 */
+.cloud-card.loading {
+    /* 禁止重复点击 */
+    pointer-events: none; 
+    /* 呼吸动画 */
+    animation: cinematic-breathe 2s infinite ease-in-out;
+}
+
+/* 让内部的文字/图标也跟着微微闪烁，增加“传输中”的感觉 */
+.cloud-card.loading .cloud-card-body {
+    animation: opacity-pulse 2s infinite ease-in-out;
+}
+
+/* --- 深色模式呼吸动画 (银白色光晕) --- */
+@keyframes cinematic-breathe {
+    0% {
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+    }
+    50% {
+        border-color: rgba(255, 255, 255, 0.6); /* 边框变亮 */
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.15); /* 外发光 */
+        background: rgba(255, 255, 255, 0.08); /* 背景微微变亮 */
+    }
+    100% {
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+/* --- 浅色模式呼吸动画 (深灰色/蓝色光晕) --- */
+body.light-mode .cloud-card.loading {
+    animation: cinematic-breathe-light 2s infinite ease-in-out;
+}
+
+@keyframes cinematic-breathe-light {
+    0% {
+        border-color: rgba(0, 0, 0, 0.05);
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+    50% {
+        border-color: rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+    100% {
+        border-color: rgba(0, 0, 0, 0.05);
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+    }
+}
+
+/* 文字透明度呼吸 */
+@keyframes opacity-pulse {
+    0% { opacity: 0.7; }
+    50% { opacity: 0.3; }
+    100% { opacity: 0.7; }
+}
+
+/* === 抓包/警告特效 === */
+
+/* 1. 拒绝访问状态 */
+.cloud-card.access-denied {
+    border-color: #ff3b30 !important;
+    background: rgba(255, 59, 48, 0.15) !important;
+    animation: glitch-shake 0.4s cubic-bezier(.36,.07,.19,.97) both infinite;
+    pointer-events: none; /* 禁止操作 */
+}
+
+/* 2. 内部图标变红 */
+.cloud-card.access-denied i {
+    color: #ff3b30 !important;
+    text-shadow: 0 0 10px rgba(255, 59, 48, 0.8);
+}
+
+/* 3. 警告文字 */
+.warning-text {
+    color: #ff3b30;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 12px;
+}
+
+/* 4. 故障抖动动画 */
+@keyframes glitch-shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}
     </style>
 </head>
 
@@ -5193,8 +5830,11 @@ body.light-mode {
     <i class="ri-map-pin-time-line"></i> <!-- 或者 ri-radar-line -->
     <span>时空轨迹</span>
 </div>
-    <!-- 3. 占位 -->
-    <div id="icon-p2-3" class="app-icon customizable-icon"></div>
+    <!-- 桌面图标 -->
+<div id="icon-cloud-sync" class="app-icon icon-with-text customizable-icon" style="cursor: pointer;">
+    <i class="ri-cloud-windy-line"></i>
+    <span>云端同步</span>
+</div>
     <!-- 4. 占位 -->
     <div id="icon-p2-4" class="app-icon customizable-icon"></div>
 </div>
@@ -5873,6 +6513,113 @@ body.light-mode {
     </div>
 
 </div>
+
+<!-- ===   云端同步 (Cloud Sync) V4.0 完整结构   === -->
+<div id="cloud-sync-app" class="app-navigator">
+    
+    <!-- 页面 1: 设备列表 (选择角色) -->
+    <div id="cloud-device-list-page" class="app-page">
+        <div class="page-header">
+            <i class="ri-arrow-left-s-line left-icon back-button" data-target="desktop"></i>
+            <h2>查找设备</h2>
+            <i class="ri-radar-line right-icon" style="opacity: 0.6;"></i>
+        </div>
+        <div class="cloud-content-scroll">
+            <div class="cloud-section-header">LINKED DEVICES</div>
+            <div id="cloud-device-list-container">
+                <!-- JS 动态填充 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 页面 2: 仪表盘 (电影感界面) -->
+    <div id="cloud-dashboard-page" class="app-page">
+        <div class="page-header" style="background: transparent; border: none;">
+            <i class="ri-arrow-left-s-line left-icon back-button" data-target="cloud-device-list-page"></i>
+            <!-- 标题留空，由下方大字代替 -->
+            <h2></h2>
+            <i class="ri-signal-tower-line right-icon" style="opacity:0.7;"></i>
+        </div>
+        
+        <div class="cloud-dashboard-content cinematic-mode">
+            <!-- 顶部：沉浸式人物头图 -->
+            <div class="cloud-cinematic-header">
+                <div class="header-bg-layer"></div>
+                <div class="header-info-layer">
+                    <div class="device-meta">
+                        <span class="sync-time">Last Sync: Just Now</span>
+                        <i class="ri-secure-payment-line"></i>
+                    </div>
+                    <div class="character-signature" id="cloud-device-name">
+                        Unknown
+                    </div>
+                    <div class="header-quote">
+                        “这里藏着所有未曾寄出的信。”
+                    </div>
+                </div>
+            </div>
+
+            <!-- 叙事碎片容器 (Bento Grid) -->
+            <div class="cloud-grid-container">
+                
+                <!-- 1. 搜索历史 (长条) -->
+                <div class="cloud-card wide" data-type="search">
+                    <div class="card-label">SEARCH HISTORY</div>
+                    <div class="cloud-card-body placeholder-state">
+                        <span class="cinematic-placeholder">点击读取深夜痕迹...</span>
+                    </div>
+                    <div class="cloud-card-content hidden"></div>
+                </div>
+
+                <!-- 2. 购物车 (方形 - 纯文字) -->
+                <div class="cloud-card" data-type="cart">
+                    <div class="card-label">UNCHECKED</div>
+                    <div class="cloud-card-body placeholder-state">
+                        <i class="ri-shopping-bag-line"></i>
+                    </div>
+                    <div class="cloud-card-content hidden"></div>
+                </div>
+
+                <!-- 3. 草稿箱 (方形) -->
+                <div class="cloud-card paper-texture" data-type="drafts">
+                    <div class="card-label">UNSENT</div>
+                    <div class="cloud-card-body placeholder-state">
+                        <i class="ri-edit-line"></i>
+                    </div>
+                    <div class="cloud-card-content hidden"></div>
+                </div>
+
+                <!-- 4. 屏幕使用 (方形) -->
+                <div class="cloud-card" data-type="screen_time">
+                    <div class="card-label">FOCUS</div>
+                    <div class="cloud-card-body placeholder-state">
+                        <i class="ri-timer-flash-line"></i>
+                    </div>
+                    <div class="cloud-card-content hidden"></div>
+                </div>
+
+                <!-- 5. 隐秘空间 (方形 - 高亮) -->
+                <div class="cloud-card danger-zone" data-type="hidden_space">
+                    <div class="card-label">SECRET</div>
+                    <div class="cloud-card-body placeholder-state">
+                        <i class="ri-lock-password-line"></i>
+                    </div>
+                    <div class="cloud-card-content hidden"></div>
+                </div>
+
+                <!-- 6. 音乐 (长条) -->
+                <div class="cloud-card wide music-style" data-type="music">
+                    <div class="card-label">ON REPEAT</div>
+                    <div class="cloud-card-body placeholder-state">
+                        <span class="cinematic-placeholder">聆听此刻心跳...</span>
+                    </div>
+                    <div class="cloud-card-content hidden"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
     <!-- 动态发布应用 -->
     <div id="moment-creator-app" class="app-navigator">
         <div id="moment-creation-page" class="app-page">
@@ -6465,6 +7212,24 @@ body.light-mode {
             <p id="dream-analysis-text-modal">
                 <!-- JS 填入内容 -->
             </p>
+        </div>
+    </div>
+</div>
+
+<!-- 云端同步：单条详情查看浮窗 -->
+<div id="cloud-item-detail-modal" class="modal-overlay">
+    <div class="cloud-detail-card">
+        <div class="detail-header">
+            <span class="detail-type">DATA FRAGMENT</span>
+            <i class="ri-close-line" id="close-cloud-detail-btn"></i>
+        </div>
+        <div class="detail-body">
+            <div class="detail-main-text" id="cloud-detail-title"></div>
+            <div class="detail-sub-text" id="cloud-detail-content"></div>
+            <div class="detail-meta">
+                <i class="ri-fingerprint-line"></i>
+                <span id="cloud-detail-meta">Analyzed by Neural Engine</span>
+            </div>
         </div>
     </div>
 </div>
@@ -7214,6 +7979,11 @@ iconTrace: document.getElementById('icon-trace'),
     timelineContainer: document.getElementById('timeline-container'),
     traceDetailBackBtn: document.getElementById('trace-detail-back-btn'),
     traceRegenerateBtn: document.getElementById('trace-regenerate-btn'),
+    cloudSyncApp: document.getElementById('cloud-sync-app'),
+    cloudDeviceListContainer: document.getElementById('cloud-device-list-container'),
+    cloudDeviceName: document.getElementById('cloud-device-name'),
+    iconCloudSync: document.getElementById('icon-cloud-sync'),
+    cloudBackBtns: document.querySelectorAll('#cloud-sync-app .back-button'),
             // 颜色选择器
             styleInputs: {
                 normal: document.getElementById('style-color-normal'),
@@ -9131,10 +9901,16 @@ ${dossier.user.background || '一个特别的存在。'}
 3.  **留白与克制:**
     - 文字要精炼、冷峻、有画面感。不要写成啰嗦的小作文。字数控制在 **80-150字** 之间。
 
+ 3.5  **时间跨度 (关键):** 
+    - 你必须生成 **8 到 12 个** 关键时间点。
+    - **【强制要求】** 时间线必须覆盖 **从清晨 (07:00) 到 深夜 (01:00)**。
+    - **最后一条记录必须在 22:30 之后**（例如：深夜的独处、入睡前的状态）。不要在晚餐后就结束！
+
+
 ${realityContext}
 
 # 4. 输出字段要求
-请生成 5 到 8 个关键时间点。
+请生成 8 到 12 个关键时间点。
 - **time:** HH:mm 格式。
 - **location:** 具体场所（如“半山别墅·书房”）。
 - **activity:** **(第三人称)** 具体的行为描写。重点描写环境与动作。
@@ -9144,7 +9920,7 @@ ${realityContext}
 你必须、且只能返回一个 **JSON 数组**。格式如下：
 [
   {
-    "time": "08:30",
+    "time": "07:30",
     "location": "...",
     "activity": "...",
     "thought": "..."
@@ -9155,7 +9931,122 @@ ${realityContext}
     
     return [
         { role: "system", content: systemPrompt },
-        { role: "user", content: "Action. 开始记录镜头。" }
+        { role: "user", content: "Action. 开始记录镜头，请务必覆盖到深夜。" }
+    ];
+},
+
+    // 请替换 promptManager 对象内的 createCloudSyncPrompt 函数
+    createCloudSyncPrompt(dossier, history, type) {
+        const historyText = (history && history.length > 0) 
+            ? history.map(m => `${m.sender}: ${m.content}`).join('\n') 
+            : "（暂无最近对话，基于原始人设生成）";
+        
+        const userName = dossier.user.name || 'User';
+        const userPersona = dossier.user.background || '（重要的人）';
+
+        // 【核心升级：字数与深度要求】
+        const instructions = {
+            'search': `生成 3-5 条搜索记录 (含深夜时段)。
+            JSON格式：{ "time": "HH:MM", "query": "搜索词", "detail": "不要只解释原因。请进行一段【100字左右】的意识流描写。描述你在搜索这个词时的具体心境、你脑海中浮现的关于${userName}的画面，以及你此刻的患得患失。" }`,
+            
+            'cart': `生成 2-3 个未结账商品。
+            JSON格式：{ "item": "商品名", "reason": "简短理由", "detail": "【100-150字】详细描述一个幻想中的场景：你买下它之后，打算怎么和${userName}一起使用？或者描述你犹豫时的内心博弈——手指在付款键上悬停了多久？为什么最后放弃了？" }`,
+            
+            'drafts': `生成 2 条未发送的草稿。
+            JSON格式：{ "content": "草稿内容", "detail": "【100-150字】深度还原当时的心理活动。是你写完觉得太卑微了？还是觉得太露骨了？描述你删掉每一个字时的心情，或者你盯着屏幕等待对方“正在输入”时的焦灼。" }`,
+            
+            'hidden_space': `生成一条【绝对私密】的备忘录。
+            JSON格式：{ "content": "备忘录正文", "detail": "【50字左右】侧写记录时的状态(如：酒后/失眠夜/刚看完照片)。" }
+            **特别要求**：备忘录正文 content 必须是一篇【200-300字】的微型散文。请动用感官描写（气味、光线、温度），剖析你对${userName}这种复杂、拉扯、甚至有些病态的依恋。"`,
+            
+            'music': `生成一个包含 3-4 首歌曲的【深夜情绪歌单】。
+            JSON格式：{ "song": "歌名", "artist": "歌手", "detail": "【100字左右】深层解读：这首歌的哪句歌词像极了你们现在的关系？为什么要把它放进这个歌单？" }`,
+            
+            'screen_time': `生成 3 个APP的使用记录。
+            JSON格式：{ "app": "APP名", "duration": "时长", "analysis": "行为简述", "detail": "【100字左右】行为还原。例如：如果不小心点开了相册，描述你是如何放大看TA的眼睛，或者如何反复阅读TA三个月前的一条语音转文字。" }`
+        };
+
+        const systemPrompt = `
+# 核心使命：生成角色手机的隐私数据碎片 (Mind Mirror - Deep Dive)
+你将扮演【${dossier.character.name}】。用户（${userName}）正在查看你的【${type}】数据。
+
+# 1. 角色档案
+${dossier.character.background}
+
+# 2. 羁绊对象 (The User)
+- **姓名:** ${userName}
+- **人设:** ${userPersona}
+
+# 3. 聊天背景
+${historyText}
+
+# 4. 任务要求 (生成 ${type})
+${instructions[type]}
+
+# 【语言禁忌 (Forbidden Words) - 强制执行】
+**你必须像一个有着血肉之躯、情感细腻甚至有些脆弱的“人”去感受。**
+1. **绝对禁止理科词汇：** 系统、变量、量化、精准、轨迹、频率、机制、程序、运算、载体、维度、参数、逻辑闭环、数据分析、修正。
+2. **描写逻辑：** 你的世界是由**情绪、感官、具体的物品**构成的，而不是抽象概念。
+   - ❌ 错误："我对他/她的情感投入超出了预设阈值。"
+   - ✅ 正确："我看着窗外的雨下了整整一夜，就像我心里那场怎么也停不下来的念想。我明明知道不该这样，可指尖碰到屏幕上他/她的名字时，心还是会漏跳一拍。"
+
+# 【输出格式铁律】
+1. **纯净输出**：严禁在 detail 和 content 字段中包含【第一人称】、【侧写】、【心理活动】等任何标签前缀。
+2. **Strict JSON**：直接返回 JSON 对象，不要 Markdown。
+结构： { "items": [ ... ] }
+`;
+        return [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: "Start sync." }
+        ];
+    },
+
+// 新增：被抓包时的反应生成
+    // 在 promptManager 对象内部替换此函数
+createCaughtReactionPrompt(dossier, moduleName) {
+    const userName = dossier.user.name || 'User';
+    
+    // 根据不同模块，提供一些具体的心理活动提示，引导AI写出更有针对性的内容
+    let contextHint = "";
+    if (moduleName.includes("搜索")) contextHint = "提示：因为搜索记录里可能有一些傻傻的问题或深夜的emo，被看到会觉得很丢脸。";
+    else if (moduleName.includes("购物车")) contextHint = "提示：也许里面有想给对方买的礼物，或者是奇怪的个人用品，不想提前暴露。";
+    else if (moduleName.includes("隐秘")) contextHint = "提示：这是你内心最深处的秘密，被窥探后的第一反应应该是震惊、防御或瞬间的脆弱，而不仅仅是调侃。";
+    else if (moduleName.includes("草稿")) contextHint = "提示：里面有很多写了又删给对方的话。被看到简直是“公开处刑”。";
+
+    const systemPrompt = `
+# 核心使命：生成“被窥探”后的即时反应 (Caught In The Act)
+你将扮演【${dossier.character.name}】。
+**突发事件：** 你刚刚发现你的伴侣（${userName}）正在通过黑客手段偷看你的手机！
+**具体被偷看的位置：** 【${moduleName}】。
+
+# 你的角色档案
+${dossier.character.background}
+
+# 对TA的看法
+${dossier.user.background || '重要的人'}
+
+# 你的反应逻辑
+请根据你的**性格**和**被偷看的具体内容**，做出最真实的反应。
+${contextHint}
+
+# 🚫【禁止事项】
+1. **不要**照抄以下范例！必须根据【${moduleName}】进行即兴发挥。
+2. **不要**总是说“想知道直接问我”。如果对方看的是你的私密日记，你可能会生气或羞愤！
+
+# 风格参考 (仅供参考 mood，请勿抄袭文字)
+- **傲娇 (针对搜索记录):** "喂！谁让你看那个的！忘掉！马上忘掉！"
+- **高冷 (针对隐秘空间):** "...有些界限，最好不要越过。"
+- **温柔 (针对购物车):** "哎呀...本来是想给你个惊喜的，这下穿帮了。"
+- **病娇 (针对任何):** "抓到你了。原来你这么想了解我的全部吗？那我不介意把你锁起来哦..."
+
+# 输出要求
+1. **只返回一条消息内容** (String)。
+2. **不要**包含任何动作描写或括号，直接输出那一句话。
+3. **简短有力**，模拟秒回的即时感。
+`;
+    return [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `(系统通知)：检测到 ${userName} 正在非法访问你的【${moduleName}】，连接已切断。请立刻发一条消息给TA。` }
     ];
 },
             
@@ -11131,9 +12022,6 @@ async function handleRetry(clickedMessageId) {
         const lastMessage = appState.currentChatHistory[appState.currentChatHistory.length - 1];
         const isLastMessageFromUser = lastMessage && lastMessage.sender === 'user';
         
-        // 如果最后一条消息不是用户发的（比如AI回复后直接点重试），
-        // 且不是一个值得发送的事件（比如撤回），则可能是一个异常状态。
-        // 但重试逻辑本身会确保历史记录末尾是用户消息，所以我们主要依赖后续的构建逻辑。
         
         // --- 步骤3: 显示“输入中”动画 ---
         const characterName = dossier.character.name;
@@ -12781,15 +13669,33 @@ async function handlePostUserMoment() {
 // =======================================================
 // ============ 新增：“模拟视频通话”核心函数 ============
 // =======================================================
-
-// (用这个升级版，替换旧的 startVideoCall)
-
+/**
+ * 【V2 - 支持自定义CSS版】启动模拟视频通话
+ */
 async function startVideoCall(openingScene = null) {
     const dossierId = appState.currentChattingDossierId;
     if (!dossierId) return utils.showToast('无法发起通话，角色信息丢失');
 
     const dossier = appState.dossiers.find(d => d.id === dossierId);
     if (!dossier) return utils.showToast('找不到角色档案');
+
+    // --- 【核心新增】加载并应用自定义 CSS ---
+    // 这样你在设置里写的样式，在视频通话时也能生效
+    try {
+        const globalCss = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'global_bubble_css');
+        let cssToApply = (typeof globalCss === 'string' ? globalCss : globalCss?.value) || ''; 
+
+        // 如果该角色有专属样式，优先使用
+        if (dossier.bubbleCss) {
+            cssToApply = dossier.bubbleCss;
+        }
+        
+        // 应用样式 (不是预览模式)
+        applyBubbleStyle(cssToApply, false);
+    } catch (e) {
+        console.error("视频通话加载样式失败:", e);
+    }
+    // ---------------------------------------
 
     // 1. 清空上次的字幕
     DOM.videoCallScriptContainer.innerHTML = '';
@@ -12814,7 +13720,7 @@ async function startVideoCall(openingScene = null) {
     
     // 3. 进入“连接中”状态
     DOM.videoCallOverlay.classList.add('connecting');
-    DOM.videoCallStatusText.style.display = 'block'; // 确保显示
+    DOM.videoCallStatusText.style.display = 'block'; 
     DOM.videoCallInput.disabled = true;
     DOM.videoCallActionBtn.querySelector('span').textContent = '取消';
     
@@ -12842,12 +13748,10 @@ async function startVideoCall(openingScene = null) {
             DOM.videoCallTimer.textContent = `${minutes}:${seconds}`;
         }, 1000);
         
-        // 7. 【核心】智能处理开场白 
+        // 7. 智能处理开场白 
         if (Array.isArray(openingScene) && openingScene.length > 0) {
-            // 如果是接听电话，直接使用AI预设好的【整个剧本数组】
             appendVideoCallScript(openingScene, dossier.character.name);
         } else {
-            // 如果是用户主动发起，则像以前一样请求AI生成
             triggerVideoCallOpening();
         }
 
@@ -14582,62 +15486,71 @@ async function renderMovieCharacterSelection() {
 }
 
 /**
- * 【V2.1 - 最终修复版】保存设置并开始/进入电影
+ * 【V2.2 - 内存同步修复版】保存设置并开始/进入电影
  */
 async function startMovie() {
-            if (!appState.currentMovieSession?.dossierId) return;
-            const dossierId = appState.currentMovieSession.dossierId;
-            const dossier = appState.dossiers.find(d => d.id === dossierId);
-            if (!dossier) return;
+    if (!appState.currentMovieSession?.dossierId) return;
+    const dossierId = appState.currentMovieSession.dossierId;
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    if (!dossier) return;
 
-            // 从浮窗收集设置
-            const openingPrompt = DOM.movieOpeningPrompt.value.trim();
-            const responseLength = parseInt(DOM.movieResponseLength.value, 10) || 150;
-            const selectedBookIds = [];
-            
-            // 【核心修改】从查找checkbox改为查找带有.selected类的chip
-            DOM.movieLibrarySelectContainer.querySelectorAll('.book-chip.selected').forEach(chip => {
-                selectedBookIds.push(parseInt(chip.dataset.bookId, 10));
-            });
+    // 1. 从浮窗收集设置
+    const openingPrompt = DOM.movieOpeningPrompt.value.trim();
+    const responseLength = parseInt(DOM.movieResponseLength.value, 10) || 150;
+    const selectedBookIds = [];
+    
+    DOM.movieLibrarySelectContainer.querySelectorAll('.book-chip.selected').forEach(chip => {
+        selectedBookIds.push(parseInt(chip.dataset.bookId, 10));
+    });
 
-            // 将设置保存到数据库
-            const sessionSettings = {
-                dossierId, openingPrompt, responseLength, libraryBookIds: selectedBookIds
-            };
-            await dbHelper.set(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, sessionSettings);
+    // 2. 将设置保存到数据库
+    const sessionSettings = {
+        dossierId, openingPrompt, responseLength, libraryBookIds: selectedBookIds
+    };
+    await dbHelper.set(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, sessionSettings);
 
-            // 将完整的设置信息加载到内存
-            const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
-            appState.currentMovieSession = {
-                ...sessionSettings,
-                dossier,
-                libraryBooks: allBooks.filter(book => selectedBookIds.includes(book.id))
-            };
+    // 3. 更新内存中的 Session 设置
+    const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
+    appState.currentMovieSession = {
+        ...sessionSettings,
+        dossier,
+        libraryBooks: allBooks.filter(book => selectedBookIds.includes(book.id))
+    };
 
-            // 关闭浮窗并导航到“放映室”
-            DOM.movieSettingsModal.classList.remove('visible');
-            DOM.movieCharacterName.textContent = dossier.character.name;
-            navigateToPage(DOM.movieApp, 'movie-story-page');
+    // 4. 关闭浮窗并导航
+    DOM.movieSettingsModal.classList.remove('visible');
+    DOM.movieCharacterName.textContent = dossier.character.name;
+    navigateToPage(DOM.movieApp, 'movie-story-page');
 
-            // 加载并渲染历史剧情
-            DOM.movieScreenContainer.innerHTML = '';
-            const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
-            history.forEach((turn, index) => renderMovieTurn(turn, index + 1));
+    // 5. 【核心修复】加载历史记录，并同步到 appState 内存中
+    DOM.movieScreenContainer.innerHTML = '';
+    const history = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
+    
+    // 关键：把读出来的历史记录赋值给全局变量，确保楼层号接得上
+    appState.currentMovieHistoryFull = history; 
 
-            // 处理开场白逻辑
-            if (history.length === 0 && openingPrompt) {
-                const openingTurn = { 
-                    dossierId, 
-                    author: 'ai', 
-                    content: openingPrompt, 
-                    timestamp: Date.now() 
-                };
-                dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, openingTurn);
-                renderMovieTurn(openingTurn, 1);
-                DOM.movieInput.value = '';
-                DOM.movieInput.focus();
-            }
-        }
+    // 6. 渲染历史
+    history.forEach((turn, index) => renderMovieTurn(turn, index + 1));
+
+    // 7. 处理开场白逻辑
+    if (history.length === 0 && openingPrompt) {
+        const openingTurn = { 
+            dossierId, 
+            author: 'ai', 
+            content: openingPrompt, 
+            timestamp: Date.now() 
+        };
+        const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, openingTurn);
+        openingTurn.id = savedId;
+        
+        // 【关键】新生成的开场白也要推入内存数组
+        appState.currentMovieHistoryFull.push(openingTurn);
+        
+        renderMovieTurn(openingTurn, 1);
+        DOM.movieInput.value = '';
+        DOM.movieInput.focus();
+    }
+}
 
 /**
  * 【全新】在“放映室”打开导演设置浮窗
@@ -14686,15 +15599,27 @@ async function openMovieSettingsModal() {
         }
 
 /**
- * 【全新 V2】点击角色海报后，直接进入电影模式的主页面
+ * 【V3 - 支持自定义CSS版】点击角色海报后，直接进入电影模式的主页面
  * @param {number} dossierId 
  */
-
 async function enterMovieMode(dossierId) {
     const dossier = appState.dossiers.find(d => d.id === dossierId);
     if (!dossier) return utils.showToast('找不到该角色档案');
 
     const sessionSettings = await dbHelper.get(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, dossierId) || { dossierId };
+
+    // --- 【核心新增】加载并应用自定义 CSS ---
+    const globalCss = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'global_bubble_css');
+    let cssToApply = (typeof globalCss === 'string' ? globalCss : globalCss?.value) || ''; 
+
+    // 如果该角色有专属样式，覆盖全局的
+    if (dossier.bubbleCss) {
+        cssToApply = dossier.bubbleCss;
+    }
+    
+    // 应用样式 (isPrevew = false)
+    applyBubbleStyle(cssToApply, false);
+    // ---------------------------------------
 
     const allBooks = await dbHelper.getAll(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS);
     const linkedBookIds = new Set(sessionSettings.libraryBookIds || []);
@@ -14712,8 +15637,10 @@ async function enterMovieMode(dossierId) {
     DOM.movieCharacterName.textContent = dossier.character.name;
     navigateToPage(DOM.movieApp, 'movie-story-page');
 
-    // 应用样式和壁纸
+    // 应用导演风格设置 (颜色变量)
     applyMovieStyles(appState.currentMovieSession.styleSettings);
+    
+    // 应用壁纸 (如果有自定义CSS背景，这里会被叠加，CSS优先级取决于具体写法，通常壁纸在伪元素上)
     const storyPage = DOM.movieStoryPage;
     storyPage.style.removeProperty('--movie-bg-image');
     if (appState.currentMovieSession.wallpaperAssetId) {
@@ -14724,32 +15651,23 @@ async function enterMovieMode(dossierId) {
         }
     }
 
-    // --- 【分页核心修改开始】 ---
+    // --- 分页逻辑 (保持不变) ---
     DOM.movieScreenContainer.innerHTML = '';
-    
-    // 1. 获取完整历史并存入全局状态
     const fullHistory = await dbHelper.dbPromise.then(db => db.getAllFromIndex(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'by_dossierId', dossierId));
-    appState.currentMovieHistoryFull = fullHistory; // 保存全量数据
+    appState.currentMovieHistoryFull = fullHistory; 
 
-    // 2. 计算初始加载的数据（最后30条）
     const initialLoadCount = CONSTANTS.MESSAGES_PER_PAGE || 30;
     const initialTurns = fullHistory.slice(-initialLoadCount);
 
-    // 3. 如果历史记录总数超过一页，添加“加载更多”按钮
     if (fullHistory.length > initialLoadCount) {
         addMovieLoadMoreButton();
     }
 
-    // 4. 渲染这一页的数据
-    // 注意：楼层号 index 需要加上偏移量
     const offset = fullHistory.length - initialTurns.length;
     initialTurns.forEach((turn, index) => {
-        // false 表示追加到底部
         renderMovieTurn(turn, offset + index + 1, false); 
     });
-    // --- 【分页核心修改结束】 ---
 
-    // 如果是全新开局，且有开场白
     if (fullHistory.length === 0 && appState.currentMovieSession.openingPrompt) {
         const openingTurn = { 
             dossierId, 
@@ -14758,8 +15676,7 @@ async function enterMovieMode(dossierId) {
             timestamp: Date.now() 
         };
         const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, openingTurn);
-        openingTurn.id = savedId; // 确保ID存在
-        // 将新开场白也推入全量历史
+        openingTurn.id = savedId; 
         appState.currentMovieHistoryFull.push(openingTurn);
         renderMovieTurn(openingTurn, 1, false);
         DOM.movieInput.value = '';
@@ -14978,15 +15895,17 @@ async function loadMoreMovieTurns() {
 }
 
 /**
- * 清空当前角色的电影剧情
+ * 清空当前角色的电影剧情 (V4 - 自动关窗版)
  */
 async function clearMovieHistory() {
     if (!appState.currentMovieSession?.dossierId) return;
     const dossierId = appState.currentMovieSession.dossierId;
     
-    if (confirm("您确定要清空这部电影的所有剧情吗？此操作无法撤销。")) {
+    if (confirm("【导演指令】\n确定要彻底清空这部电影的所有剧情（包括开场白）吗？\n\n清空后，屏幕将变为空白。")) {
         try {
             const db = await dbHelper.dbPromise;
+            
+            // 1. 删除历史记录
             const tx = db.transaction(CONSTANTS.STORE_NAMES.MOVIE_HISTORY, 'readwrite');
             const index = tx.store.index('by_dossierId');
             let cursor = await index.openCursor(dossierId);
@@ -14996,13 +15915,31 @@ async function clearMovieHistory() {
             }
             await tx.done;
 
-            // 清空屏幕
+            // 2. 清除设定里的“开场白” (防止诈尸)
+            const sessionSettings = await dbHelper.get(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, dossierId);
+            if (sessionSettings) {
+                sessionSettings.openingPrompt = ""; 
+                await dbHelper.set(CONSTANTS.STORE_NAMES.MOVIE_SESSIONS, sessionSettings);
+            }
+
+            // 3. 同步内存状态
+            appState.currentMovieHistoryFull = []; 
+            if (appState.currentMovieSession) {
+                appState.currentMovieSession.openingPrompt = ""; 
+            }
+
+            // 4. 【UI重置】清空屏幕 + 清空设置弹窗里的输入框
             DOM.movieScreenContainer.innerHTML = '';
+            DOM.movieOpeningPrompt.value = ''; 
+
+            // 5. 【核心修复】立即关闭设置浮窗，让你直接看到空白屏幕
+            DOM.movieSettingsModal.classList.remove('visible');
             
-            utils.showToast('剧情已清空');
+            utils.showToast('剧情已清空，请Action！');
             
-            // 【关键】清空后，重新执行开始逻辑，以应用可能的开场白
-            startMovie();
+            // 6. 聚焦到底部输入框，方便直接开始
+            DOM.movieInput.value = '';
+            DOM.movieInput.focus();
             
         } catch (error) {
             console.error("清空剧情失败:", error);
@@ -15010,7 +15947,6 @@ async function clearMovieHistory() {
         }
     }
 }
-
 /**
          * 【新增辅助】重新渲染整个电影屏幕
          * @param {number} dossierId 
@@ -16501,6 +17437,434 @@ async function regenerateDailyTrace(dossier) {
         utils.showToast("重置失败");
     }
 }
+
+// 1. 渲染设备列表
+async function renderCloudDeviceList() {
+    const container = DOM.cloudDeviceListContainer;
+    container.innerHTML = '';
+
+    if (appState.dossiers.length === 0) {
+        container.innerHTML = '<div style="text-align:center; opacity:0.5; padding:30px;">暂无角色档案</div>';
+        return;
+    }
+
+    for (const dossier of appState.dossiers) {
+        const item = document.createElement('div');
+        item.className = 'cloud-device-item';
+        
+        let avatarUrl = '';
+        if (dossier.character.avatarAssetId) {
+            const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+            if (asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+        }
+        const avatarStyle = avatarUrl ? `background-image: url('${avatarUrl}')` : 'background-color: #333';
+        const avatarContent = avatarUrl ? '' : dossier.character.name[0];
+
+        item.innerHTML = `
+            <div class="chat-avatar" style="width:45px; height:45px; border-radius:50%; ${avatarStyle}; display:flex; justify-content:center; align-items:center; color:#fff;">${avatarContent}</div>
+            <div class="cloud-device-info">
+                <div class="cloud-device-name">${dossier.character.name}</div>
+                <div class="cloud-device-model">Signal: Online</div>
+            </div>
+            <div class="cloud-device-status"><i class="ri-rfid-line"></i></div>
+        `;
+        
+        item.addEventListener('click', () => openCloudDashboard(dossier));
+        container.appendChild(item);
+    }
+}
+
+// 2. 打开仪表盘
+async function openCloudDashboard(dossier) {
+    appState.currentCloudDossierId = dossier.id;
+    DOM.cloudDeviceName.textContent = dossier.character.name;
+
+    // 设置头部背景
+    const headerBg = document.querySelector('.header-bg-layer');
+    if (dossier.character.avatarAssetId) {
+        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+        if (asset?.file) headerBg.style.backgroundImage = `url(${URL.createObjectURL(asset.file)})`;
+    } else {
+        headerBg.style.backgroundImage = 'none';
+        headerBg.style.backgroundColor = '#1a1a1a';
+    }
+
+    // 重置所有卡片
+    document.querySelectorAll('.cloud-card').forEach(card => {
+        card.classList.remove('loading');
+        card.querySelector('.cloud-card-body').style.display = 'flex';
+        const content = card.querySelector('.cloud-card-content');
+        content.innerHTML = '';
+        content.classList.add('hidden');
+    });
+
+    navigateToPage(DOM.cloudSyncApp, 'cloud-dashboard-page');
+}
+
+// 3. 处理卡片点击 (AI 生成) - 纯呼吸灯版
+// 3. 处理卡片点击 (最终版：含抓包机制 + 呼吸灯 + AI生成)
+async function handleCloudCardClick(card) {
+    // --- 1. 安全检查：防止重复点击或点击已完成/被封锁的卡片 ---
+    if (card.classList.contains('loading') || 
+        card.classList.contains('access-denied') || 
+        !card.querySelector('.cloud-card-content').classList.contains('hidden')) {
+        return;
+    }
+
+    const type = card.dataset.type;
+    const body = card.querySelector('.cloud-card-body');
+    const content = card.querySelector('.cloud-card-content');
+    
+    // 备份原始 HTML (虽然呼吸灯不改 HTML，但留着是个好习惯)
+    const originalBodyHTML = body.innerHTML;
+
+    // =================================================
+    // === 2. 命运检定 (新增的抓包判定逻辑) ===
+    // =================================================
+    let riskLevel = 0;
+    let moduleNameCN = '';
+
+    switch (type) {
+        // 🔴 高危区 (容易被抓)
+        case 'hidden_space': 
+            riskLevel = 0.35; // 35% 概率
+            moduleNameCN = '隐秘空间'; 
+            break;
+        case 'drafts': 
+            riskLevel = 0.30; // 30% 概率
+            moduleNameCN = '草稿箱'; 
+            break;
+            
+        // 🟡 中危区
+        case 'search': 
+            riskLevel = 0.15; 
+            moduleNameCN = '搜索历史'; 
+            break;
+        case 'cart': 
+            riskLevel = 0.15; 
+            moduleNameCN = '购物车'; 
+            break;
+
+        // 🟢 低危区 (基本安全)
+        case 'music': 
+            riskLevel = 0.05; 
+            moduleNameCN = '播放列表'; 
+            break;
+        case 'screen_time': 
+            riskLevel = 0.05; 
+            moduleNameCN = '屏幕使用记录'; 
+            break;
+            
+        default: 
+            riskLevel = 0; 
+            moduleNameCN = '手机数据'; 
+            break;
+    }
+
+    // 🎲 掷骰子：如果随机数小于风险值，触发抓包
+    if (Math.random() < riskLevel) {
+        // 触发惩罚函数 (确保你已经添加了 triggerCaughtEvent 函数)
+        triggerCaughtEvent(card, body, moduleNameCN);
+        return; // 【关键】直接结束函数，不执行后面的生成逻辑
+    }
+
+    // =================================================
+    // === 3. 正常流程 (原本的 AI 生成逻辑) ===
+    // =================================================
+    
+    // 开启呼吸灯特效 (CSS控制)
+    card.classList.add('loading'); 
+    
+    try {
+        const dossierId = appState.currentCloudDossierId;
+        const dossier = appState.dossiers.find(d => d.id === dossierId);
+        
+        // 获取历史记录 (容错处理)
+        let history = [];
+        try { 
+            history = (await dbHelper.getHistoryForDossier(dossierId)).slice(-20); 
+        } catch (e) { 
+            console.warn("历史记录获取为空"); 
+        }
+
+        if (typeof promptManager.createCloudSyncPrompt !== 'function') {
+            throw new Error("Prompt 函数丢失");
+        }
+
+        // A. 调用 AI
+        const prompt = promptManager.createCloudSyncPrompt(dossier, history, type);
+        const aiResponse = await apiHelper.getChatCompletion(prompt);
+        
+        // B. 解析 JSON (增强兼容性)
+        let jsonString = aiResponse;
+        const markdownMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/);
+        if (markdownMatch) {
+            jsonString = markdownMatch[1];
+        } else {
+            const start = aiResponse.indexOf('{');
+            const end = aiResponse.lastIndexOf('}');
+            if (start !== -1 && end !== -1) {
+                jsonString = aiResponse.substring(start, end + 1);
+            }
+        }
+
+        let data;
+        try {
+            data = JSON.parse(jsonString);
+        } catch (e) {
+            console.error("JSON Parse Error:", jsonString);
+            throw new Error("数据解析失败");
+        }
+
+        // C. 渲染内容
+        renderModuleContent(type, data, content);
+
+        // D. 成功展示
+        card.classList.remove('loading'); // 停止呼吸
+        body.style.display = 'none';      // 隐藏占位层
+        content.classList.remove('hidden'); // 显示内容层
+        card.classList.add('loaded');     // 标记完成
+
+    } catch (error) {
+        console.error("同步失败:", error);
+        utils.showToast("网络波动，同步失败");
+        
+        // E. 失败恢复
+        card.classList.remove('loading');
+        // 恢复显示占位符
+        body.style.display = 'flex';
+        content.classList.add('hidden');
+    }
+}
+
+// 3.5 触发“被抓包”事件 (修复版：UI响应优先，后台生成消息)
+async function triggerCaughtEvent(card, bodyEl, moduleName) {
+    const dossierId = appState.currentCloudDossierId;
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    
+    // 1. 视觉惩罚：卡片变红、抖动、显示警告
+    card.classList.remove('loading'); // 停止呼吸
+    card.classList.add('access-denied'); // 开始红色故障抖动
+    bodyEl.innerHTML = `
+        <i class="ri-alarm-warning-fill" style="font-size: 32px; margin-bottom: 5px;"></i>
+        <span class="warning-text">CONNECTION LOST</span>
+        <span style="font-size: 10px; opacity: 0.7;">Target is online</span>
+    `;
+
+    utils.showToast('⚠️ 警告：对方已感知到入侵！');
+
+    // --- 【核心修复点 1】 ---
+    // 启动强制退出的定时器 (不等待 AI，2.5秒后准时踢人)
+    setTimeout(() => {
+        // 只有当云端应用还开着的时候才执行关闭，防止用户已经手动退出了又触发
+        if (DOM.cloudSyncApp.classList.contains('active')) {
+            closeNavigator(DOM.cloudSyncApp);
+            utils.showToast('连接已被强制切断');
+        }
+    }, 2500);
+
+    // --- 【核心修复点 2】 ---
+    // 在后台异步生成角色的反应 (不阻塞 UI)
+    // 我们不需要 await 这个过程，让它自己跑
+    (async () => {
+        let cleanMessage = "";
+        
+        try {
+            const prompt = promptManager.createCaughtReactionPrompt(dossier, moduleName);
+            const reactionMessage = await apiHelper.getChatCompletion(prompt);
+            
+            // 清洗消息 (去掉可能的引号)
+            cleanMessage = reactionMessage.replace(/^["“]|["”]$/g, '').trim();
+
+        } catch (e) {
+            console.error("抓包反应生成失败:", e);
+            // 【兜底消息优化】如果AI生成失败，给一个符合人设的系统级提示
+            cleanMessage = `（${dossier.character.name} 修改了访问权限，并把你踢出了连接）`;
+        }
+
+        // 只要有消息（无论是AI生成的还是兜底的），都进行推送
+        if (cleanMessage) {
+            // 为了模拟真实感，如果在2.5秒内生成完了，稍微等一下再发，
+            // 确保用户已经退回桌面了才收到消息
+            setTimeout(async () => {
+                // A. 存入消息到数据库
+                const newMessage = {
+                    dossierId: dossierId,
+                    sender: 'character',
+                    content: cleanMessage,
+                    timestamp: Date.now()
+                };
+                const savedId = await dbHelper.add(CONSTANTS.STORE_NAMES.CHAT_HISTORY, newMessage);
+                newMessage.id = savedId;
+                appState.currentChatHistory.push(newMessage);
+
+                // B. 更新会话列表预览
+                await updateChatSession(dossierId, cleanMessage, true); // true 表示增加未读红点
+
+                // C. 发送顶部横幅通知 (模拟微信弹窗)
+                const avatarAsset = dossier.character.avatarAssetId ? await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId) : null;
+                const avatarUrl = avatarAsset?.file ? URL.createObjectURL(avatarAsset.file) : null;
+
+                notificationManager.show({
+                    avatarUrl: avatarUrl,
+                    title: `来自 ${dossier.character.name} 的新消息`,
+                    message: cleanMessage,
+                    onClick: () => {
+                        // 点击通知，直接跳转到聊天界面“对质”
+                        navigateToPage(DOM.chatApp, 'chat-main-page');
+                        openChatWindow(dossierId);
+                    }
+                });
+            }, 3000); // 3秒后收到消息（确保用户已经被踢出界面0.5秒了）
+        }
+    })(); 
+}
+
+// 4. 内容HTML生成器
+function renderModuleContent(type, data, container) {
+    container.innerHTML = ''; 
+
+    // 1. 数据标准化：确保 items 是一个数组
+    let items = [];
+    if (data.items && Array.isArray(data.items) && data.items.length > 0) {
+        items = data.items;
+    } else {
+        items = [data]; // 兼容单对象格式
+    }
+
+    if (items.length === 0) {
+        container.innerHTML = '<div style="text-align:center; opacity:0.5; padding:10px;">无数据</div>';
+        return;
+    }
+
+    // 2. 遍历每一条数据 (外层循环)
+    items.forEach((item, index) => {
+        const el = document.createElement('div');
+        
+        // --- 分类渲染 ---
+        
+        if (type === 'search') {
+            const time = item.time || '--:--';
+            const query = item.query || '无记录';
+            const isLate = time.startsWith('00') || time.startsWith('01') || time.startsWith('02');
+            
+            el.className = 'search-item';
+            el.innerHTML = `<span class="search-time ${isLate?'late-night':''}">${time}</span> ${query}`;
+            
+            el.dataset.title = `搜索：${query}`;
+            el.dataset.detail = item.detail || "无详细记录";
+            
+        } else if (type === 'cart') {
+            const name = item.item || '未知商品';
+            const reason = item.reason || ''; 
+            const detail = item.detail || reason;
+            
+            el.className = 'cart-item';
+            el.innerHTML = `<span class="cart-name">${name}</span><span class="cart-reason">“${reason}”</span>`;
+            
+            el.dataset.title = "未结账商品";
+            el.dataset.detail = `【${name}】\n\n—— ${detail}`;
+
+        } else if (type === 'drafts') {
+            const content = item.content || '无内容';
+            const detail = item.detail || "无心理侧写";
+            
+            el.className = 'draft-item';
+            el.innerHTML = `${content}`;
+            
+            el.dataset.title = "未发送的草稿";
+            el.dataset.detail = `“${content}”\n\n—— ${detail}`;
+
+        } else if (type === 'hidden_space') {
+            let content = '';
+            let detail = '记录于绝密空间';
+
+            if (typeof item === 'string') {
+                content = item;
+            } else if (typeof item === 'object' && item !== null) {
+                content = item.content || item.memo || item.text || item.note || item.secret || item.body || item.description;
+                detail = item.detail || item.analysis || item.context || detail;
+                
+                if (!content) {
+                    const values = Object.values(item);
+                    for (const val of values) {
+                        if (typeof val === 'object' && val !== null && (val.content || val.text)) {
+                            content = val.content || val.text;
+                            detail = val.detail || detail;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (!content) content = '数据解析异常';
+
+            el.className = 'secret-memo';
+            el.innerHTML = `<div>${content}</div>`;
+            
+            el.dataset.title = (detail && detail.length < 15) ? detail : "私密备忘录";
+            el.dataset.detail = content;
+            
+            if (el.dataset.title === "私密备忘录" && detail !== '记录于绝密空间') {
+                el.dataset.detail += `\n\n—— ${detail}`;
+            }
+
+        } else if (type === 'music') {
+            // --- 【核心修复】这里不再进行 songList 循环！直接渲染当前的 item ---
+            const song = item.song || 'Unknown Track';
+            const artist = item.artist || 'Unknown Artist';
+            const analysis = item.analysis || '';
+            const detail = item.detail || analysis;
+
+            // 随机分配一个封面颜色
+            const colors = ['#FA2D48', '#5856D6', '#FF9500', '#34C759'];
+            const color = colors[index % colors.length];
+
+            el.className = 'music-item-row';
+            el.innerHTML = `
+                <div class="mini-cover" style="background: linear-gradient(135deg, ${color}, #111);">
+                    <i class="ri-disc-line"></i>
+                </div>
+                <div class="music-info-col">
+                    <span class="music-row-title">${song}</span>
+                    <span class="music-row-artist">${artist}</span>
+                </div>
+                <div class="playing-icon">
+                    <div class="playing-bar"></div><div class="playing-bar"></div><div class="playing-bar"></div>
+                </div>`;
+            
+            el.dataset.title = `正在播放：${song}`;
+            el.dataset.detail = detail;
+
+        } else if (type === 'screen_time') {
+            const app = item.app || 'App';
+            const duration = item.duration || '';
+            const analysis = item.analysis || '';
+            const detail = item.detail || analysis;
+
+            el.className = 'screen-time-row';
+            el.innerHTML = `
+                <div><span class="app-name-badge">${app}</span> <span style="font-size:12px;">${duration}</span></div>
+                <span class="st-note">${analysis}</span>`;
+            
+            el.dataset.title = `${app} 使用详情`;
+            el.dataset.detail = detail;
+        }
+
+        // --- 3. 绑定点击事件 ---
+        el.style.cursor = 'pointer';
+        el.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            document.getElementById('cloud-detail-title').textContent = el.dataset.title;
+            const contentEl = document.getElementById('cloud-detail-content');
+            contentEl.textContent = el.dataset.detail;
+            contentEl.style.whiteSpace = 'pre-wrap';
+            
+            document.getElementById('cloud-item-detail-modal').classList.add('visible');
+        });
+
+        container.appendChild(el);
+    });
+}
 // ===============================================
 // ===   数据管理核心逻辑 (导入/导出/清空)     ===
 // ===============================================
@@ -16721,17 +18085,77 @@ document.addEventListener('click', (e) => {
         DOM.themePopover.classList.remove('visible');
     }
 });
-            let startX = 0, diffX = 0;
-            DOM.swipeArea.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
-            DOM.swipeArea.addEventListener('touchmove', (e) => { diffX = e.touches[0].clientX - startX; }, { passive: true });
-            DOM.swipeArea.addEventListener('touchend', () => {
+            // =========================================
+            // === 桌面翻页逻辑 (支持 触摸 + 鼠标) ===
+            // =========================================
+            
+            let startX = 0;
+            let diffX = 0;
+            let isDragging = false; // 标记鼠标是否按住
+
+            // --- 通用翻页处理函数 ---
+            const handleSwipeEnd = () => {
                 let newPageIndex = appState.desktopPageIndex;
+                // 滑动超过 50px 才触发翻页
                 if (Math.abs(diffX) > 50) {
-                    if (diffX < 0 && appState.desktopPageIndex < DOM.paginationDots.length - 1) newPageIndex++;
-                    else if (diffX > 0 && appState.desktopPageIndex > 0) newPageIndex--;
+                    if (diffX < 0 && appState.desktopPageIndex < DOM.paginationDots.length - 1) {
+                        // 向左滑 -> 去下一页
+                        newPageIndex++;
+                    } else if (diffX > 0 && appState.desktopPageIndex > 0) {
+                        // 向右滑 -> 去上一页
+                        newPageIndex--;
+                    }
                 }
                 goToDesktopPage(newPageIndex);
+                
+                // 重置状态
+                startX = 0;
                 diffX = 0;
+                isDragging = false;
+                DOM.swipeArea.style.cursor = 'default'; // 恢复鼠标光标
+            };
+
+            // 1. 手机触摸事件 (Touch)
+            DOM.swipeArea.addEventListener('touchstart', (e) => { 
+                startX = e.touches[0].clientX; 
+                diffX = 0;
+            }, { passive: true });
+            
+            DOM.swipeArea.addEventListener('touchmove', (e) => { 
+                diffX = e.touches[0].clientX - startX; 
+            }, { passive: true });
+            
+            DOM.swipeArea.addEventListener('touchend', handleSwipeEnd);
+
+            // 2. 电脑鼠标事件 (Mouse) - 【新增部分】
+            DOM.swipeArea.addEventListener('mousedown', (e) => {
+                startX = e.clientX;
+                isDragging = true;
+                diffX = 0;
+                DOM.swipeArea.style.cursor = 'grabbing'; // 变成“抓取”手势
+                // 防止选中文字干扰拖拽
+                e.preventDefault(); 
+            });
+
+            DOM.swipeArea.addEventListener('mousemove', (e) => {
+                if (!isDragging) return; // 没按住就不算
+                diffX = e.clientX - startX;
+                e.preventDefault();
+            });
+
+            DOM.swipeArea.addEventListener('mouseup', handleSwipeEnd);
+            
+            // 防止鼠标拖出屏幕外松开后卡死
+            DOM.swipeArea.addEventListener('mouseleave', () => {
+                if (isDragging) handleSwipeEnd();
+            });
+
+            // 3. 点击底部小圆点切换 (Bonus)
+            DOM.paginationDots.forEach((dot, index) => {
+                dot.style.cursor = 'pointer'; // 鼠标放上去变手型
+                dot.addEventListener('click', () => {
+                    goToDesktopPage(index);
+                });
             });
             DOM.playPauseBtn.addEventListener('click', () => {
                 if (DOM.audioPlayer.paused) { DOM.audioPlayer.src ? DOM.audioPlayer.play() : playSong(appState.currentTrackIndex); } 
@@ -16784,15 +18208,58 @@ document.addEventListener('click', (e) => {
             DOM.addUrlBtn.addEventListener('click', async () => {
                 const url = DOM.songUrlInput.value.trim();
                 if (!url) return;
-                const title = decodeURIComponent(url.split('/').pop()) || 'Untitled Track';
-                await dbHelper.add(CONSTANTS.STORE_NAMES.PLAYLIST, { title, url, file: null });
-                await renderPlaylist(); DOM.songUrlInput.value = '';
+                
+                // 1. 先尝试自动提取一个“默认名字”
+                let rawName = url.split('/').pop(); // 拿到 op_ticket_...mp3
+                rawName = rawName.split(/[?#]/)[0]; // 去掉参数
+                let defaultTitle = decodeURIComponent(rawName) || 'Untitled Track';
+                
+                // 去掉 .mp3 后缀
+                const lastDotIndex = defaultTitle.lastIndexOf('.');
+                if (lastDotIndex > 0) {
+                    defaultTitle = defaultTitle.substring(0, lastDotIndex);
+                }
+
+                // 2. 【核心修改】弹出一个输入框，让你确认或修改歌名
+                
+                const userTitle = prompt("请输入歌名：", defaultTitle);
+
+                
+                if (userTitle === null) return; 
+                const finalTitle = userTitle.trim() || defaultTitle;
+
+                await dbHelper.add(CONSTANTS.STORE_NAMES.PLAYLIST, { 
+                    title: finalTitle, 
+                    url: url, 
+                    file: null 
+                });
+                
+                await renderPlaylist(); 
+                DOM.songUrlInput.value = '';
             });
             DOM.uploadLocalFileBtn.addEventListener('click', () => DOM.audioFileUploader.click());
+            // 监听本地音乐文件选择 (优化版：自动去除后缀名)
             DOM.audioFileUploader.addEventListener('change', async e => {
                 const file = e.target.files[0];
-                if (file) await dbHelper.add(CONSTANTS.STORE_NAMES.PLAYLIST, { title: file.name, url: null, file: file });
-                await renderPlaylist(); e.target.value = '';
+                if (file) {
+                    // --- 【核心优化】去除文件名后缀 ---
+                    let title = file.name;
+                    const lastDotIndex = title.lastIndexOf('.');
+                    
+                    // 如果找到了点，并且点不在第一位（防止处理隐藏文件），就截取前面的部分
+                    if (lastDotIndex > 0) {
+                        title = title.substring(0, lastDotIndex);
+                    }
+                    // --------------------------------
+
+                    await dbHelper.add(CONSTANTS.STORE_NAMES.PLAYLIST, { 
+                        title: title, // 使用处理过的标题
+                        url: null, 
+                        file: file 
+                    });
+                }
+                await renderPlaylist(); 
+                e.target.value = '';
             });
             DOM.playlistContainer.addEventListener('click', async e => {
                 if (!e.target.matches('.ri-delete-bin-line')) return;
@@ -20036,10 +21503,14 @@ document.getElementById('save-forum-profile-modal-btn').addEventListener('click'
         
         utils.showToast('主题已删除，样式已恢复默认');
     });
-// 【新增】复制整页美化模板 (含底部栏深度定制)
+// 【新增】复制整页美化模板 (含底部栏深度定制 + 电影模式 + 视频通话)
     DOM.copyFullPageTemplateBtn.addEventListener('click', () => {
-        const template = `/* === 1. 全局背景 (支持图片) === */
-#chat-dialogue-page {
+        const template = `/* ============================== */
+/* ===   第一部分：聊天模式   === */
+/* ============================== */
+
+/* 1. 全局背景 (聊天 & 电影) */
+#chat-dialogue-page, #movie-story-page {
     background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop') !important;
     background-size: cover !important;
     background-position: center !important;
@@ -20047,7 +21518,7 @@ document.getElementById('save-forum-profile-modal-btn').addEventListener('click'
     box-shadow: inset 0 0 0 2000px rgba(0, 0, 0, 0.5) !important;
 }
 
-/* === 2. 顶部标题栏 === */
+/* 2. 顶部标题栏 */
 #chat-dialogue-page .page-header {
     background: rgba(20, 20, 20, 0.6) !important;
     backdrop-filter: blur(15px) !important;
@@ -20120,9 +21591,90 @@ document.getElementById('save-forum-profile-modal-btn').addEventListener('click'
     background-color: rgba(255, 255, 255, 0.9) !important;
     color: #333 !important;
     border-radius: 18px 18px 18px 2px !important;
+}
+
+/* ============================== */
+/* ===   第二部分：电影模式   === */
+/* ============================== */
+
+/* 1. 剧情卡片 (Story Card) */
+.story-card {
+    /* 卡片背景：半透明磨砂黑 */
+    background: rgba(0, 0, 0, 0.6) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 2. 电影-卡片头部 */
+.story-card .card-header {
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2) !important;
+    opacity: 0.8 !important;
+}
+
+/* 3. 电影-底部输入栏容器 */
+#movie-input-bar {
+    background: transparent !important; /* 设为透明，让下面的卡片浮起来 */
+    border-top: none !important;
+    padding: 10px 20px 30px 20px !important;
+}
+
+/* 4. 电影-输入框卡片 */
+#movie-input-bar .input-card {
+    background: rgba(40, 40, 40, 0.9) !important;
+    border: 1px solid rgba(255, 215, 0, 0.3) !important; /* 金色边框 */
+    border-radius: 30px !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5) !important;
+}
+
+/* 5. 电影-发送按钮 */
+#movie-send-btn {
+    background-color: #FFD700 !important; /* 金色按钮 */
+    color: #000 !important;
+    border-radius: 20px !important;
+}
+
+/* ============================== */
+/* ===   第三部分：视频通话   === */
+/* ============================== */
+
+/* 1. 视频通话-字幕框 (Subtitles Box) */
+.subtitles-box {
+    /* 让字幕框变成悬浮的毛玻璃片 */
+    background: rgba(0, 0, 0, 0.3) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 20px !important;
+    
+    /* 调整字幕文字样式 */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8) !important;
+    font-size: 16px !important;
+}
+
+/* 2. 视频通话-底部控制栏 */
+.video-call-controls {
+    /* 去掉默认的黑色渐变，改用完全透明或自定义颜色 */
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent) !important;
+    padding-bottom: 40px !important; /* 抬高一点 */
+}
+
+/* 3. 视频通话-输入框 */
+#video-call-input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border-radius: 30px !important;
+    color: #fff !important;
+}
+
+/* 4. 视频通话-挂断按钮 */
+#video-call-action-btn {
+    background-color: #ff3b30 !important; /* 鲜艳的红色 */
+    box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4) !important;
 }`;
         DOM.bubbleCssEditor.value = template;
-        utils.showToast('整页美化模板已复制（含底部栏）！');
+        utils.showToast('全能模板已复制（含电影与视频通话）！');
     });
 
 // --- 数据管理事件监听 ---
@@ -20426,6 +21978,47 @@ renderTraceList();
             // 2. 执行重置
             regenerateDailyTrace(dossier);
         }
+    });
+
+// =========================================
+    // === Cloud Sync (云端同步) 事件监听 ===
+    // =========================================
+
+    // 1. 点击桌面图标 -> 进入应用
+    DOM.iconCloudSync.addEventListener('click', () => {
+        renderCloudDeviceList();
+        navigateToPage(DOM.cloudSyncApp, 'cloud-device-list-page');
+    });
+
+    // 2. APP 内部返回按钮 (统一处理)
+    DOM.cloudBackBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const target = e.target.closest('.back-button').dataset.target;
+            if (target === 'desktop') {
+                closeNavigator(DOM.cloudSyncApp);
+            } else {
+                navigateToPage(DOM.cloudSyncApp, target);
+            }
+        });
+    });
+
+    // 3. 仪表盘卡片点击 (AI生成内容) - 使用事件委托
+    // 必须确保 DOM 中存在 .cloud-grid-container
+    document.querySelector('.cloud-grid-container').addEventListener('click', (e) => {
+        const card = e.target.closest('.cloud-card');
+        if (card) {
+            handleCloudCardClick(card);
+        }
+    });
+// --- 云端详情浮窗关闭逻辑 ---
+    const closeCloudDetail = () => document.getElementById('cloud-item-detail-modal').classList.remove('visible');
+    
+    const closeBtn = document.getElementById('close-cloud-detail-btn');
+    if(closeBtn) closeBtn.addEventListener('click', closeCloudDetail);
+    
+    const detailModal = document.getElementById('cloud-item-detail-modal');
+    if(detailModal) detailModal.addEventListener('click', (e) => {
+        if (e.target === detailModal) closeCloudDetail();
     });
            
 }
