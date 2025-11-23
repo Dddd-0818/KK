@@ -17489,10 +17489,33 @@ async function openCloudDashboard(dossier) {
         headerBg.style.backgroundColor = '#1a1a1a';
     }
 
+    // --- 【核心修复】定义卡片的默认内容字典 ---
+    const defaultContents = {
+        'search': '<span class="cinematic-placeholder">点击读取深夜痕迹...</span>',
+        'cart': '<i class="ri-shopping-bag-line"></i>',
+        'drafts': '<i class="ri-edit-line"></i>',
+        'screen_time': '<i class="ri-timer-flash-line"></i>',
+        'hidden_space': '<i class="ri-lock-password-line"></i>',
+        'music': '<span class="cinematic-placeholder">聆听此刻心跳...</span>'
+    };
+
     // 重置所有卡片
     document.querySelectorAll('.cloud-card').forEach(card => {
-        card.classList.remove('loading');
-        card.querySelector('.cloud-card-body').style.display = 'flex';
+        // 1. 清除所有可能的状态类 (呼吸灯、被拒绝、已加载)
+        card.classList.remove('loading', 'access-denied', 'loaded'); 
+        
+        // 2. 恢复卡片主体部分的显示
+        const body = card.querySelector('.cloud-card-body');
+        body.style.display = 'flex';
+        
+        // 3. 【关键】根据卡片类型，强制恢复默认的图标/文字
+        // 这样就能把“Connection Lost”那段警告文字覆盖掉
+        const type = card.dataset.type;
+        if (defaultContents[type]) {
+            body.innerHTML = defaultContents[type];
+        }
+
+        // 4. 隐藏并清空内容层
         const content = card.querySelector('.cloud-card-content');
         content.innerHTML = '';
         content.classList.add('hidden');
@@ -17500,8 +17523,6 @@ async function openCloudDashboard(dossier) {
 
     navigateToPage(DOM.cloudSyncApp, 'cloud-dashboard-page');
 }
-
-// 3. 处理卡片点击 (AI 生成) - 纯呼吸灯版
 // 3. 处理卡片点击 (最终版：含抓包机制 + 呼吸灯 + AI生成)
 async function handleCloudCardClick(card) {
     // --- 1. 安全检查：防止重复点击或点击已完成/被封锁的卡片 ---
@@ -17525,33 +17546,35 @@ async function handleCloudCardClick(card) {
     let moduleNameCN = '';
 
     switch (type) {
-        // 🔴 高危区 (容易被抓)
+        // 🔴 高危区 (原本是 1.0，现在降为 0.25)
         case 'hidden_space': 
-            riskLevel = 0.35; // 35% 概率
+            riskLevel = 0.25; // 25% 概率被抓
             moduleNameCN = '隐秘空间'; 
             break;
+            
+        // 🟡 中危区 (原本是 0.3，现在降为 0.1)
         case 'drafts': 
-            riskLevel = 0.30; // 30% 概率
+            riskLevel = 0.10; // 10% 概率被抓
             moduleNameCN = '草稿箱'; 
             break;
             
-        // 🟡 中危区
+        // 🟢 低危区 (原本是 0.15，现在降为 0.05)
         case 'search': 
-            riskLevel = 0.15; 
+            riskLevel = 0.05; // 5% 概率被抓
             moduleNameCN = '搜索历史'; 
             break;
         case 'cart': 
-            riskLevel = 0.15; 
+            riskLevel = 0.05; // 5% 概率被抓
             moduleNameCN = '购物车'; 
             break;
 
-        // 🟢 低危区 (基本安全)
+        // ⚪ 安全区 (原本是 0.05，现在降为 0.01)
         case 'music': 
-            riskLevel = 0.05; 
+            riskLevel = 0.01; // 1% 概率被抓 (微乎其微)
             moduleNameCN = '播放列表'; 
             break;
         case 'screen_time': 
-            riskLevel = 0.05; 
+            riskLevel = 0.01; 
             moduleNameCN = '屏幕使用记录'; 
             break;
             
@@ -17561,11 +17584,10 @@ async function handleCloudCardClick(card) {
             break;
     }
 
-    // 🎲 掷骰子：如果随机数小于风险值，触发抓包
+    // 🎲 掷骰子
     if (Math.random() < riskLevel) {
-        // 触发惩罚函数 (确保你已经添加了 triggerCaughtEvent 函数)
         triggerCaughtEvent(card, body, moduleNameCN);
-        return; // 【关键】直接结束函数，不执行后面的生成逻辑
+        return; 
     }
 
     // =================================================
