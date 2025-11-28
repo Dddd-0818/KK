@@ -6858,6 +6858,1053 @@ body.light-mode .pawn-ticket.rejected {
     background: rgba(205, 92, 92, 0.1) !important;
     box-shadow: 0 0 15px rgba(205, 92, 92, 0.2);
 }
+
+/* === 藏品页专属：博物馆展签样式 === */
+
+.collection-item-card {
+    /* 深色背景框 */
+    background: rgba(20, 20, 20, 0.6);
+    border: 1px solid rgba(212, 175, 55, 0.3); /* 暗金边框 */
+    border-radius: 4px; /* 这种卡片适合直角或小圆角 */
+    padding: 20px;
+    
+    /* 垂直布局 */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    
+    transition: transform 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.collection-item-card:hover {
+    transform: translateY(-2px);
+    background: rgba(30, 30, 30, 0.8);
+    border-color: rgba(212, 175, 55, 0.6);
+}
+
+/* 标题 */
+.collection-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #e0e0e0; /* 亮白 */
+    letter-spacing: 1px;
+}
+
+/* 分割线 */
+.collection-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(212,175,55,0.5), transparent);
+    margin: 5px 0;
+}
+
+/* 描述 (核心修复点) */
+.collection-desc {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7); /* 灰白 */
+    font-family: "KaiTi", "STKaiti", serif; /* 楷体，更有故事感 */
+    line-height: 1.6;
+    
+    /* 允许换行，不限制高度，确保显示完整 */
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+/* 底部信息 */
+.collection-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    
+    font-family: monospace;
+    font-size: 10px;
+    color: #d4af37; /* 金色文字 */
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+/* --- 日间模式适配 --- */
+body.light-mode .collection-item-card {
+    background: #fff;
+    border-color: rgba(184, 134, 11, 0.2);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+body.light-mode .collection-title { color: #333; }
+body.light-mode .collection-desc { color: #555; }
+body.light-mode .collection-divider { background: linear-gradient(90deg, rgba(184,134,11,0.3), transparent); }
+body.light-mode .collection-footer { border-top-color: rgba(0,0,0,0.05); color: #b8860b; }
+
+/* ==========================================
+   ===   大富翁 V3 (终极修复版)   ===
+   ========================================== */
+
+
+/* 1. 棋盘容器：固定比例，防止变形 */
+.monopoly-board {
+    display: grid;
+    /* 9x9 网格，每一格的大小均分 */
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+    gap: 2px;
+    
+    width: 100%;
+    aspect-ratio: 1 / 1; /* 强制正方形 */
+    
+    background: #1a0b0b; /* 深红底色 */
+    border: 4px double #e0c097; /* 金色双边框 */
+    padding: 4px;
+    border-radius: 8px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* 2. 单个格子：紧凑排版 */
+.tile {
+    background: #eaddcf; /* 奶油色底 */
+    border: 1px solid #cbbba0;
+    border-radius: 2px;
+    
+    /* --- 核心修复：强制文字颜色为深色 --- */
+    color: #1a0b0b !important; /* 深酒红/黑色 */
+    font-weight: 600; /* 稍微加粗，防晕染 */
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    
+    position: relative;
+    overflow: hidden;
+    font-size: 9px;
+    line-height: 1.2;
+}
+
+/* 针对角落的大格子 (保持深底亮字) */
+.tile.corner {
+    background: #d4af37; /* 金色角落 */
+    color: #2c0e0e !important; /* 这种底色配深色字清楚 */
+    font-weight: 800;
+    border: 1px solid #8B4513;
+}
+
+/* 特殊格子 (保持深底亮字) */
+.tile.special {
+    background: #2c0e0e; /* 深色底 */
+    color: #e0c097 !important; /* 亮金色字 */
+    border-color: #5d4037;
+    font-weight: normal;
+}
+
+.tile i { font-size: 12px; margin-bottom: 2px; }
+.tile span { transform: scale(0.85); white-space: nowrap; }
+
+/* 棋盘上的玩家棋子 */
+.token {
+    width: 14px; /* 稍微大一点点 */
+    height: 14px; 
+    border-radius: 50%;
+    position: absolute; /* 绝对定位 */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+    border: 2px solid #fff; /* 加个白边，更醒目 */
+    z-index: 100; /* 确保浮在格子上 */
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 3. 中间舞台：必须腾出空间 */
+.center-stage {
+    /* 占据中间 7x7 的区域 (从第2条线开始，到第9条线结束) */
+    grid-column: 2 / 9;
+    grid-row: 2 / 9;
+    
+    background-image: radial-gradient(circle at center, #2c0e0e 0%, #000 80%);
+    border: 1px solid rgba(224, 192, 151, 0.2);
+    box-shadow: inset 0 0 50px #000;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1; /* 确保在底层 */
+}
+
+/* 4. === 3D 骰子核心 (物理引擎感) === */
+.dice-stage {
+    display: flex;
+    gap: 40px;
+    perspective: 600px; /* 3D 透视距离 */
+    margin-bottom: 20px;
+}
+
+.dice-wrapper {
+    width: 60px;
+    height: 60px;
+}
+
+.dice {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d; /* 关键：保留3D空间 */
+    transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 弹跳缓动 */
+    transform: rotateX(-25deg) rotateY(-35deg);
+}
+
+.face {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: #fdfbf7; /* 象牙白 */
+    border: 1px solid #dcdcdc;
+    border-radius: 10px; /* 圆角 */
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.1);
+    
+    /* 点数样式 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0; /* 隐藏文字，只显示背景点 */
+}
+
+/* 绘制点数 (使用伪元素画黑点) */
+.face::before {
+    content: '';
+    display: block;
+    background-color: #1a1a1a; /* 黑点 */
+    border-radius: 50%;
+    box-shadow: inset 1px 1px 2px rgba(255,255,255,0.3); /* 点的高光 */
+}
+
+/* 具体的点数布局 (这里用 Grid 模拟点数位置) */
+.face { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); padding: 4px; box-sizing: border-box; gap: 2px; }
+.dot { background-color: #333; border-radius: 50%; width: 10px; height: 10px; margin: auto; box-shadow: inset 0 2px 2px rgba(0,0,0,0.5); }
+/* 1点是红色的 */
+.face.front .dot { background-color: #d00; width: 16px; height: 16px; }
+
+/* 6个面的 3D 变换 (以60px为例，translateZ = 30px) */
+.face.front  { transform: translateZ(30px); }
+.face.back   { transform: rotateY(180deg) translateZ(30px); }
+.face.right  { transform: rotateY(90deg) translateZ(30px); }
+.face.left   { transform: rotateY(-90deg) translateZ(30px); }
+.face.top    { transform: rotateX(90deg) translateZ(30px); }
+.face.bottom { transform: rotateX(-90deg) translateZ(30px); }
+
+/* 5. 顶部状态栏修复 */
+.game-status-bar {
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+    padding: 10px 20px;
+    background: rgba(40, 20, 20, 0.9);
+    border: 1px solid #5d4037;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+.player-card {
+    display: flex; 
+    flex-direction: column; /* 上下排列：头像在上，钱在下 */
+    align-items: center; 
+    gap: 5px;
+}
+.player-avatar {
+    width: 36px; height: 36px; 
+    border: 2px solid #ffd700;
+    border-radius: 50%;
+    display: flex; justify-content: center; align-items: center;
+    background: #000; font-weight: bold; color: #fff;
+}
+.player-money {
+    font-family: monospace;
+    color: #ffd700;
+    font-size: 14px;
+}
+.vs-badge { font-family: serif; font-style: italic; color: #888; font-size: 20px; }
+
+/* 6. 底部字幕条美化 (仅限深色模式) */
+body:not(.light-mode) .game-subtitle-box {
+    margin-top: auto;
+    margin-bottom: 10px;
+    min-height: 60px;
+    
+    /* 悬浮卡片感 */
+    background: rgba(20, 10, 10, 0.85); 
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    /* 金色细边框 */
+    border: 1px solid rgba(212, 175, 55, 0.3) !important; 
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+}
+
+body:not(.light-mode) #game-message {
+    font-family: "Songti SC", serif; /* 宋体，更有电影感 */
+    color: #e0c097; /* 香槟金文字 */
+    text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+    font-weight: 500;
+}
+
+/* ============================================================
+   ===   大富翁浅色模式：常青藤名流 (Ivy League Style)   ===
+   ============================================================ */
+
+/* 1. 全局背景：高级信纸 / 香奈儿风格 */
+body.light-mode #monopoly-app .app-page {
+    background-color: #fdfdfd; /* 纯净白 */
+    /* 菱格纹背景：保持不变，很有质感 */
+    background-image: 
+        linear-gradient(45deg, #f4f4f4 25%, transparent 25%, transparent 75%, #f4f4f4 75%, #f4f4f4),
+        linear-gradient(45deg, #f4f4f4 25%, transparent 25%, transparent 75%, #f4f4f4 75%, #f4f4f4);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    color: #002366; /* 皇室蓝/海军蓝文字 */
+    font-family: "Didot", "Bodoni MT", "Songti SC", serif; /* 时尚杂志衬线体 */
+}
+
+/* 2. 顶部标题：像时尚杂志封面 */
+body.light-mode #monopoly-app .page-header h2 {
+    color: #000 !important;
+    font-family: "Didot", serif;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    
+    /* 【修改】粉色下划线 -> 深红下划线 */
+    border-bottom: 2px solid #C41E3A; 
+    padding-bottom: 5px;
+}
+body.light-mode #monopoly-app .page-header i {
+    color: #000 !important;
+}
+
+/* 3. 状态栏：VIP 邀请函风格 */
+body.light-mode .game-status-bar {
+    background: #fff;
+    border: 1px solid #d4af37; /* 金边 */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-radius: 0; /* 直角 */
+}
+body.light-mode .player-avatar {
+    background: #002366; /* 海军蓝底 */
+    border: 2px solid #d4af37; /* 金框 */
+    color: #fff;
+    font-family: "Didot", serif;
+}
+body.light-mode .player-money {
+    color: #000;
+    font-weight: 900;
+}
+body.light-mode .vs-badge {
+    /* 【修改】粉色 VS -> 深红 VS */
+    color: #C41E3A; 
+    font-family: "Snell Roundhand", cursive;
+    font-size: 24px;
+}
+
+/* 4. 棋盘主体：学院风 (蓝金配色) */
+body.light-mode .monopoly-board {
+    background: #002366; /* 海军蓝底座 */
+    border: 6px double #d4af37; /* 奢华金边 */
+    box-shadow: 0 20px 50px rgba(0, 35, 102, 0.3);
+}
+
+/* 5. 格子样式：干净利落 */
+body.light-mode .tile {
+    background: #fff;
+    border: 1px solid #eee;
+    color: #000 !important;
+    font-family: "Didot", serif;
+    font-weight: bold;
+}
+
+/* 【修改】浅色模式下的【特殊格子】：深红警示 */
+body.light-mode .tile.special {
+    background: #C41E3A; /* 学院红/深红 */
+    color: #fff !important;
+    border-color: #8a0e23; /* 更深一点的红边框 */
+    font-weight: 900;
+}
+body.light-mode .tile.special i {
+    color: #fff;
+}
+
+/* 浅色模式下的【角落格子】：奢华黑金 */
+body.light-mode .tile.corner {
+    background: #000;
+    color: #d4af37 !important;
+    border-color: #d4af37;
+}
+
+/* 格子里的价格 */
+body.light-mode .tile span[style*="color:#8B0000"] {
+    color: #002366 !important; /* 价格变海军蓝 */
+    font-family: "Courier New", monospace;
+}
+
+/* 6. 中间舞台：名牌丝巾印花 */
+body.light-mode .center-stage {
+    /* 背景纹理淡化 */
+    background-image: 
+        repeating-linear-gradient(45deg, rgba(212, 175, 55, 0.1) 0, rgba(212, 175, 55, 0.1) 1px, transparent 0, transparent 50%);
+    background-color: #fff;
+    border: 1px solid #d4af37;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
+}
+
+/* 7. 骰子：珍珠白 */
+body.light-mode .face {
+    background: linear-gradient(135deg, #fff, #f0f0f0);
+    border-color: #ccc;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+}
+/* 骰子点数：黑色 */
+body.light-mode .dot {
+    background-color: #000;
+}
+/* 【修改】1点：深红色 */
+body.light-mode .face.front .dot {
+    background-color: #C41E3A;
+}
+
+/* 8. 按钮：黑金小香风 */
+body.light-mode .cinema-btn {
+    background: #000;
+    border: 1px solid #d4af37;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    text-transform: uppercase;
+}
+body.light-mode .cinema-btn:active {
+    background: #222;
+    transform: translateY(2px);
+}
+
+/* 9. 底部消息条：短信弹窗 */
+body.light-mode .game-subtitle-box {
+    background: rgba(255, 255, 255, 0.9);
+    border-top: 1px solid #eee;
+    color: #000;
+    backdrop-filter: blur(10px);
+}
+body.light-mode #game-message {
+    color: #000;
+    text-shadow: none;
+    font-family: Helvetica, Arial, sans-serif;
+    font-style: normal;
+}
+/* 【修改】前缀风格 */
+body.light-mode #game-message::before {
+    content: "NEWS: "; /* 换成 NEWS 或者 ALERT，去掉 XOXO */
+    color: #C41E3A;
+    font-weight: bold;
+    font-family: "Courier New", monospace;
+}
+
+/* ==========================================
+   ===   大富翁：对手选择浮窗样式   ===
+   ========================================== */
+
+/* 列表项容器 */
+.monopoly-select-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+/* 头像 */
+.monopoly-select-avatar {
+    width: 44px; 
+    height: 44px; 
+    border-radius: 50%; 
+    background-size: cover; 
+    background-position: center;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+
+/* 名字 */
+.monopoly-select-name {
+    font-size: 16px;
+    font-weight: 600;
+    flex-grow: 1;
+}
+
+/* 选中状态标记 */
+.monopoly-select-check {
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s;
+    color: #34C759;
+    font-size: 20px;
+}
+
+/* --- 深色模式 (Vanity Fair) --- */
+body:not(.light-mode) .monopoly-select-item {
+    background: rgba(255, 255, 255, 0.05);
+    color: #e0c097; /* 香槟金 */
+}
+body:not(.light-mode) .monopoly-select-item:hover {
+    background: rgba(212, 175, 55, 0.15); /* 金色高亮 */
+    border-color: rgba(212, 175, 55, 0.3);
+}
+body:not(.light-mode) .monopoly-select-avatar {
+    border-color: #d4af37;
+}
+
+/* --- 浅色模式 (Upper East Side) --- */
+body.light-mode .monopoly-select-item {
+    background: #f9f9f9;
+    color: #002366; /* 海军蓝 */
+    border: 1px solid #eee;
+}
+body.light-mode .monopoly-select-item:hover {
+    background: #fff;
+    border-color: #C41E3A; /* 学院红高亮 */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+body.light-mode .monopoly-select-avatar {
+    border-color: #002366;
+}
+
+/* 激活选中状态 */
+.monopoly-select-item.active .monopoly-select-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* === 修复：大富翁头像显示问题 === */
+#monopoly-app .player-avatar {
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
+/* === 大富翁：领地归属样式 (修复版：莫兰迪绿价格) === */
+
+/* --- 🌑 深色模式 (Dark Mode) --- */
+
+/* 1. 玩家地盘 */
+.tile.owned-by-user {
+    box-shadow: inset 0 0 0 2px #FF4D4D, inset 0 0 10px rgba(255, 77, 77, 0.3) !important;
+    background-color: rgba(139, 0, 0, 0.3) !important;
+    color: #FFD700 !important; /* 名字保持金色 */
+}
+
+/* 2. AI 地盘 */
+.tile.owned-by-ai {
+    box-shadow: inset 0 0 0 2px #4da6ff, inset 0 0 10px rgba(77, 166, 255, 0.3) !important;
+    background-color: rgba(25, 25, 112, 0.4) !important;
+    color: #fff !important; /* 名字保持白色 */
+}
+
+/* 3. 【关键新增】强制修正价格颜色 (莫兰迪绿) */
+/* 无论是谁的地盘，只要是深色模式，价格都显示为这种淡淡的高级绿 */
+.tile.owned-by-user span,
+.tile.owned-by-ai span {
+    color: #B5C7BE !important; /* Morandi Sage Green */
+    font-weight: 600;
+}
+
+/* --- ☀️ 浅色模式 (Light Mode) - 保持之前的印章风格 --- */
+body.light-mode .tile.owned-by-user {
+    box-shadow: inset 0 0 0 3px #C41E3A !important;
+    background-color: #FFF0F5 !important; 
+    color: #8B0000 !important;
+    font-weight: 800 !important;
+}
+body.light-mode .tile.owned-by-ai {
+    box-shadow: inset 0 0 0 3px #002366 !important;
+    background-color: #F0F8FF !important;
+    color: #002366 !important;
+    font-weight: 800 !important;
+}
+/* 浅色模式下，价格颜色跟随文字颜色 (深红/深蓝)，不需要绿色 */
+body.light-mode .tile.owned-by-user span,
+body.light-mode .tile.owned-by-ai span {
+    color: inherit !important;
+    text-shadow: none !important;
+}
+
+/* === 大富翁按钮呼吸特效 === */
+@keyframes btn-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); transform: scale(1); }
+    70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); transform: scale(1.05); }
+    100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); transform: scale(1); }
+}
+
+.pulse-btn {
+    animation: btn-pulse 1.5s infinite;
+    border-color: #FFD700 !important; /* 强制金色边框 */
+    color: #FFD700 !important;       /* 强制金色文字 */
+    background: rgba(0, 0, 0, 0.6) !important; /* 深色背景让文字更亮 */
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/* === 大富翁：回合指示器 === */
+
+/* 默认卡片样式微调 */
+.player-card {
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0.5; /* 非当前回合变暗 */
+    transform: scale(0.9);
+}
+
+/* 当前回合状态 */
+.player-card.is-turn {
+    opacity: 1;
+    transform: scale(1.05); /* 放大 */
+}
+
+/* 当前回合的头像：金色呼吸光环 */
+.player-card.is-turn .player-avatar {
+    box-shadow: 0 0 0 2px #FFD700, 0 0 15px rgba(255, 215, 0, 0.6);
+    animation: avatar-breathe 2s infinite ease-in-out;
+    border-color: #FFD700 !important;
+}
+
+/* 呼吸动画 */
+@keyframes avatar-breathe {
+    0% { box-shadow: 0 0 0 2px #FFD700, 0 0 5px rgba(255, 215, 0, 0.3); }
+    50% { box-shadow: 0 0 0 4px #FFD700, 0 0 20px rgba(255, 215, 0, 0.8); }
+    100% { box-shadow: 0 0 0 2px #FFD700, 0 0 5px rgba(255, 215, 0, 0.3); }
+}
+
+/* 浅色模式适配 (深红光环) */
+body.light-mode .player-card.is-turn .player-avatar {
+    box-shadow: 0 0 0 2px #C41E3A, 0 0 15px rgba(196, 30, 58, 0.4);
+    border-color: #C41E3A !important;
+    animation: avatar-breathe-light 2s infinite ease-in-out;
+}
+
+@keyframes avatar-breathe-light {
+    0% { box-shadow: 0 0 0 2px #C41E3A, 0 0 5px rgba(196, 30, 58, 0.2); }
+    50% { box-shadow: 0 0 0 4px #C41E3A, 0 0 15px rgba(196, 30, 58, 0.6); }
+    100% { box-shadow: 0 0 0 2px #C41E3A, 0 0 5px rgba(196, 30, 58, 0.2); }
+}
+
+/* ==========================================
+   ===   桌面组件：神秘档案袋 (Kraft Style)   ===
+   ========================================== */
+
+.kraft-file-widget {
+    width: 100%;
+    height: 110px; /* 档案袋的高度 */
+    position: relative;
+    
+    /* 牛皮纸核心底色：陈旧的黄褐色 */
+    background-color: #c0a075; 
+    /* 叠加渐变：模拟纸张表面的光泽和污以此增加真实感 */
+    background-image: 
+        radial-gradient(circle at 30% 20%, rgba(255,255,255,0.1), transparent 60%),
+        linear-gradient(to bottom, rgba(0,0,0,0.05), rgba(0,0,0,0.15));
+        
+    border-radius: 6px; /* 纸袋的角通常比较直，圆角要小 */
+    border: 1px solid #8d6e63; /* 深褐色边框 */
+    box-sizing: border-box;
+    cursor: pointer;
+    overflow: hidden;
+    
+    /* 投影：让它看起来是放在桌子上的，而不是贴在屏幕上 */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    /* 布局 */
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+/* 悬停交互：轻微浮起 */
+.kraft-file-widget:active {
+    transform: scale(0.98);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* --- 纸张纹理层 --- */
+.kraft-file-widget .paper-texture {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    /* SVG 噪点，增加粗糙感 */
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjMDAwIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+');
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* --- 右侧绕线扣 (String Tie) 装饰 --- */
+.file-string-tie {
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 60px;
+    z-index: 2;
+}
+.file-string-tie .button-top,
+.file-string-tie .button-bottom {
+    width: 14px; height: 14px;
+    background: #5d4037; /* 深咖啡色扣子 */
+    border-radius: 50%;
+    position: absolute; left: 50%; transform: translateX(-50%);
+    box-shadow: 1px 2px 3px rgba(0,0,0,0.3); /* 扣子的投影 */
+}
+.file-string-tie .button-top { top: 0; }
+.file-string-tie .button-bottom { bottom: 0; }
+
+.file-string-tie .string-line {
+    position: absolute;
+    top: 7px; left: 50%;
+    width: 2px; height: 46px;
+    background: #eceff1; /* 棉线白 */
+    box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    transform: translateX(-50%) rotate(3deg); /* 线稍微有点歪 */
+}
+
+/* --- 档案文字信息 --- */
+.file-info {
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #3e2723; /* 墨水色 */
+}
+
+.file-title {
+    font-family: "Courier New", monospace; /* 打字机字体 */
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 1px;
+    border-bottom: 2px solid #3e2723;
+    padding-bottom: 2px;
+    margin-bottom: 5px;
+    width: fit-content;
+}
+
+.file-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 红色机密印章 */
+.stamp-text {
+    border: 2px solid #b71c1c;
+    color: #b71c1c;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 2px 6px;
+    transform: rotate(-8deg); /* 盖歪了 */
+    font-family: sans-serif;
+    letter-spacing: 1px;
+    opacity: 0.8;
+    mix-blend-mode: multiply; /* 正片叠底，模拟印泥渗入纸张 */
+}
+
+.case-id {
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* =========================================
+   ===   心声面板样式 (终极防隐身版)      ===
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400;1,600&family=Noto+Serif+SC:wght@200;400;700&display=swap');
+
+#inner-voice-modal { z-index: 300; }
+
+.inner-voice-container {
+    position: relative; width: 100%; height: 100%; 
+    background: #0a0a0c; /* 深色底 */
+    overflow: hidden; display: flex; flex-direction: column;
+    opacity: 0; transition: opacity 0.5s ease;
+}
+.modal-overlay.visible .inner-voice-container { opacity: 1; }
+
+/* 背景层 */
+.iv-fixed-bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.iv-bg-base { position: absolute; inset: 0; background: linear-gradient(to bottom, #050505, #1a1016, #0f172a); }
+.iv-aurora-wrapper { position: absolute; top: -20%; left: -20%; width: 140%; height: 140%; opacity: 0.4; mix-blend-mode: screen; animation: iv-pulse-slow 8s ease-in-out infinite; }
+.iv-aurora-blob { position: absolute; width: 100%; height: 100%; }
+.iv-aurora-blob.top-right { top: 0; right: 0; background: radial-gradient(circle at 50% 50%, rgba(244,63,94,0.1), transparent 60%); }
+.iv-aurora-blob.bottom-left { bottom: 0; left: 0; background: radial-gradient(circle at 30% 50%, rgba(100,200,255,0.08), transparent 50%); }
+.iv-particle { position: absolute; background: white; border-radius: 50%; opacity: 0.3; animation: iv-float linear infinite; }
+.iv-big-text { position: absolute; top: 5rem; right: -2.5rem; font-size: 15rem; font-family: 'Cormorant Garamond', serif; font-weight: 700; color: rgba(255,255,255,0.04); line-height: 1; pointer-events: none; transform-origin: top right; }
+
+/* 内容层 */
+.iv-close-btn { position: absolute; top: 25px; right: 25px; z-index: 50; font-size: 28px; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s; }
+.iv-close-btn:hover { color: #fff; transform: rotate(90deg); }
+
+/* 滚动区域 */
+.iv-content-scroll { 
+    position: relative; 
+    z-index: 10; 
+    width: 100%; 
+    height: 100%; 
+    overflow-y: auto; 
+    padding: 20px; 
+    box-sizing: border-box; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+
+/* --- 修复点1：Loading 容器强制居中 --- */
+#inner-voice-loading {
+    display: none; /* 默认隐藏，由JS控制显示 */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%; /* 占满全屏高度，确保居中 */
+    width: 100%;
+    margin-top: 20vh; /* 稍微偏上一点，视觉更平衡 */
+}
+
+/* --- 修复点2：Loading 动画修复 --- */
+.iv-loading-spinner { 
+    width: 50px; 
+    height: 50px; 
+    border: 3px solid rgba(255,255,255,0.1); /* 稍微加粗 */
+    border-top-color: #fb7185; 
+    border-radius: 50%; 
+    margin: 0 auto 20px auto; /* 居中 */
+    animation: iv-spin 1s linear infinite; 
+    flex-shrink: 0; /* 防止被压缩 */
+}
+
+#inner-voice-loading p { 
+    text-align: center; 
+    color: rgba(255,255,255,0.6); 
+    font-size: 14px; 
+    letter-spacing: 2px; 
+    animation: iv-pulse-text 2s infinite ease-in-out;
+}
+
+/* 浅色模式：加载圈底色变深灰，顶部变深红 */
+body.light-mode .iv-loading-spinner {
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    border-top-color: #be123c !important;
+}
+
+/* 【关键修复】浅色模式：文字变深灰色 (原本是白色所以看不见) */
+body.light-mode #inner-voice-loading p {
+    color: rgba(0, 0, 0, 0.6) !important;
+    text-shadow: none;
+}
+
+/* 数据显示容器 */
+.iv-data-wrapper { 
+    width: 100%; 
+    max-width: 800px; 
+    margin-top: 40px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 50px; 
+    /* 移除这里的 opacity: 0，防止不显示 */
+    animation: iv-slide-up 0.8s ease-out; 
+}
+
+/* 模块样式 */
+.iv-section-header {
+    text-align: center; 
+    padding-left: 0;    
+    margin-bottom: 40px; 
+}
+
+.iv-meta-badge {
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    gap: 8px;
+    color: rgba(253, 164, 175, 0.6); 
+    font-family: monospace; 
+    font-size: 10px; 
+    letter-spacing: 0.4em;
+    text-transform: uppercase; 
+    margin-bottom: 12px;
+}
+
+#iv-char-name {
+    font-family: "Times New Roman", "Songti SC", "SimSun", serif;
+    font-style: italic;
+    color: #e0e0e0; 
+    background: none;
+    -webkit-text-fill-color: initial;
+    -webkit-background-clip: border-box;
+    font-size: 4.5rem;
+    line-height: 1.1;
+    margin: 0;
+    letter-spacing: 2px;
+    text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+    filter: none;
+}
+
+#iv-char-title {
+    font-size: 12px; 
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.4em;
+    text-transform: uppercase; 
+    margin-top: 10px;
+    font-weight: 300;
+    opacity: 0.6;
+}
+
+/* --- 修复点3：中间引用框防隐身 --- */
+.iv-section-quote {
+    position: relative;
+    padding: 40px 20px; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;     
+    justify-content: center; 
+    text-align: center;      
+    
+    /* 核心修复：不透明度初始值设为1，不要设为0 */
+    background: rgba(255, 255, 255, 0.05); 
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    
+    border-radius: 12px;
+    margin: 10px 0;
+    
+    /* 动画改为淡入，不使用 forwards 防止状态卡死 */
+    animation: iv-fade-in 1s ease-out;
+}
+
+.iv-fingerprint {
+    position: absolute; 
+    top: 10px; 
+    left: 10px;
+    font-size: 80px; 
+    color: rgba(244, 63, 94, 0.1); 
+    transform: rotate(-15deg);
+    pointer-events: none; 
+    z-index: 0; 
+}
+
+.iv-quote-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    display: flex;           
+    flex-direction: column;  
+    align-items: center;     
+    justify-content: center;
+    gap: 15px;               
+}
+
+.iv-quote-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;         
+    color: rgba(255, 255, 255, 0.2); 
+    line-height: 1;
+    display: block;          
+    text-align: center;      
+}
+
+/* --- 修复点4：中间文字强制白色 --- */
+#iv-quote-text {
+    font-family: 'Cormorant Garamond', 'Noto Serif SC', serif; 
+    font-size: 1.8rem;       
+    font-weight: 500;
+    line-height: 1.8;        
+    
+    /* 强制纯白，增加权重防止被覆盖 */
+    color: #ffffff !important; 
+    
+    text-align: center;      
+    white-space: pre-wrap;   
+    max-width: 95%;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+
+/* 高亮词 */
+#iv-quote-text i { 
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic; 
+    font-weight: bold;       
+    margin: 0 6px;           
+    
+    background: linear-gradient(to right, #fecdd3, #ffffff, #fecdd3); 
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;      
+    display: inline-block;   
+}
+
+.iv-section-profile { display: grid; grid-template-columns: 1fr; gap: 30px; }
+@media (min-width: 768px) { .iv-section-profile { grid-template-columns: repeat(3, 1fr); } }
+.iv-profile-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 20px; transition: background 0.3s; }
+.iv-profile-card:hover { background: rgba(255,255,255,0.04); }
+.iv-card-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.text-rose { color: rgba(253, 164, 175, 0.5); } .text-blue { color: rgba(191, 219, 254, 0.5); } .text-emerald { color: rgba(110, 231, 183, 0.5); }
+.iv-profile-card p { font-size: 14px; color: rgba(156, 163, 175, 1); font-weight: 300; line-height: 1.8; text-align: justify; font-family: sans-serif; }
+
+/* 动画定义 */
+@keyframes iv-float { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 0.3; } 80% { opacity: 0.3; } 100% { transform: translate(10px, -50px); opacity: 0; } }
+@keyframes iv-pulse-slow { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.6; } }
+@keyframes iv-slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes iv-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes iv-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes iv-pulse-text { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+/* =======================================
+   === 浅色模式适配 (独立权重) ===
+   ======================================= */
+   
+body.light-mode .inner-voice-container { background: #fdfbf7; color: #333; }
+body.light-mode .iv-bg-base { background: linear-gradient(to bottom, #ffffff, #fdf2f8, #f0f9ff); }
+body.light-mode .iv-big-text { color: rgba(0,0,0,0.03); }
+body.light-mode .iv-close-btn { color: rgba(0,0,0,0.3); } body.light-mode .iv-close-btn:hover { color: #000; }
+
+/* 名字颜色 */
+body.light-mode #iv-char-name {
+    color: #881337; 
+    text-shadow: none; 
+    background: none;
+    -webkit-text-fill-color: initial;
+}
+body.light-mode #iv-char-title { color: rgba(0,0,0,0.4); }
+
+/* 中间引用框 - 浅色版 */
+body.light-mode .iv-section-quote { 
+    background: rgba(255, 255, 255, 0.6) !important; 
+    border-color: rgba(0, 0, 0, 0.05) !important;    
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+body.light-mode .iv-quote-content { color: #4a4a4a; } 
+body.light-mode .iv-quote-mark { color: rgba(0,0,0,0.1) !important; } 
+
+/* 文字颜色覆盖 */
+body.light-mode #iv-quote-text { 
+    color: #333333 !important; /* 确保浅色模式下是深灰，不是白色 */
+    text-shadow: none; 
+}
+
+/* 高亮词颜色 */
+body.light-mode #iv-quote-text i { 
+    background: linear-gradient(to right, #be123c, #881337, #be123c); 
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent !important;
+}
+
+body.light-mode .iv-profile-card { background: rgba(255,255,255,0.5); border-color: rgba(0,0,0,0.05); }
+body.light-mode .iv-profile-card p { color: rgba(0,0,0,0.6); }
+body.light-mode .iv-loading-spinner { border-color: rgba(0,0,0,0.1); border-top-color: #be123c; }
+
     </style>
 </head>
 
@@ -6953,15 +8000,38 @@ body.light-mode .pawn-ticket.rejected {
     <i class="ri-cloud-windy-line"></i>
     <span>云端同步</span>
 </div>
-    <!-- 4. 占位 -->
-    <div id="icon-p2-4" class="app-icon customizable-icon"></div>
+    <!-- 桌面图标：电影大富翁 -->
+<div id="icon-monopoly" class="app-icon icon-with-text customizable-icon" style="cursor: pointer;">
+    <i class="ri-vip-crown-line"></i> <!-- 用皇冠或胶卷图标 -->
+    <span>名利场</span>
 </div>
-                        </div>
-                    </div>
-                </div>
+</div>
+          <!-- 2. 【新】牛皮纸档案袋组件 -->
+    <div id="mystery-case-widget" class="kraft-file-widget">
+        <!-- 绕线扣装饰 -->
+        <div class="file-string-tie">
+            <div class="button-top"></div>
+            <div class="string-line"></div>
+            <div class="button-bottom"></div>
+        </div>
+        
+        <!-- 文字标签区域 -->
+        <div class="file-info">
+            <div class="file-title">UNSOLVED CASES</div>
+            <div class="file-meta">
+                <span class="stamp-text">TOP SECRET</span>
+                <span class="case-id">NO. 1999</span>
             </div>
+        </div>
 
-            <div class="pagination">
+        <!-- 纸张纹理遮罩 -->
+        <div class="paper-texture"></div></div></div>    
+    </div>
+  </div>  
+</div>               
+
+            
+<div class="pagination">
                 <div class="dot active"></div>
                 <div class="dot"></div>
             </div>
@@ -7308,6 +8378,7 @@ body.light-mode .pawn-ticket.rejected {
     <div class="function-icon-bg"><i class="ri-exchange-box-line"></i></div>
     <span>典当行</span>
 </div>
+
                 </div>
             </div>
             <div class="chat-input-bar">
@@ -7339,11 +8410,19 @@ body.light-mode .pawn-ticket.rejected {
                     <i class="ri-history-line"></i>
                     <span>记忆轮数</span>
                 </div>
+ <div id="extract-memory-book-btn" class="settings-item">
+            <i class="ri-git-repository-line"></i> <!-- 图标：书签 -->
+            <div style="display:flex; flex-direction:column;">
+                <span>提取记忆结晶</span>
+                <span style="font-size:12px; opacity:0.6; font-weight:normal;">将聊天记录总结为“设定书”存入图书馆</span>
+            </div>
+        </div>
                 <div id="manage-exclusive-books-item" class="settings-item">
                     <i class="ri-book-read-line"></i>
                     <span>管理专属书</span>
                     <span id="linked-books-count" style="opacity: 0.6; font-size: 14px; margin-left: auto;">未设置</span>
                 </div>
+
                 <div id="toggle-time-perception-item" class="settings-item">
                     <i class="ri-time-line"></i>
                     <span>时间感知</span>
@@ -7740,6 +8819,96 @@ body.light-mode .pawn-ticket.rejected {
                 </div>
 
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- 大富翁游戏应用 (Monopoly App) -->
+<div id="monopoly-app" class="app-navigator">
+    <div id="monopoly-main-page" class="app-page">
+        <!-- 背景层：深色天鹅绒质感 -->
+        <div class="monopoly-bg-layer"></div>
+
+        <!-- 页头 -->
+        <div class="page-header cinematic-header">
+            <i class="ri-arrow-left-s-line left-icon back-button" data-target="desktop" style="color: #e0c097;"></i>
+            <h2 style="font-family: 'Times New Roman', serif; color: #e0c097; letter-spacing: 2px;">VANITY FAIR</h2>
+            <i class="ri-settings-4-line right-icon" style="color: #e0c097; opacity: 0.6;"></i>
+        </div>
+
+        <!-- 游戏主区域 -->
+        <div class="monopoly-container">
+            
+            <!-- 顶部信息栏：显示当前回合/资金 -->
+            <div class="game-status-bar">
+                <div class="player-card active">
+                    <div class="player-avatar" style="background-color: #8B0000;">我</div>
+                    <span class="player-money">¥ 10,000</span>
+                </div>
+                <div class="vs-badge">VS</div>
+                <div class="player-card">
+                    <div class="player-avatar" style="background-image: url(''); background-size: cover;">?</div>
+                    <span class="player-money">¥ 10,000</span>
+                </div>
+            </div>
+
+            <!-- 棋盘区域 -->
+<div id="monopoly-board" class="monopoly-board">
+    <!-- JS 生成格子 -->
+    
+    <!-- 中间舞台：放置 3D 骰子 -->
+    <div class="center-stage">
+    <div class="dice-stage">
+        <!-- 骰子 1 -->
+        <div class="dice-wrapper">
+            <div id="dice-1" class="dice">
+                <!-- 1点 -->
+                <div class="face front"><div class="dot" style="grid-area: 2/2;"></div></div>
+                <!-- 2点 -->
+                <div class="face back"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+                <!-- 3点 -->
+                <div class="face right"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 2/2;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+                <!-- 4点 -->
+                <div class="face left"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 1/3;"></div><div class="dot" style="grid-area: 3/1;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+                <!-- 5点 -->
+                <div class="face top"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 1/3;"></div><div class="dot" style="grid-area: 2/2;"></div><div class="dot" style="grid-area: 3/1;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+                <!-- 6点 -->
+                <div class="face bottom"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 1/3;"></div><div class="dot" style="grid-area: 2/1;"></div><div class="dot" style="grid-area: 2/3;"></div><div class="dot" style="grid-area: 3/1;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+            </div>
+        </div>
+        
+        <!-- 骰子 2 (结构完全一样) -->
+        <div class="dice-wrapper">
+            <div id="dice-2" class="dice">
+                <div class="face front"><div class="dot" style="grid-area: 2/2;"></div></div>
+                <div class="face back"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+                <div class="face right"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 2/2;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+                <div class="face left"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 1/3;"></div><div class="dot" style="grid-area: 3/1;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+                <div class="face top"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 1/3;"></div><div class="dot" style="grid-area: 2/2;"></div><div class="dot" style="grid-area: 3/1;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+                <div class="face bottom"><div class="dot" style="grid-area: 1/1;"></div><div class="dot" style="grid-area: 1/3;"></div><div class="dot" style="grid-area: 2/1;"></div><div class="dot" style="grid-area: 2/3;"></div><div class="dot" style="grid-area: 3/1;"></div><div class="dot" style="grid-area: 3/3;"></div></div>
+            </div>
+        </div>
+    </div>
+    
+    <button id="roll-dice-btn" class="cinema-btn">
+        <i class="ri-vip-crown-2-line"></i> ROLL
+    </button>
+</div>
+</div>
+
+            <!-- 底部消息条 (像电影字幕) -->
+            <div class="game-subtitle-box">
+                <p id="game-message">游戏准备就绪，请掷骰子...</p>
+<!-- 你的输入框 (默认隐藏，点击按钮显示) -->
+    <div id="monopoly-chat-input-area" style="display: none; width: 100%; margin-top: 10px; gap: 10px;">
+        <input type="text" id="monopoly-input" placeholder="说点什么干扰TA..." style="flex:1; padding:8px; border-radius:4px; border:1px solid rgba(255,255,255,0.3); background:rgba(0,0,0,0.3); color:#fff;">
+        <button id="monopoly-send-btn" class="cinema-btn" style="padding: 5px 15px; font-size: 12px;">发送</button>
+    </div>
+    
+    <!-- 聊天开关按钮 -->
+    <i id="monopoly-toggle-chat-btn" class="ri-chat-3-line" style="position: absolute; right: 15px; top: 15px; cursor: pointer; opacity: 0.7;"></i>
+            </div>
+
         </div>
     </div>
 </div>
@@ -8224,6 +9393,73 @@ body.light-mode .pawn-ticket.rejected {
         </div>
     </div>
 </div>
+
+<!-- 心声/潜台词揭秘面板 (Aurora Bloom 复刻版) -->
+<div id="inner-voice-modal" class="modal-overlay">
+    <div class="inner-voice-container">
+        <!-- 1. 背景层 -->
+        <div class="iv-fixed-bg">
+            <div class="iv-bg-base"></div>
+            <div class="iv-aurora-wrapper">
+                <div class="iv-aurora-blob top-right"></div>
+                <div class="iv-aurora-blob bottom-left"></div>
+            </div>
+            <div id="iv-particles"></div>
+            <div class="iv-big-text">BLOOM</div>
+        </div>
+
+        <!-- 关闭按钮 -->
+        <i id="close-inner-voice-btn" class="ri-close-line iv-close-btn"></i>
+
+        <!-- 2. 内容层 -->
+        <div class="iv-content-scroll">
+            <div id="inner-voice-loading" style="display: none;">
+                <div class="iv-loading-spinner"></div>
+                <p>正在同步潜意识频率...</p>
+            </div>
+
+            <div id="inner-voice-data" class="iv-data-wrapper" style="display: none;">
+                <!-- 顶部：名片 -->
+                <div class="iv-section-header">
+                    <div class="iv-meta-badge">
+                        <i class="ri-sparkling-2-line"></i>
+                        <span>SUBJECT <span id="iv-char-id">00</span></span>
+                        <i class="ri-sparkling-2-line"></i>
+                    </div>
+                    <h1 id="iv-char-name">---</h1>
+                    <p id="iv-char-title">---</p>
+                </div>
+
+                <!-- 中部：心声 -->
+                <div class="iv-section-quote">
+                    <div class="iv-fingerprint"><i class="ri-fingerprint-line"></i></div>
+                    <div class="iv-quote-content">
+                        <span class="iv-quote-mark">“</span>
+                        <span id="iv-quote-text">...</span>
+                        <span class="iv-quote-mark">”</span>
+                    </div>
+                </div>
+
+                <!-- 底部：侧写 -->
+                <div class="iv-section-profile">
+                    <div class="iv-profile-card">
+                        <h3 class="iv-card-title text-rose"><i class="ri-t-shirt-line"></i> ATTIRE</h3>
+                        <p id="iv-profile-attire">...</p>
+                    </div>
+                    <div class="iv-profile-card">
+                        <h3 class="iv-card-title text-blue"><i class="ri-eye-line"></i> POSE</h3>
+                        <p id="iv-profile-pose">...</p>
+                    </div>
+                    <div class="iv-profile-card">
+                        <h3 class="iv-card-title text-emerald"><i class="ri-windy-line"></i> DYNAMIC</h3>
+                        <p id="iv-profile-dynamic">...</p>
+                    </div>
+                </div>
+                <div style="height: 50px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
     
     <!-- 心事详情浮窗 -->
     <div id="secret-details-modal" class="modal-overlay">
@@ -8476,6 +9712,20 @@ body.light-mode .pawn-ticket.rejected {
                 <i class="ri-fingerprint-line"></i>
                 <span id="cloud-detail-meta">Analyzed by Neural Engine</span>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- 大富翁：选择对手浮窗 -->
+<div id="monopoly-char-select-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 360px;">
+        <div class="modal-header">
+            <h3>选择你的对手</h3>
+            <i id="close-monopoly-char-btn" class="ri-close-line"></i>
+        </div>
+        <!-- 角色列表容器 -->
+        <div id="monopoly-char-list" style="display: flex; flex-direction: column; gap: 12px; overflow-y: auto; max-height: 60vh; padding: 5px;">
+            <!-- JS 动态填充 -->
         </div>
     </div>
 </div>
@@ -8810,8 +10060,9 @@ currentDreamingDossierId: null,
 isDreamHistoryMode: false,
 currentPawnSession: null,
 currentShopItems: [],
-cloudSessionCache: {},
+cloudSessionCache: {}, 
 shopInventoriesMap: {},
+
         };
 
         const DOM = {
@@ -9257,6 +10508,32 @@ pawnHaggleArea: document.getElementById('pawn-haggle-area'),
             haggleReasonInput: document.getElementById('haggle-reason-input'),
             confirmHaggleBtn: document.getElementById('confirm-haggle-btn'),
             pawnHaggleBtn: document.getElementById('pawn-haggle-btn'),
+iconMonopoly: document.getElementById('icon-monopoly'),
+monopolyApp: document.getElementById('monopoly-app'),
+monopolyBoard: document.getElementById('monopoly-board'),
+rollDiceBtn: document.getElementById('roll-dice-btn'),
+diceBox: document.getElementById('dice-box'),
+gameMessage: document.getElementById('game-message'),
+dice1: document.getElementById('dice-1'),
+dice2: document.getElementById('dice-2'),
+monopolySettingsBtn: document.querySelector('#monopoly-app .right-icon'), // 设置按钮
+monopolyCharModal: document.getElementById('monopoly-char-select-modal'),
+monopolyCharList: document.getElementById('monopoly-char-list'),
+closeMonopolyCharBtn: document.getElementById('close-monopoly-char-btn'),
+innerVoiceModal: document.getElementById('inner-voice-modal'),
+    closeInnerVoiceBtn: document.getElementById('close-inner-voice-btn'),
+    innerVoiceLoading: document.getElementById('inner-voice-loading'),
+    innerVoiceData: document.getElementById('inner-voice-data'),
+    ivParticles: document.getElementById('iv-particles'),
+    // 数据字段
+    ivCharId: document.getElementById('iv-char-id'),
+    ivCharName: document.getElementById('iv-char-name'),
+    ivCharTitle: document.getElementById('iv-char-title'),
+    ivQuoteText: document.getElementById('iv-quote-text'),
+    ivProfileAttire: document.getElementById('iv-profile-attire'),
+    ivProfilePose: document.getElementById('iv-profile-pose'),
+    ivProfileDynamic: document.getElementById('iv-profile-dynamic'),
+extractMemoryBookBtn: document.getElementById('extract-memory-book-btn'),
             // 颜色选择器
             styleInputs: {
                 normal: document.getElementById('style-color-normal'),
@@ -9580,7 +10857,7 @@ console.log('📦 发送给 AI 的最终数据包:', JSON.stringify(requestBody,
             },
             async getChatCompletion(messages) { return this._callChatAPI(messages); },
             async generateDossierDetails(characterName, characterBackground) {
-               const prompt = `
+                const prompt = `
 # 核心使命：角色档案深度分析与提取 (Profile Extraction)
 这是一个用于**虚构文学创作**的辅助工具。你的任务是基于作者提供的原始设定，精准提炼出角色的核心属性。
 
@@ -9620,6 +10897,11 @@ console.log('📦 发送给 AI 的最终数据包:', JSON.stringify(requestBody,
  * 目标：在保证视觉清晰度的前提下, 减小文件体积。
  */
 async function compressImageForDisplay(file) {
+ // --- 核心修复：GIF 豁免逻辑 ---
+    if (file.type === 'image/gif') {
+        console.log("检测到 GIF 动图，跳过压缩以保留动画效果。");
+        return file; // 直接返回原文件
+    }
     const options = {
         maxSizeMB: 1,
         maxWidthOrHeight: 1280,
@@ -9640,6 +10922,13 @@ async function compressImageForDisplay(file) {
  * 目标：在保留核心可识别信息的前提下, 最大限度地减小Token成本和体积。
  */
 async function compressImageForAI(file) {
+// --- 核心修复：GIF 豁免逻辑 ---
+    if (file.type === 'image/gif') {
+        // 如果 GIF 太大 (比如超过 5MB)，你可能需要考虑提示用户
+        // 但为了保证动图能发出去，这里优先选择保留原文件
+        console.log("检测到 GIF 动图，跳过压缩以保留动画效果。");
+        return file;
+    }
     const options = {
         maxSizeMB: 0.4,
         maxWidthOrHeight: 768,
@@ -9754,7 +11043,25 @@ DOM.messagesContainer.scrollTop = DOM.messagesContainer.scrollHeight; },
                     console.error("Base64转Blob失败:", e);
                     return null;
                 }
-            }
+            },
+
+    generateIVParticles() {
+        if (!DOM.ivParticles) return;
+        DOM.ivParticles.innerHTML = '';
+        // 生成 15 个随机粒子
+        for (let i = 0; i < 15; i++) {
+            const p = document.createElement('div');
+            p.className = 'iv-particle';
+            const size = Math.random() * 2 + 1 + 'px';
+            p.style.width = size;
+            p.style.height = size;
+            p.style.left = Math.random() * 100 + '%';
+            p.style.top = Math.random() * 100 + '%';
+            p.style.animationDuration = Math.random() * 15 + 10 + 's';
+            p.style.animationDelay = Math.random() * 5 + 's';
+            DOM.ivParticles.appendChild(p);
+        }
+    },
         };
 
 // vvv 在这里添加全新的辅助函数 vvv
@@ -10503,6 +11810,16 @@ createMoviePrompt(sessionSettings, movieHistory, userInput) {
 
 ---
 
+# 🚫 【语言禁忌 (Forbidden Words) - 强制执行】
+**为了保持电影的沉浸感与文学性，请严格遵守以下语言规范：**
+
+1.  **负面词汇库 (Strictly Banned):** 你的脑海中完全不存在以下词汇。在任何情况下，严禁出现【系统、变量、量化、精准、轨迹、频率、机制、程序、运算、载体、维度、参数、阈值、手术刀】等任何理工科/学术/AI术语。
+2.  **描写逻辑 (Metaphor Logic):** 你的世界是由**情绪、感官、光影和具体的事物**构成的。
+    - ❌ **绝对禁止:** "他的出现打破了我的生活逻辑。" / "这种情感超出了预设范围。"
+    - ✅ **正确写法:** "他的出现像一场突如其来的暴雨，淋湿了我所有的计划。" / "这种感觉像野草一样疯长，怎么也压不住。"
+
+---
+
 # 导演备注与创作许可 (Director's Note & License)
 **在基于上述人设进行表演时，请同时融入以下现代化的关系准则：**
 
@@ -10566,7 +11883,7 @@ ${historySection}
     },
 
 // --- 【最终兼容版】论坛混合评论生成 Prompt ---
-           // 在 promptManager 对象内部替换此函数
+  
 createForumCommentGenerationPrompt(post, selectedCharacters, selectedNPCs, passerbyCount, allDossiers) {
     
     // --- 1. 构建角色信息块 ---
@@ -11527,6 +12844,196 @@ ${scriptText}
     return [
         { role: "system", content: systemPrompt },
         { role: "user", content: "Cut! 剧情非常精彩，请进行深度归档，保留那些珍贵的细节。" }
+    ];
+},
+
+createMonopolyReactionPrompt(dossier, gameState, eventType, eventDetail, userMessage = null) {
+    const opponentName = dossier.user.name || 'User';
+    const opponentPersona = dossier.user.background || '竞争对手'; 
+    const charName = dossier.character.name;
+    
+    // 局势描述
+    const moneyDiff = gameState.aiMoney - gameState.userMoney;
+    let statusDesc = "局势胶着，胜负未分";
+    if (moneyDiff > 5000) statusDesc = `你(${charName})目前大幅领先，资金充裕，心态轻松`;
+    if (moneyDiff < -5000) statusDesc = `你(${charName})目前大幅落后，资金紧张，感到危机`;
+
+    // 构建更丰富的事件描述
+    let eventDesc = "";
+    
+    switch(eventType) {
+        // === 地产类 ===
+        case 'buy': 
+            // AI 自己买地
+            eventDesc = `你刚刚豪掷 ¥${eventDetail.price} 买下了【${eventDetail.landName}】。这是你的新资产。`; 
+            break;
+            
+        case 'opponent_buy': 
+            // 玩家买地 (关键修改)
+            eventDesc = `对手(${opponentName}) 刚刚在你眼皮子底下买下了【${eventDetail.landName}】(花费 ¥${eventDetail.price})。现在那里是TA的地盘了。`; 
+            break;
+            
+        case 'pay_rent': 
+            eventDesc = `真倒霉！你踩到了 ${opponentName} 的地盘【${eventDetail.landName}】，被迫支付过路费 ¥${eventDetail.rent}。`; 
+            break;
+            
+        case 'receive_rent': 
+            eventDesc = `好消息！${opponentName} 踩到了你的地盘【${eventDetail.landName}】，你收到了过路费 ¥${eventDetail.rent}。`; 
+            break;
+            
+        // === 特殊格子类 ===
+        case 'tax':
+            eventDesc = `你被强制征收了【${eventDetail.title}】 ¥${eventDetail.amount}。`;
+            break;
+        case 'jail': 
+            eventDesc = `你被捕入狱了！暂停一回合。`; 
+            break;
+            
+        // === 命运卡片类 ===
+        case 'fate_self':
+            eventDesc = `你触发了命运卡：【${eventDetail.title}】。“${eventDetail.desc}”。结果：${eventDetail.amount >= 0 ? '获利' : '损失'} ¥${Math.abs(eventDetail.amount)}。`;
+            break;
+        case 'fate_opponent':
+            eventDesc = `对手(${opponentName})触发了命运卡：【${eventDetail.title}】。“${eventDetail.desc}”。结果：TA${eventDetail.amount >= 0 ? '获利' : '损失'}了 ¥${Math.abs(eventDetail.amount)}。`;
+            break;
+            
+        case 'user_chat': 
+            eventDesc = `${opponentName} 对你说：“${userMessage}”`; 
+            break;
+            
+        default: eventDesc = "正常回合。";
+    }
+
+    const systemPrompt = `
+# 核心使命：大富翁游戏中的实时互动 (Roleplay Reaction)
+你正在和【${opponentName}】玩大富翁（名利场版）。你就是【${charName}】。
+
+# 1. 角色档案
+- **你的性格：** ${dossier.character.background}
+- **对手设定：** ${opponentPersona}
+- **当前局势：** ${statusDesc}
+
+# 2. 刚刚发生的突发事件
+${eventDesc}
+
+# 3. 你的反应任务
+请根据**你的人设和性格**以及**事件的具体类型**，说一句简短的话（20字以内）。
+
+## 🎯 反应风格指南 (Reaction Guide) - 【关键】
+
+1.  **🏠 地产交易 (重点)**：
+    - **你自己买地时 ('buy')**：表现出掌控感、野心、或者是对这块地的喜爱。“以后这里改名叫做${charName}大厦。”
+    - **对手买地时 ('opponent_buy')**：**绝对不要表现得像是你买了地！**
+      - **鄙视/酸葡萄**：“切，这种地段也就你稀罕。” / “眼光真差。”
+      - **威胁/竞争**：“别得意，早晚我会收购过来的。”
+      - **无所谓**：“让给你了，反正我看不上。”
+
+2.  **💸 资金往来**：
+    - **付过路费**：不情愿、肉痛，或者假装大方扔钱给对方。
+    - **收过路费**：得意、嘲讽、“欢迎光临”。
+
+3.  **🎭 命运/意外**：
+    - **自己倒霉**：骂骂咧咧、自嘲、找借口。
+    - **对手倒霉**：幸灾乐祸、阴阳怪气。
+
+# 输出示例
+- (对手买下帝国大厦 + 傲娇): "哼，给你也只是暴殄天物。"
+- (对手买下贫民区 + 毒舌): "很符合你的品味。"
+- (自己买地 + 霸总): "这整条街迟早都是我的。"
+`;
+    return [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: "React based on the event." }
+    ];
+},
+
+    createInnerVoicePrompt(dossier, chatHistory) {
+        // 截取最近 10 条记录
+        const recentChats = chatHistory.slice(-10).map(msg => {
+            const speaker = msg.sender === 'user' ? (dossier.user.name || '我') : dossier.character.name;
+            let content = msg.content;
+            if (typeof content !== 'string') content = '[非文本交互]';
+            return `${speaker}: ${content}`;
+        }).join('\n');
+
+        const systemPrompt = `
+# 核心使命：全息潜意识投影 (Holographic Subconscious Projection)
+你现在不仅要读取角色【${dossier.character.name}】的内心，还要捕捉TA此刻的**形象侧写**。
+
+# 角色档案
+${dossier.character.background}
+
+# 最近对话现场
+${recentChats}
+
+# 输出要求 (JSON Format)
+请返回一个 JSON 对象，包含以下字段：
+1. **title**: 给角色此刻的状态起一个富有诗意或画面感的头衔（例如：“雨夜的彷徨者”、“王座上的伪装者”）。(中文)
+2. **inner_voice**: 此时此刻，TA内心绝对不会说出口的真实想法。深情、阴暗、吐槽或纠结。不要复述对话！请使用 *斜体* 来强调关键词。(50字以内，中文)
+3. **attire**: (穿着) TA此刻的穿着细节，或给人的衣着印象（例如：“领口微敞的丝绸睡袍”）。(30字以内，中文)
+4. **pose**: (姿态) TA此刻的身体语言或所处位置（例如：“蜷缩在沙发角落”）。(30字以内，中文)
+5. **dynamic**: (动态) 环境或细节的微小动态（例如：“指尖的烟灰摇摇欲坠”）。(30字以内，中文)
+
+# 示例 JSON (仅供参考格式，内容需原创)
+{
+  "title": "玻璃温室的囚徒",
+  "inner_voice": "他居然真的记得那个日子……*冷静点*，别让他看出我的手在抖。",
+  "attire": "一袭被岁月漂白的维多利亚式蕾丝长裙",
+  "pose": "赤脚蜷缩在废弃温室的玻璃穹顶下",
+  "dynamic": "破损的呼吸面罩挂在颈间轻轻晃动"
+}
+`;
+        return [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: "Action. 给我潜意识投影。" }
+        ];
+    },
+
+createLongTermMemoryBookPrompt(dossier, longHistoryText) {
+    const systemPrompt = `
+# 核心使命：构建深度人物关系白皮书 (Cinematic Relationship White Paper)
+你是一名专注于**非虚构写作**的顶级传记作家和电影编剧。
+你的任务是阅读【${dossier.character.name}】与用户之间漫长的对话记录，将其转化为一份**详尽、细腻、极具电影质感**的背景设定书。
+
+这份资料将作为未来“互动电影”的剧本核心设定，帮助导演精准把握人物关系的灵魂。
+
+# 待分析的对话记录 (Source Material)
+${longHistoryText}
+
+# 🚫 绝对禁令 (Iron Rules)
+1. **严禁虚构 (No Hallucination):** 所有的总结必须**严格基于**上述提供的对话记录。如果记录里没发生过的事，绝对不能编造。不要为了“丰富剧情”而无中生有。
+2. **拒绝干瘪 (No Dry Summary):** 拒绝流水账（如“他们聊了天气，然后聊了吃饭”）。必须提取**情绪的流动**、**场景的氛围**和**语言的张力**。
+
+# 写作指令 (Directives)
+请尽可能详尽地分析这份长对话，不要遗漏任何重要的剧情转折、伏笔和情感细节。请使用**文学性、画面感强**的语言，像是在撰写一部电影的角色小传或前传大纲。
+
+# 输出结构 (Required Structure)
+
+## 1. 情感光谱与关系定义 (The Emotional Spectrum)
+- 用精准且富有张力的语言定义两人当前的关系状态。（是“在那层窗户纸前徘徊”，还是“已然成为彼此的骨血”？是“势均力敌的博弈”，还是“温柔的相互救赎”？）
+- 分析双方在关系中的姿态（谁更主动？谁在通过推拉掩饰真心？）。
+
+## 2. 关键剧情锚点 (Cinematic Moments)
+*请回顾对话中 3-5 个最具画面感或转折意义的时刻，并进行深描：*
+- **场景复现:** 当时发生了什么？（不仅仅是动作，更是氛围）。
+- **高光台词:** 直接引用记录中一句最打动人、或最能代表人物性格的原话。
+- **潜台词解读:** 当时他们表面在说什么，心里其实在渴望什么？
+
+## 3. 行为模式与独家默契 (Dynamics & Quirks)
+- 两人之间有没有特殊的昵称、暗号或只有他们懂的“梗”？
+- 在面对冲突或需要安慰时，他们习惯用什么方式？（是笨拙的解释，还是无言的陪伴？是毒舌的关心，还是直球的情话？）
+
+## 4. 未完的伏笔 (The Unresolved)
+- 记录里是否留下了未兑现的承诺、未解的误会、暂缓的计划或悬而未决的约定？这将是未来剧情的导火索。
+
+# 格式要求
+- 使用清晰的 Markdown 格式。
+- **字数不设上限**，请尽情挥洒，直到你认为已经完整、真实地刻画了这段关系的灵魂。
+`;
+
+    return [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: "请开始你的深度分析，生成这份白皮书。" }
     ];
 },
             
@@ -18382,7 +19889,7 @@ async function handleCharacterPostAction(payload, dossierId) {
 
             notificationManager.show({
                 avatarUrl: avatarUrl,
-                title: `${dossier.character.name} 发布了新动态`,
+                title: `${dossier.character.name} 发布了新帖子 (Gossip Scroll)`, 
                 message: title || content,
                 
                 // vvv 【核心修改】点击仅关闭，不跳转 vvv
@@ -19059,7 +20566,7 @@ async function renderCloudDeviceList() {
     }
 }
 
-// 2. 打开仪表盘 (修复版：优先读取缓存)
+// 2. 打开仪表盘
 async function openCloudDashboard(dossier) {
     appState.currentCloudDossierId = dossier.id;
     DOM.cloudDeviceName.textContent = dossier.character.name;
@@ -19115,7 +20622,6 @@ async function openCloudDashboard(dossier) {
 
     navigateToPage(DOM.cloudSyncApp, 'cloud-dashboard-page');
 }
-
 // 3. 处理卡片点击 (最终版：含抓包机制 + 呼吸灯 + AI生成)
 async function handleCloudCardClick(card) {
     // --- 1. 安全检查：防止重复点击或点击已完成/被封锁的卡片 ---
@@ -19239,7 +20745,8 @@ async function handleCloudCardClick(card) {
         body.style.display = 'none';      // 隐藏占位层
         content.classList.remove('hidden'); // 显示内容层
         card.classList.add('loaded');     // 标记完成
-        // --- 【核心新增】写入缓存 ---
+
+// --- 【核心新增】写入缓存 ---
         if (!appState.cloudSessionCache[dossierId]) {
             appState.cloudSessionCache[dossierId] = {};
         }
@@ -19262,8 +20769,8 @@ async function handleCloudCardClick(card) {
 async function triggerCaughtEvent(card, bodyEl, moduleName) {
     const dossierId = appState.currentCloudDossierId;
     const dossier = appState.dossiers.find(d => d.id === dossierId);
-    // --- 【核心新增】定点爆破：只清除当前模块的缓存 ---
- 
+
+// --- 【核心新增】定点爆破：只清除当前模块的缓存 ---
     const type = card.dataset.type;
     if (appState.cloudSessionCache[dossierId] && appState.cloudSessionCache[dossierId][type]) {
         delete appState.cloudSessionCache[dossierId][type];
@@ -19868,7 +21375,7 @@ async function handleBuyPawnItem(item, currentBalance) {
     }
 }
 
-// 5. 渲染我的藏品
+// 5. 渲染我的藏品 (博物馆展签版)
 async function renderMyCollection() {
     const container = document.getElementById('pawn-collection-grid');
     const countEl = document.getElementById('collection-count');
@@ -19891,26 +21398,20 @@ async function renderMyCollection() {
 
         items.forEach(item => {
             const card = document.createElement('div');
-            // 复用 shop-item-card 的样式，但去掉 hover 效果或稍微改一下
-            card.className = 'shop-item-card';
-            card.style.cursor = 'default'; // 藏品不需要点击购买
-            card.style.background = 'rgba(255,255,255,0.02)'; // 稍微暗一点
+            // 【改动】使用专属的 class
+            card.className = 'collection-item-card'; 
 
             const dateStr = new Date(item.boughtAt).toLocaleDateString();
+            // 兼容 desc 或 description 字段
+            const descText = item.desc || item.description || "（暂无详细描述）";
 
             card.innerHTML = `
-                <div class="item-header">
-                    <div class="item-name" style="color:#d4af37;">${item.name}</div>
-                </div>
-                <div class="item-desc">“${item.desc}”</div>
-                
-                <div class="shop-card-footer">
-                    <div class="item-owner">
-                        FROM: ${item.owner}
-                    </div>
-                    <div class="item-owner" style="margin-left: auto;">
-                        ${dateStr}
-                    </div>
+                <div class="collection-title">${item.name}</div>
+                <div class="collection-divider"></div>
+                <div class="collection-desc">${descText}</div>
+                <div class="collection-footer">
+                    <span class="source">FROM: ${item.owner}</span>
+                    <span class="date">${dateStr}</span>
                 </div>
             `;
             container.appendChild(card);
@@ -20002,6 +21503,1373 @@ async function handleHaggleSubmit() {
         DOM.confirmHaggleBtn.disabled = false;
         DOM.confirmHaggleBtn.textContent = "提交还价";
     }
+}
+
+// =========================================
+// === 大富翁游戏逻辑 (Cinematic Ver) ===
+// =========================================
+
+// 地图数据 (20格循环)
+const monopolyMap = [
+    { id: 0, name: "起点", type: "corner", icon: "ri-flag-2-fill" },
+    { id: 1, name: "布鲁克林", type: "land", price: 100 },
+    { id: 2, name: "皇后区", type: "land", price: 120 },
+    { id: 3, name: "命运", type: "special", icon: "ri-question-mark" },
+    { id: 4, name: "中央车站", type: "land", price: 200 },
+    { id: 5, name: "哈林区", type: "land", price: 150 },
+    { id: 6, name: "机会", type: "special", icon: "ri-lightbulb-flash-line" },
+    { id: 7, name: "格林威治", type: "land", price: 220 },
+    { id: 8, name: "监狱/探监", type: "corner", icon: "ri-git-repository-private-fill" }, // 左下角 (Grid: 9, 1)
+    
+    { id: 9, name: "SOHO", type: "land", price: 240 },
+    { id: 10, name: "电力公司", type: "land", price: 150 },
+    { id: 11, name: "唐人街", type: "land", price: 260 },
+    { id: 12, name: "小意大利", type: "land", price: 260 },
+    { id: 13, name: "宾州车站", type: "land", price: 200 },
+    { id: 14, name: "翠贝卡", type: "land", price: 280 },
+    { id: 15, name: "命运", type: "special", icon: "ri-question-mark" },
+    { id: 16, name: "度假村", type: "corner", icon: "ri-cup-fill" }, // 右下角 (Grid: 9, 9)
+    
+    { id: 17, name: "时代广场", type: "land", price: 300 },
+    { id: 18, name: "机会", type: "special", icon: "ri-lightbulb-flash-line" },
+    { id: 19, name: "百老汇", type: "land", price: 320 },
+    { id: 20, name: "洛克菲勒", type: "land", price: 350 },
+    { id: 21, name: "大中央", type: "land", price: 200 },
+    { id: 22, name: "第五大道", type: "land", price: 400 },
+    { id: 23, name: "奢侈税", type: "special", icon: "ri-vip-diamond-line" },
+    { id: 24, name: "前往典当", type: "corner", icon: "ri-exchange-dollar-line" }, // 右上角 (Grid: 1, 9)
+    
+    { id: 25, name: "帝国大厦", type: "land", price: 450 },
+    { id: 26, name: "机会", type: "special", icon: "ri-lightbulb-flash-line" },
+    { id: 27, name: "上东区", type: "land", price: 500 },
+    { id: 28, name: "中央公园", type: "land", price: 600 },
+    { id: 29, name: "肯尼迪", type: "land", price: 200 },
+    { id: 30, name: "命运", type: "special", icon: "ri-question-mark" },
+    { id: 31, name: "华尔街", type: "land", price: 800 },
+    // id 32 回到起点
+];
+
+const FATE_CARDS = [
+    // ==============================
+    // === 🔴 厄运类 (Bad Events) ===
+    // ==============================
+    {
+        title: "Gossip Girl 爆料",
+        desc: "你的丑闻登上了头条。为了公关，你不得不支付巨额封口费。",
+        type: "bad",
+        weight: 15,
+        action: async (player) => {
+            const cost = 2000 + Math.floor(Math.random() * 1000);
+            player.money -= cost;
+            if (player.id === 'user') await addWalletTransaction('expense', 'gossip_girl', cost, '公关费：撤热搜', 'Gossip Girl');
+            return { amount: -cost, msg: `支付封口费 ¥${cost}` };
+        }
+    },
+    {
+        title: "税务局突击检查",
+        desc: "你在开曼群岛的账户被发现了。补缴税款，否则牢底坐穿。",
+        type: "bad",
+        weight: 15,
+        action: async (player) => {
+            const tax = Math.floor(player.money * 0.15); // 扣 15%
+            player.money -= tax;
+            if (player.id === 'user') await addWalletTransaction('expense', 'tax_bureau', tax, '罚款：偷税漏税', '税务局');
+            return { amount: -tax, msg: `被强制征税 ¥${tax}` };
+        }
+    },
+    {
+        title: "高定礼服受损",
+        desc: "在晚宴上，侍者把红酒泼到了你的限量版礼服上。",
+        type: "bad",
+        weight: 20,
+        action: async (player) => {
+            const cost = 800;
+            player.money -= cost;
+            if (player.id === 'user') await addWalletTransaction('expense', 'luxury_store', cost, '意外支出：干洗与修补', '干洗店');
+            return { amount: -cost, msg: `支付清洗费 ¥${cost}` };
+        }
+    },
+    {
+        title: "做空失败",
+        desc: "你听信了所谓的内幕消息，结果股票跌停了。",
+        type: "bad",
+        weight: 15,
+        action: async (player) => {
+            const loss = 1500 + Math.floor(Math.random() * 500);
+            player.money -= loss;
+            if (player.id === 'user') await addWalletTransaction('expense', 'stock_market', loss, '投资亏损：韭菜的眼泪', '证券中心');
+            return { amount: -loss, msg: `投资亏损 ¥${loss}` };
+        }
+    },
+    {
+        title: "前任的婚礼",
+        desc: "你的前任给你发了请柬。为了面子，你包了一个巨大的红包。",
+        type: "bad",
+        weight: 10,
+        action: async (player) => {
+            const cost = 3000;
+            player.money -= cost;
+            if (player.id === 'user') await addWalletTransaction('expense', 'ex_lover', cost, '人情：前任婚礼红包', '前任');
+            return { amount: -cost, msg: `含泪支付份子钱 ¥${cost}` };
+        }
+    },
+    {
+        title: "服务器熔断",
+        desc: "你投资的元宇宙项目遭遇黑客攻击，资产暂时冻结并贬值。",
+        type: "bad",
+        weight: 10,
+        action: async (player) => {
+            const loss = 1200;
+            player.money -= loss;
+            if (player.id === 'user') await addWalletTransaction('expense', 'hacker', loss, '资产贬值：服务器故障', '未知黑客');
+            return { amount: -loss, msg: `资产缩水 ¥${loss}` };
+        }
+    },
+
+    // ==============================
+    // === 🟢 好运类 (Good Events) ===
+    // ==============================
+    {
+        title: "继承远房遗产",
+        desc: "一个你从未谋面的富豪亲戚去世了，你是唯一继承人。",
+        type: "good",
+        weight: 10,
+        action: async (player) => {
+            const bonus = 5000;
+            player.money += bonus;
+            if (player.id === 'user') await addWalletTransaction('income', 'lawyer', bonus, '意外之财：遗产继承', '遗产律师');
+            return { amount: bonus, msg: `获得遗产 ¥${bonus}` };
+        }
+    },
+    {
+        title: "加密货币暴涨",
+        desc: "你几年前随手买的空气币突然暴涨了 1000%。",
+        type: "good",
+        weight: 15,
+        action: async (player) => {
+            const bonus = 2500 + Math.floor(Math.random() * 1000);
+            player.money += bonus;
+            if (player.id === 'user') await addWalletTransaction('income', 'crypto', bonus, '投资收益：虚拟币暴涨', '交易所');
+            return { amount: bonus, msg: `套现获利 ¥${bonus}` };
+        }
+    },
+    {
+        title: "神秘爱慕者",
+        desc: "有人匿名送了你一份昂贵的礼物，并附带了发票（可退款）。",
+        type: "good",
+        weight: 20,
+        action: async (player) => {
+            const bonus = 1000;
+            player.money += bonus;
+            if (player.id === 'user') await addWalletTransaction('income', 'admirer', bonus, '礼物折现', '神秘人');
+            return { amount: bonus, msg: `收到礼物价值 ¥${bonus}` };
+        }
+    },
+    {
+        title: "退税支票",
+        desc: "税务局良心发现，退还了你去年多缴的税款。",
+        type: "good",
+        weight: 25,
+        action: async (player) => {
+            const bonus = 800;
+            player.money += bonus;
+            if (player.id === 'user') await addWalletTransaction('income', 'tax_bureau', bonus, '退税', '税务局');
+            return { amount: bonus, msg: `收到退税 ¥${bonus}` };
+        }
+    },
+    {
+        title: "艺术品拍卖",
+        desc: "你在旧货市场买的画，被鉴定为真迹。",
+        type: "good",
+        weight: 10,
+        action: async (player) => {
+            const bonus = 4000;
+            player.money += bonus;
+            if (player.id === 'user') await addWalletTransaction('income', 'auction', bonus, '拍卖所得', '苏富比');
+            return { amount: bonus, msg: `拍卖获利 ¥${bonus}` };
+        }
+    },
+
+    // ==============================
+    // === 💀 传说/特殊类 (Rare) ===
+    // ==============================
+    {
+        title: "💀 黑暗森林打击",
+        desc: "你的电子钱包私钥被黑客窃取。真实资产全部归零。",
+        type: "critical",
+        weight: 1, // 极低概率 (1%)
+        action: async (player) => {
+            if (player.id === 'user') {
+                const db = await dbHelper.dbPromise;
+                const allTx = await db.getAll(CONSTANTS.STORE_NAMES.WALLET_TRANSACTIONS);
+                let totalBalance = 0;
+                allTx.forEach(tx => totalBalance += (tx.type === 'income' ? tx.amount : -tx.amount));
+                
+                if (totalBalance > 0) {
+                    // 扣光真实钱包
+                    await addWalletTransaction('expense', 'hacker', totalBalance, '【名利场】黑客入侵-资产清零', '未知黑客');
+                    // 扣光游戏钱包的一半以示惩罚
+                    player.money = Math.floor(player.money / 2);
+                    return { amount: 0, msg: `真实钱包已清空，游戏资产减半` };
+                } else {
+                    return { amount: 0, msg: `黑客看了看你的余额，含泪走了...` };
+                }
+            } else {
+                player.money = 100; // AI 破产，只留路费
+                return { amount: 0, msg: "AI 遭遇金融风暴，濒临破产" };
+            }
+        }
+    },
+    {
+        title: "✨ 命运女神的眷顾",
+        desc: "你在街角捡到一张彩票，竟然中了头奖！",
+        type: "good",
+        weight: 2, // 低概率 (2%)
+        action: async (player) => {
+            const bonus = 10000;
+            player.money += bonus;
+            if (player.id === 'user') await addWalletTransaction('income', 'lottery', bonus, '运气爆棚：彩票头奖', '彩票中心');
+            return { amount: bonus, msg: `狂揽奖金 ¥${bonus}` };
+        }
+    }
+];
+
+// 玩家状态
+let gamePlayers = [
+    { id: 'user', name: '我', pos: 0, color: '#8B0000', el: null },
+    { id: 'ai', name: '对手', pos: 0, color: '#191970', el: null } // 午夜蓝
+];
+
+// 2. 渲染 9x9 棋盘
+function renderMonopolyBoard() {
+    const board = DOM.monopolyBoard;
+    const oldTiles = board.querySelectorAll('.tile');
+    oldTiles.forEach(t => t.remove());
+    
+    // 布局逻辑：9x9 的环形 (从左上角 0 开始顺时针)
+    // 0: (1, 1) -> 起点
+    // 1-8: Top Row (Row 1, Col 2 -> 9)
+    // 9-16: Right Col (Col 9, Row 2 -> 9)
+    // 17-24: Bottom Row (Row 9, Col 8 -> 1)
+    // 25-31: Left Col (Col 1, Row 8 -> 2)
+    
+    monopolyMap.forEach((cell, index) => {
+        const tile = document.createElement('div');
+        tile.className = `tile ${cell.type}`;
+        tile.dataset.id = index;
+        
+        let row, col;
+        
+        if (index === 0) {
+            // 起点 (左上角)
+            row = 1; col = 1;
+        } else if (index <= 8) {
+            // 上边 (向右走)
+            row = 1; col = index + 1;
+        } else if (index <= 16) {
+            // 右边 (向下走)
+            col = 9; row = index - 8 + 1;
+        } else if (index <= 24) {
+            // 下边 (向左走)
+            row = 9; col = 9 - (index - 16);
+        } else {
+            // 左边 (向上走)
+            col = 1; row = 9 - (index - 24);
+        }
+        
+        tile.style.gridColumn = col;
+        tile.style.gridRow = row;
+        
+        let iconHtml = cell.icon ? `<i class="${cell.icon}"></i>` : '';
+        let priceHtml = cell.price ? `<span style="color:#8B0000;">¥${cell.price}</span>` : '';
+        if (cell.type === 'corner') priceHtml = ''; // 角落不显示价格
+        
+        tile.innerHTML = `${iconHtml}<span>${cell.name}</span>${priceHtml}`;
+        board.appendChild(tile);
+    });
+
+    // 重置棋子位置
+     gamePlayers.forEach(p => {
+        // 检查：如果 p.el 不存在，或者它不在当前的 board 容器里
+        if (!p.el || !board.contains(p.el)) {
+            // 如果之前有旧的引用，先移除，防止内存泄漏（可选）
+            if (p.el) p.el.remove();
+
+            const token = document.createElement('div');
+            token.className = 'token';
+            token.style.backgroundColor = p.color;
+            // 错开位置防止重叠
+            token.style.transform = p.id === 'user' ? 'translate(-4px, -4px)' : 'translate(4px, 4px)';
+            
+            p.el = token; // 更新引用
+            board.appendChild(token); // 【关键】一定要把它塞进棋盘里
+        }
+        
+        // 强制更新一次位置
+        updatePlayerPosition(p);
+    });
+}
+
+// 更新棋子位置 (精准版)
+function updatePlayerPosition(player) {
+    const targetTile = document.querySelector(`.tile[data-id="${player.pos}"]`);
+    
+    if (targetTile && player.el) {
+        // 1. 计算格子的中心点坐标 (相对于 board 容器)
+        // offsetTop/Left 是基于父容器 (board) 的相对位置
+        const tileCenterX = targetTile.offsetLeft + (targetTile.offsetWidth / 2);
+        const tileCenterY = targetTile.offsetTop + (targetTile.offsetHeight / 2);
+        
+        // 2. 计算棋子自身的半径 (CSS里设的是14px，半径就是7px)
+        // 如果还没渲染出来，默认给个 7
+        const tokenRadius = (player.el.offsetWidth || 14) / 2;
+        
+        // 3. 设置棋子的基础位置 (让棋子中心 对齐 格子中心)
+        player.el.style.top = `${tileCenterY - tokenRadius}px`;
+        player.el.style.left = `${tileCenterX - tokenRadius}px`;
+
+        // 4. 【关键】利用 transform 做微调偏移，防止重叠
+        // user 往左上挪一点，AI 往右下挪一点
+        if (player.id === 'user') {
+            player.el.style.transform = 'translate(-5px, -5px)';
+        } else {
+            player.el.style.transform = 'translate(5px, 5px)';
+        }
+    }
+}
+
+// 掷骰子逻辑
+async function handleRollDice() {
+    if(DOM.rollDiceBtn.disabled) return;
+    
+    const currentPlayer = gamePlayers[0]; 
+
+// 【新增】检查是否在坐牢
+    if (currentPlayer.isStopped) {
+        DOM.gameMessage.textContent = "🚧 你在监狱里，暂停一回合。";
+        currentPlayer.isStopped = false; // 解除状态 (下回合恢复)
+        endTurn(true); // 直接结束回合
+        return;
+    }
+    
+    DOM.rollDiceBtn.disabled = true;
+    
+    // 【关键】点击后，移除呼吸灯样式，恢复正常
+    DOM.rollDiceBtn.classList.remove('pulse-btn'); 
+    DOM.rollDiceBtn.innerHTML = '🎲 ...'; 
+    
+    DOM.gameMessage.textContent = "🎲 命运之轮转动中...";
+    
+    // 1. 掷骰子动画
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    const totalSteps = d1 + d2;
+
+    // 执行3D旋转
+    await rollDice3D(DOM.dice1, d1);
+    await rollDice3D(DOM.dice2, d2);
+    
+    DOM.gameMessage.textContent = `你掷出了 ${totalSteps} 点`;
+    
+    // 2. 移动棋子 (传入定义好的 currentPlayer)
+    await movePlayerToken(currentPlayer, totalSteps);
+    
+    // 3. 触发格子事件 (买地/付钱)
+    await handleTileInteraction(currentPlayer);
+    
+}
+
+// 辅助：3D 骰子旋转核心算法
+// 辅助：3D 骰子旋转核心算法 (坐标修正版)
+function rollDice3D(diceElement, targetNum) {
+    return new Promise(resolve => {
+        // 【核心修复】这里修正了旋转角度，使其严格对应 CSS 中定义的点数面
+        const rotations = {
+            1: [0, 0],     // 正面 (Front)
+            2: [0, 180],   // 背面 (Back) - Y轴转180度
+            3: [0, -90],   // 右面 (Right) - 容器需要向左转90度才能把右面露出来
+            4: [0, 90],    // 左面 (Left)  - 容器需要向右转90度才能把左面露出来
+            5: [-90, 0],   // 上面 (Top)   - 容器需要向下转90度
+            6: [90, 0]     // 下面 (Bottom)- 容器需要向上转90度
+        };
+        
+        const [x, y] = rotations[targetNum];
+        
+        // 为了让动画每次都转起来，加上多圈随机旋转 (360 * n)
+        // 随机旋转 2-4 圈，增加物理随机感
+        const extraX = 360 * (Math.floor(Math.random() * 3) + 2);
+        const extraY = 360 * (Math.floor(Math.random() * 3) + 2);
+        
+        const finalX = x + extraX;
+        const finalY = y + extraY;
+        
+        diceElement.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
+        
+        // 等待动画结束 (CSS transition 设置了 1.5s)
+        setTimeout(resolve, 1500);
+    });
+}
+
+// 辅助：移动棋子 (一步步走)
+async function movePlayerToken(player, steps) {
+    // 1. 执行移动动画
+    for (let i = 0; i < steps; i++) {
+        player.pos = (player.pos + 1) % monopolyMap.length;
+        updatePlayerPosition(player);
+        // 播放音效逻辑可以在这里加
+        await new Promise(r => setTimeout(r, 200)); // 每步间隔
+    }
+    
+    // 2. 移动结束，显示到达提示
+    const currentTile = monopolyMap[player.pos];
+    
+    // 【核心修复】根据是谁在动，显示不同的主语
+    const subject = player.id === 'user' ? '你' : player.name;
+    
+    DOM.gameMessage.textContent = `${subject} 到达了：${currentTile.name}`;
+}
+
+// --- 大富翁：角色选择与切换逻辑 ---
+
+// 1. 打开选择对手浮窗
+async function openMonopolySettings() {
+    const list = DOM.monopolyCharList;
+    list.innerHTML = '';
+
+    // 获取当前对手的ID
+    const currentOpponentId = gamePlayers[1].id;
+
+    // --- A. 添加 NPC (Gossip Girl 等) ---
+    for (const [key, npc] of Object.entries(CONSTANTS.NPCS)) {
+        const el = document.createElement('div');
+        const isActive = currentOpponentId === npc.id ? 'active' : '';
+        el.className = `monopoly-select-item ${isActive}`;
+        
+        // NPC 头像样式
+        const avatarStyle = npc.avatar ? `background-image: url('${npc.avatar}')` : `background-color: ${npc.color}`;
+        
+        el.innerHTML = `
+            <div class="monopoly-select-avatar" style="${avatarStyle}"></div>
+            <span class="monopoly-select-name" style="${isActive ? 'color:#FFD700;' : ''}">[NPC] ${npc.name}</span>
+            <i class="ri-check-line monopoly-select-check"></i>
+        `;
+        
+        // 点击切换
+        el.addEventListener('click', () => switchMonopolyOpponent(npc.id, npc.name, npc.avatar, npc.color));
+        list.appendChild(el);
+    }
+
+    // --- B. 添加用户创建的角色 ---
+    if (appState.dossiers.length > 0) {
+        // 加个分割线
+        const divider = document.createElement('div');
+        divider.style.cssText = 'border-top: 1px solid rgba(255,255,255,0.1); margin: 5px 10px;';
+        list.appendChild(divider);
+
+        for (const dossier of appState.dossiers) {
+            let avatarUrl = '';
+            if (dossier.character.avatarAssetId) {
+                const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, dossier.character.avatarAssetId);
+                if (asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+            }
+            
+            const isActive = currentOpponentId === dossier.id ? 'active' : '';
+            const bgStyle = avatarUrl ? `background-image: url('${avatarUrl}')` : `background-color: #333`;
+            
+            const el = document.createElement('div');
+            el.className = `monopoly-select-item ${isActive}`;
+            el.innerHTML = `
+                <div class="monopoly-select-avatar" style="${bgStyle}">
+                    ${avatarUrl ? '' : dossier.character.name[0]}
+                </div>
+                <span class="monopoly-select-name" style="${isActive ? 'color:#FFD700;' : ''}">${dossier.character.name}</span>
+                <i class="ri-check-line monopoly-select-check"></i>
+            `;
+            
+            // 点击切换 (角色默认用深蓝色棋子，你也可以在档案里加颜色配置)
+            el.addEventListener('click', () => switchMonopolyOpponent(dossier.id, dossier.character.name, avatarUrl, '#4682B4'));
+            list.appendChild(el);
+        }
+    }
+
+    DOM.monopolyCharModal.classList.add('visible');
+}
+
+// 2. 【核心】切换对手逻辑 (彻底重置版)
+async function switchMonopolyOpponent(id, name, avatarUrl, color) {
+    console.log(`[名利场] 正在切换对手为: ${name} (ID: ${id})`);
+
+    // --- 1. 数据大清洗 (Reset Data) ---
+    
+    // A. 没收所有地产
+    monopolyMap.forEach(tile => {
+        delete tile.owner; // 删除归属权
+    });
+
+    // B. 重置玩家 (我) 的状态
+    gamePlayers[0].pos = 0;
+    gamePlayers[0].money = 10000;
+    // 关键：手动移除旧棋子 DOM，防止渲染重叠
+    if (gamePlayers[0].el) {
+        gamePlayers[0].el.remove(); 
+        gamePlayers[0].el = null;
+    }
+
+    // C. 重置/更新对手 (AI) 的状态
+    if (gamePlayers[1] && gamePlayers[1].el) {
+        gamePlayers[1].el.remove(); // 移除旧对手的棋子
+    }
+    
+    gamePlayers[1] = {
+        id: id,
+        name: name,
+        pos: 0,        // 归零
+        money: 10000,  // 归零
+        color: color || '#191970',
+        avatar: avatarUrl,
+        el: null       // 清空引用
+    };
+
+    // --- 2. 更新 UI 显示 (Update UI) ---
+
+    // 右上角：更新对手头像和钱
+    const opponentCard = document.querySelector('.game-status-bar .player-card:last-child');
+    const opponentAvatarEl = opponentCard.querySelector('.player-avatar');
+    const opponentMoneyEl = opponentCard.querySelector('.player-money');
+    
+    if (avatarUrl) {
+        opponentAvatarEl.style.backgroundImage = `url('${avatarUrl}')`;
+        opponentAvatarEl.textContent = '';
+    } else {
+        opponentAvatarEl.style.backgroundImage = 'none';
+        opponentAvatarEl.textContent = name[0] || '?';
+    }
+    opponentAvatarEl.style.borderColor = color || '#e0c097';
+    opponentMoneyEl.textContent = '¥ 10,000';
+
+    // 左上角：更新我的钱 (重置回 10000)
+    document.querySelector('.game-status-bar .player-card:first-child .player-money').textContent = '¥ 10,000';
+    
+    // 左上角：同步更新“我”的头像 (根据对手档案查找 User 绑定)
+    const userCard = document.querySelector('.game-status-bar .player-card:first-child');
+    const userAvatarEl = userCard.querySelector('.player-avatar');
+    
+    let userAssetId = null;
+    const dossier = appState.dossiers.find(d => d.id === id);
+    
+    if (dossier && dossier.user && dossier.user.avatarAssetId) {
+        userAssetId = dossier.user.avatarAssetId;
+    } else {
+        // 没绑就用全局
+        const globalSetting = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'global_user_avatar_asset_id');
+        if (globalSetting) userAssetId = globalSetting.value;
+    }
+
+    if (userAssetId) {
+        const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, userAssetId);
+        if (asset?.file) {
+            userAvatarEl.style.backgroundImage = `url('${URL.createObjectURL(asset.file)}')`;
+            userAvatarEl.textContent = '';
+        } else {
+            userAvatarEl.style.backgroundImage = 'none';
+            userAvatarEl.textContent = '我';
+        }
+    } else {
+        userAvatarEl.style.backgroundImage = 'none';
+        userAvatarEl.textContent = '我';
+    }
+
+    // --- 3. 提示与重绘 ---
+    DOM.gameMessage.textContent = `新对局：你 VS ${name}`;
+    
+    // 彻底重绘棋盘 (这会重新生成干净的格子和位于起点的棋子)
+    renderMonopolyBoard();
+    
+    // 初始高亮玩家
+    switchTurnUI('user');
+
+    // 关闭浮窗
+
+ // 记录这次的对手
+    await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, { value: id }, 'last_monopoly_opponent');
+    
+    // 因为是手动切换，视为开启新局，覆盖掉可能存在的旧存档
+    await saveGameState();
+    DOM.monopolyCharModal.classList.remove('visible');
+}
+
+// 3. 游戏初始化函数 (入口调用)
+// 大富翁初始化函数 (头像逻辑修正版：优先使用档案专属头像)
+async function initMonopolyGame() {
+    // 1. 获取上次对战的对手 ID
+    let currentOpponentId = gamePlayers[1].id;
+    if (currentOpponentId === 'ai') {
+        const lastOpponent = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'last_monopoly_opponent');
+        currentOpponentId = lastOpponent?.value || 'gossip_girl';
+    }
+
+    // 2. 先尝试【读档】恢复金钱和位置
+    const hasSave = await loadGameState(currentOpponentId);
+
+    // =================================================
+    // === 3. 核心修复：强制重载双方头像 (Re-hydrate) ===
+    // =================================================
+
+    // --- A. 重载对手 (AI) 信息 ---
+    let opponentConfig = null;
+    // 用来标记当前对手是否是“角色档案”，方便后面查找“我”的头像
+    let targetDossier = null; 
+    
+    // 情况1：是 NPC
+    if (CONSTANTS.NPCS[currentOpponentId]) {
+        opponentConfig = CONSTANTS.NPCS[currentOpponentId];
+    } 
+    // 情况2：是角色 (Dossier)
+    else {
+        const dossierId = parseInt(currentOpponentId, 10);
+        targetDossier = appState.dossiers.find(d => d.id === dossierId);
+        
+        if (targetDossier) {
+            let avatarUrl = '';
+            // 重载角色头像
+            if (targetDossier.character.avatarAssetId) {
+                try {
+                    const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, targetDossier.character.avatarAssetId);
+                    if (asset?.file) avatarUrl = URL.createObjectURL(asset.file);
+                } catch (e) { console.error("加载对手头像失败", e); }
+            }
+            
+            opponentConfig = { 
+                id: targetDossier.id, 
+                name: targetDossier.character.name, 
+                avatar: avatarUrl, 
+                color: '#4682B4' 
+            };
+        }
+    }
+
+    // 如果找不到对手，重置为 Gossip Girl
+    if (!opponentConfig) {
+        opponentConfig = CONSTANTS.NPCS['gossip_girl'];
+        // 重置 targetDossier 为 null
+        targetDossier = null; 
+    }
+
+    // 更新 AI 玩家对象
+    gamePlayers[1].id = opponentConfig.id;
+    gamePlayers[1].name = opponentConfig.name;
+    gamePlayers[1].avatar = opponentConfig.avatar;
+    gamePlayers[1].color = opponentConfig.color || '#191970';
+
+    // --- B. 重载玩家 (我) 信息 ---
+    // 【逻辑升级】
+    // 1. 优先尝试从当前对手的档案中，获取“User”的专属头像
+    // 2. 如果是 NPC 对战，或者档案里没设头像，再降级使用全局头像
+    
+    let myAvatarUrl = '';
+    let userAssetId = null;
+
+    if (targetDossier && targetDossier.user && targetDossier.user.avatarAssetId) {
+        // 命中：有专属头像
+        userAssetId = targetDossier.user.avatarAssetId;
+    } else {
+        // 未命中：尝试获取全局头像
+        const globalSetting = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, 'global_user_avatar_asset_id');
+        if (globalSetting?.value) {
+            userAssetId = globalSetting.value;
+        }
+    }
+
+    // 如果找到了 ID，去数据库捞图片
+    if (userAssetId) {
+        try {
+            const asset = await dbHelper.get(CONSTANTS.STORE_NAMES.ASSETS, userAssetId);
+            if (asset?.file) myAvatarUrl = URL.createObjectURL(asset.file);
+        } catch (e) { console.error("加载我的头像失败", e); }
+    }
+    
+    // 更新我方头像
+    gamePlayers[0].avatar = myAvatarUrl;
+
+    // =================================================
+
+    // 4. 如果没读到档，说明是新局，重置数值
+    if (!hasSave) {
+        console.log("无存档，初始化新局");
+        monopolyMap.forEach(tile => delete tile.owner);
+        gamePlayers[0].pos = 0; gamePlayers[0].money = 10000; gamePlayers[0].isStopped = false;
+        gamePlayers[1].pos = 0; gamePlayers[1].money = 10000; gamePlayers[1].isStopped = false;
+    }
+    
+    // 记录这次的对手
+    await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, { value: gamePlayers[1].id }, 'last_monopoly_opponent');
+
+    // 5. 渲染界面
+    renderMonopolyBoard(); 
+    updateMoneyUI();       
+    
+    // 6. 强制刷新顶部状态栏
+    refreshStatusBarAvatars();
+
+    // 7. UI 状态恢复
+    switchTurnUI('user'); 
+    
+    DOM.gameMessage.textContent = hasSave ? `欢迎回来，继续你与 ${gamePlayers[1].name} 的对局` : `新对局：你 VS ${gamePlayers[1].name}`;
+}
+
+// 辅助：强制刷新顶部状态栏头像
+function refreshStatusBarAvatars() {
+    // 1. 刷新我的头像
+    const userCard = document.querySelector('.game-status-bar .player-card:first-child');
+    const userAvatarEl = userCard.querySelector('.player-avatar');
+    const myAvatarUrl = gamePlayers[0].avatar;
+    
+    if (myAvatarUrl) {
+        userAvatarEl.style.backgroundImage = `url('${myAvatarUrl}')`;
+        userAvatarEl.textContent = '';
+    } else {
+        userAvatarEl.style.backgroundImage = 'none';
+        userAvatarEl.textContent = '我';
+    }
+
+    // 2. 刷新对手头像
+    const aiCard = document.querySelector('.game-status-bar .player-card:last-child');
+    const aiAvatarEl = aiCard.querySelector('.player-avatar');
+    const aiAvatarUrl = gamePlayers[1].avatar;
+    
+    if (aiAvatarUrl) {
+        aiAvatarEl.style.backgroundImage = `url('${aiAvatarUrl}')`;
+        aiAvatarEl.textContent = '';
+    } else {
+        aiAvatarEl.style.backgroundImage = 'none';
+        aiAvatarEl.textContent = gamePlayers[1].name[0] || '?';
+    }
+    aiAvatarEl.style.borderColor = gamePlayers[1].color;
+}
+
+// 辅助：切换回合 UI (高亮当前玩家)
+function switchTurnUI(turn) {
+    const cards = document.querySelectorAll('.game-status-bar .player-card');
+    const userCard = cards[0];
+    const aiCard = cards[1];
+    const btn = DOM.rollDiceBtn;
+
+    if (turn === 'user') {
+        // === 轮到我了 ===
+        userCard.classList.add('is-turn');
+        aiCard.classList.remove('is-turn');
+        
+        // 按钮变亮
+        btn.disabled = false;
+        btn.innerHTML = '<i class="ri-vip-crown-2-line"></i> 轮到你了';
+        btn.classList.add('pulse-btn');
+        
+    } else {
+        // === 轮到对方了 ===
+        userCard.classList.remove('is-turn');
+        aiCard.classList.add('is-turn');
+        
+        // 按钮变暗并显示对方名字
+        btn.disabled = true;
+        btn.classList.remove('pulse-btn');
+        btn.innerHTML = `<i class="ri-hourglass-fill"></i> ${gamePlayers[1].name}`; // 显示对方名字
+    }
+}
+
+// 4. 处理格子交互事件 (完整终极版)
+
+async function handleTileInteraction(player) {
+    const tileIndex = player.pos;
+    const tileData = monopolyMap[tileIndex];
+    const isUser = player.id === 'user';
+    
+    // 准备 AI 吐槽用的状态
+    const gameState = { aiMoney: gamePlayers[1].money, userMoney: gamePlayers[0].money };
+    const subject = isUser ? '你' : player.name;
+
+    // =========================================
+    // === 分支 1: 特殊区域 (非地产) ===
+    // =========================================
+    if (tileData.type !== 'land') {
+        
+        // 1. 起点
+        if (tileData.name === "起点") {
+            player.money += 2000;
+            DOM.gameMessage.textContent = `${subject} 回到起点，领取低保 ¥2,000`;
+            if (isUser) utils.showToast("工资到账 +¥2,000");
+        }
+        
+        // 2. 奢侈税 (The Big Tax)
+        else if (tileData.name === "奢侈税" || tileData.name === "奢修税") {
+            const tax = Math.floor(player.money * 0.2); // 扣 20%
+            player.money -= tax;
+            
+            // 先显示系统提示
+            DOM.gameMessage.textContent = `💎 ${subject} 缴纳奢侈税 ¥${tax}`;
+            
+            // 【演出延迟】给玩家 1.5秒 看清这行字
+            await new Promise(r => setTimeout(r, 1500));
+
+            if (isUser) {
+                utils.showToast(`心痛！缴纳了 ¥${tax} 的智商税`);
+                // 【狠招】同步扣除真实钱包余额！
+                await addWalletTransaction('expense', 'system_tax', tax, '【名利场】奢侈税', '税务局');
+                
+                // 触发 AI 嘲讽
+                await triggerAISpeech('fate_opponent', { title: '税务局稽查', desc: '你被强制征收了奢侈税', amount: -tax }, gameState);
+            } else {
+                // AI 自己交税，AI 吐槽自己
+                await triggerAISpeech('tax', { title: tileData.name, amount: tax }, gameState);
+            }
+        }
+        
+        // 3. 监狱 / 探监 (路过监狱，无事发生)
+        else if (tileData.name.includes("监狱")) {
+            // 明确提示：这是探监，不是坐牢
+            DOM.gameMessage.textContent = `👀 ${player.name} 只是路过探监，下回合正常行动。`;
+            await new Promise(r => setTimeout(r, 1500));
+            
+            // 【关键修复】这里不能直接 return，必须先结束回合！
+            
+            updateMoneyUI();
+            endTurn(isUser); 
+            return;
+        }
+        
+        // 4. 前往典当 (核心修复：入狱演出)
+        else if (tileData.name === "前往典当") {
+            // A. 先显示醒目的被捕消息
+            DOM.gameMessage.innerHTML = `<span style="color:#ff4d4d; font-weight:bold;">🚓 ${subject} 因涉嫌洗钱被捕！</span>`;
+            
+            // B. 【关键延迟】停留 2 秒，让玩家意识到出事了
+            await new Promise(r => setTimeout(r, 2000));
+
+            // C. 视觉上移动棋子到监狱 (id: 8 是监狱格)
+            player.pos = 8;
+            updatePlayerPosition(player); // 强制更新棋子位置到左下角
+            
+            // D. 标记状态
+            player.isStopped = true; 
+            DOM.gameMessage.textContent = `${subject} 已被移送监狱，暂停一回合。`;
+            
+            // E. 再过 1 秒，触发 AI 吐槽
+            await new Promise(r => setTimeout(r, 1000));
+            
+            if (!isUser) {
+                // AI 自己进去了，自嘲一下
+                await triggerAISpeech('jail', {}, gameState);
+            } else {
+                // 你进去了，AI 嘲笑你
+                await triggerAISpeech('jail', {}, gameState, "[看到我被抓进去了]");
+            }
+        }
+        
+        // 5. 命运 / 机会 (触发抽卡逻辑)
+        else if (tileData.name === "命运" || tileData.name === "机会") {
+            // 调用我们在上面定义的抽卡函数 (确保你代码里有 handleFateCard)
+            await handleFateCard(player);
+        }
+        
+        // 6. 度假村
+        else if (tileData.name === "度假村") {
+             DOM.gameMessage.textContent = `🏖️ ${subject} 正在享受昂贵的下午茶...`;
+        }
+
+        // 统一收尾：更新界面余额并结束回合
+        updateMoneyUI();
+        endTurn(isUser); 
+        return;
+    }
+
+    // =========================================
+    // === 分支 2: 地产逻辑 (买地/收租) ===
+    // =========================================
+    
+    // 1. 无主之地
+    if (!tileData.owner) {
+         if (isUser) {
+            // === 玩家回合：弹窗询问是否购买 ===
+            // 稍微延迟一下弹窗，体验更好
+            await new Promise(r => setTimeout(r, 300)); 
+            
+            if (player.money >= tileData.price) {
+                if (confirm(`到达【${tileData.name}】\n售价: ¥${tileData.price}\n\n你要买下它吗？`)) {
+                    buyLand(player, tileData, tileIndex);
+                    // 购买成功，AI 评价
+                    await triggerAISpeech('opponent_buy', { landName: tileData.name, price: tileData.price }, gameState);
+                } else {
+                    DOM.gameMessage.textContent = `你放弃了 ${tileData.name}`;
+                }
+            } else {
+                DOM.gameMessage.textContent = `资金不足，无法购买 ${tileData.name}`;
+                utils.showToast("钱不够啦！");
+            }
+        } else {
+            // === AI 回合：有钱就买 ===
+            // 设定：AI 至少保留 500 块钱备用金
+             if (player.money >= tileData.price + 500) { 
+                 buyLand(player, tileData, tileIndex);
+                 // AI 买完地，炫耀一下
+                 await triggerAISpeech('buy', { landName: tileData.name, price: tileData.price }, gameState);
+             } else {
+                 DOM.gameMessage.textContent = `${player.name} 资金紧张，放弃了收购`;
+             }
+        }
+    } 
+    // 2. 别人的地 (触发过路费)
+    else if (tileData.owner !== player.id) {
+        const owner = gamePlayers.find(p => p.id === tileData.owner);
+        const rent = Math.floor(tileData.price * 0.3); // 30% 过路费
+        
+        // 扣钱转账
+        player.money -= rent;
+        owner.money += rent;
+        updateMoneyUI();
+        
+        DOM.gameMessage.textContent = `${player.name} 支付过路费 ¥${rent}`;
+
+        // 【增加延迟】给个 1 秒钟让玩家看清“支付过路费”这行字，再出 AI 语音
+        await new Promise(r => setTimeout(r, 1000));
+
+        if (isUser) {
+            // 玩家付钱 -> AI 收钱 (AI 得意)
+            utils.showToast(`痛失 ¥${rent} 😭`);
+
+await addWalletTransaction(
+                'expense',           // 类型：支出
+                tileData.owner,      // 对象：给谁了 (AI的ID)
+                rent,                // 金额
+                `【名利场】过路费 - ${tileData.name}`, // 账单备注
+                owner.name           // 对方名字
+            );
+            await triggerAISpeech('receive_rent', { landName: tileData.name, rent: rent }, gameState);
+        } else {
+            // AI 付钱 -> 玩家收钱 (AI 心疼)
+            await triggerAISpeech('pay_rent', { landName: tileData.name, rent: rent }, gameState);
+        }
+    } 
+    // 3. 自己的地
+    else {
+        DOM.gameMessage.textContent = `欢迎回家，这是 ${isUser?'你':player.name} 的 ${tileData.name}`;
+    }
+
+    // 统一结束回合
+    endTurn(isUser);
+}
+
+// 辅助：执行买地操作 (无需修改)
+function buyLand(player, tileData, tileIndex) {
+    player.money -= tileData.price;
+    tileData.owner = player.id;
+    updateMoneyUI();
+    updateTileVisual(tileIndex, player.id); 
+    DOM.gameMessage.textContent = `${player.id === 'user' ? '你' : player.name} 买下了 ${tileData.name}`;
+saveGameState();
+}
+
+// 处理命运卡片逻辑 (修复版：显示AI抽卡结果)
+async function handleFateCard(player) {
+    const isUser = player.id === 'user';
+    const gameState = { aiMoney: gamePlayers[1].money, userMoney: gamePlayers[0].money };
+    
+    // 1. 权重抽卡
+    const totalWeight = FATE_CARDS.reduce((sum, card) => sum + card.weight, 0);
+    let random = Math.random() * totalWeight;
+    let card = FATE_CARDS[0];
+    for (const item of FATE_CARDS) {
+        if (random < item.weight) {
+            card = item;
+            break;
+        }
+        random -= item.weight;
+    }
+    
+    // 2. 执行效果 (扣钱/加钱)
+    const result = await card.action(player);
+    
+    // 立即刷新右上角的钱数，这样你能看到数字变化
+    updateMoneyUI();
+
+    // 准备传给 AI 的事件详情
+    const eventDetail = {
+        title: card.title,
+        desc: card.desc,
+        amount: result.amount
+    };
+    
+    // 3. 分情况处理反馈
+    if (isUser) {
+        // === 玩家抽卡 (逻辑不变) ===
+        DOM.gameMessage.textContent = `${card.title}: ${result.msg}`; // 底部简单显示
+        
+        if (card.type === 'critical') {
+             alert(`⚠ 严重警告 ⚠\n\n【${card.title}】\n${card.desc}\n\n结果: ${result.msg}`);
+        } else {
+             alert(`【${card.title}】\n${card.desc}\n\n结果: ${result.msg}`);
+        }
+        
+        // 触发 AI 评价你的运气
+        await triggerAISpeech('fate_opponent', eventDetail, gameState);
+        
+    } else {
+        // === AI 抽卡 (核心修改) ===
+        
+        // 1. 【新增】在屏幕下方清楚地显示 AI 抽到了什么
+        // 使用 innerHTML 支持换行，让信息更醒目
+        DOM.gameMessage.innerHTML = `
+            <span style="color: #FFD700; font-weight: bold;">${player.name} 触发命运:</span><br>
+            【${card.title}】 ${result.msg}
+        `;
+        
+        // 2. 【修改】延长阅读时间 (2.5秒)，让你看清上面的字
+        await new Promise(r => setTimeout(r, 2500));
+        
+        // 3. AI 根据结果自己吐槽
+        // (AI 说话会覆盖上面的提示，所以前面的延迟很重要)
+        if (card.type === 'bad' || card.type === 'critical') {
+             // 这里的 tax 类型只是为了触发“倒霉”的语境，实际上走的是 fate_self
+             await triggerAISpeech('fate_self', eventDetail, gameState);
+        } else {
+             await triggerAISpeech('fate_self', eventDetail, gameState);
+        }
+    }
+}
+
+// 辅助：更新界面上的钱
+function updateMoneyUI() {
+    const cards = document.querySelectorAll('.game-status-bar .player-card');
+    // 更新玩家
+    cards[0].querySelector('.player-money').textContent = `¥ ${gamePlayers[0].money.toLocaleString()}`;
+    // 更新对手
+    cards[1].querySelector('.player-money').textContent = `¥ ${gamePlayers[1].money.toLocaleString()}`;
+}
+
+// 辅助：更新格子外观 (染色)
+function updateTileVisual(index, ownerId) {
+    const tileEl = document.querySelector(`.tile[data-id="${index}"]`);
+    if (tileEl) {
+        tileEl.classList.remove('owned-by-user', 'owned-by-ai');
+        tileEl.classList.add(ownerId === 'user' ? 'owned-by-user' : 'owned-by-ai');
+    }
+}
+
+// 辅助：回合结束
+function endTurn(isUserTurn) {
+
+saveGameState();
+
+    if (isUserTurn) {
+        // 玩家回合结束 -> 立即切换 UI 并触发 AI
+        // (因为 AI 需要一点准备时间，所以先切换 UI 更有感觉)
+        switchTurnUI('ai'); 
+        
+        setTimeout(() => {
+            handleAITurn();
+        }, 1000);
+    } 
+    
+}
+// --- AI 回合逻辑 ---
+async function handleAITurn() {
+    const aiPlayer = gamePlayers[1]; // AI 是 1 号位
+    
+    // 1. 切换 UI 到 AI 状态 (头像高亮，按钮变暗)
+    switchTurnUI('ai');
+
+    // 【新增】检查是否在坐牢
+    if (aiPlayer.isStopped) {
+        await new Promise(r => setTimeout(r, 1000));
+        DOM.gameMessage.textContent = `${aiPlayer.name} 在监狱里反省中...`;
+        aiPlayer.isStopped = false;
+        
+        setTimeout(() => {
+            switchTurnUI('user'); 
+        }, 1500);
+        return;
+    }
+
+    // 模拟思考延迟 (1.5秒)
+    await new Promise(r => setTimeout(r, 1500));
+    
+    // 2. 掷骰子
+    const d1 = Math.floor(Math.random() * 6) + 1;
+    const d2 = Math.floor(Math.random() * 6) + 1;
+    const steps = d1 + d2;
+    
+    // 掷骰子时，更新字幕告知点数 (这是必要的反馈)
+    await rollDice3D(DOM.dice1, d1);
+    await rollDice3D(DOM.dice2, d2);
+    
+    DOM.gameMessage.textContent = `${aiPlayer.name} 掷出了 ${steps} 点`;
+    
+    // 3. 移动
+    await movePlayerToken(aiPlayer, steps);
+    
+    // 4. 触发事件处理 (买地/付钱/说话)
+    
+    await handleAITileInteraction(aiPlayer);
+    
+    // 5. 回合结束，交还控制权给玩家
+    setTimeout(() => {
+        switchTurnUI('user'); 
+    }, 2500); // 给看完 AI 说话留点时间
+}
+
+// --- AI 的格子交互 (决策逻辑 - 修复版) ---
+async function handleAITileInteraction(player) {
+    const tileIndex = player.pos;
+    const tileData = monopolyMap[tileIndex];
+    const userPlayer = gamePlayers[0];
+    
+    // 准备数据给 AI 生成回复用
+    const gameState = { aiMoney: player.money, userMoney: userPlayer.money };
+    
+    // =========================================
+    // === 分支 1: 特殊区域 (AI 处理逻辑) ===
+    // =========================================
+    if (tileData.type !== 'land') {
+        
+        // 1. 命运 / 机会 (触发抽卡)
+        if (tileData.name === "命运" || tileData.name === "机会") {
+            // handleFateCard 内部已经包含了：显示结果 -> 等待 -> 触发AI发言
+            // 所以这里直接调用并 return 即可
+            await handleFateCard(player);
+            return; 
+        }
+
+        // 2. 奢侈税 (修复扣钱 + 字幕提醒)
+        else if (tileData.name === "奢侈税") {
+            const tax = Math.floor(player.money * 0.2); // 扣 20%
+            player.money -= tax;
+            updateMoneyUI(); // 立即刷新余额显示
+
+            // A. 先显示系统字幕
+            DOM.gameMessage.innerHTML = `<span style="color:#ff4d4d;">💸 ${player.name} 被强制征收奢侈税 ¥${tax}</span>`;
+            
+            // B. 等待 2 秒，让你看清字幕
+            await new Promise(r => setTimeout(r, 2000));
+
+            // C. 触发 AI 抱怨
+            await triggerAISpeech('tax', { title: '奢侈税', amount: tax }, gameState);
+            return;
+        }
+
+        // 3. 监狱 (入狱逻辑)
+        else if (tileData.name === "前往典当") {
+            // A. 显示字幕
+            DOM.gameMessage.innerHTML = `<span style="color:#ff4d4d;">🚓 ${player.name} 涉嫌违规，被带走调查！</span>`;
+            await new Promise(r => setTimeout(r, 2000));
+
+            // B. 移动棋子
+            player.pos = 8; // 移动到监狱格
+            updatePlayerPosition(player);
+            player.isStopped = true; // 标记暂停
+
+            // C. 触发 AI 自嘲
+            await triggerAISpeech('jail', {}, gameState);
+            return;
+        }
+
+        // 4. 起点 (领钱)
+        else if (tileData.name === "起点") {
+            player.money += 2000;
+            updateMoneyUI();
+            DOM.gameMessage.textContent = `${player.name} 经过起点，领取资金 ¥2,000`;
+            // 起点通常不需要 AI 特别说话，或者简单说一句
+            await new Promise(r => setTimeout(r, 1500)); // 稍微停顿
+            return;
+        }
+
+        // 其他角落 (如停车场/度假村)
+        else {
+            DOM.gameMessage.textContent = `${player.name} 正在 ${tileData.name} 休息...`;
+            await new Promise(r => setTimeout(r, 1500));
+            return;
+        }
+    }
+
+    // =========================================
+    // === 分支 2: 地产逻辑 (买地/收租) ===
+    // =========================================
+    
+    let eventType = 'normal';
+    let eventDetail = {};
+
+    if (!tileData.owner) {
+        // A. 无主之地 -> AI 有钱就买 (设定保留 1000 备用金)
+        if (player.money >= tileData.price + 1000) {
+            // 先显示购买动作
+            DOM.gameMessage.textContent = `${player.name} 正在签署【${tileData.name}】的购买合同...`;
+            await new Promise(r => setTimeout(r, 1000));
+
+            buyLand(player, tileData, tileIndex);
+            
+            eventType = 'buy';
+            eventDetail = { landName: tileData.name, price: tileData.price };
+        } else {
+            DOM.gameMessage.textContent = `${player.name} 看了看钱包，放弃了购买 ${tileData.name}`;
+            // 没钱买就不触发 AI 说话了，或者你可以加个 'skip_buy' 的类型
+            await new Promise(r => setTimeout(r, 1500));
+            return; 
+        }
+    } else if (tileData.owner === 'user') {
+        // B. 玩家的地 -> 付过路费
+        const rent = Math.floor(tileData.price * 0.3);
+        
+        // 先显示扣款提示
+        DOM.gameMessage.innerHTML = `🛑 ${player.name} 踩到你的地盘，支付租金 <span style="color:#FFD700; font-weight:bold;">¥${rent}</span>`;
+        await new Promise(r => setTimeout(r, 1500)); // 让你爽 1.5 秒
+
+        player.money -= rent;
+        userPlayer.money += rent;
+        updateMoneyUI();
+        
+        if (typeof utils !== 'undefined') utils.showToast(`${player.name} 支付给你 ¥${rent}`);
+        
+        eventType = 'pay_rent';
+        eventDetail = { landName: tileData.name, rent: rent };
+    } else {
+        // C. 自己的地
+        DOM.gameMessage.textContent = `${player.name} 回到了自己的地盘巡视。`;
+        await new Promise(r => setTimeout(r, 1500));
+        return;
+    }
+    
+    // D. 触发 AI 发言 (仅针对 买地 和 付租金)
+    await triggerAISpeech(eventType, eventDetail, gameState);
+}
+
+// --- 核心：触发 AI 发言 (NPC 随机读取身份版) ---
+async function triggerAISpeech(eventType, eventDetail, gameState, userMessage = null) {
+    const aiPlayer = gamePlayers[1];
+    let dossier = null;
+    
+    // 1. 判断对手身份
+    if (CONSTANTS.NPCS[aiPlayer.id]) {
+        // === 情况 A: 对手是 NPC (如 Gossip Girl) ===
+        const npc = CONSTANTS.NPCS[aiPlayer.id];
+        
+        // 默认身份（兜底用）
+        let targetUserPersona = { 
+            name: '神秘玩家', 
+            background: '一位不知名的挑战者' 
+        };
+
+        // 【核心逻辑】NPC 随机读取你的一个档案
+        if (appState.dossiers.length > 0) {
+            const randomIndex = Math.floor(Math.random() * appState.dossiers.length);
+            const randomExistingDossier = appState.dossiers[randomIndex];
+            
+            if (randomExistingDossier && randomExistingDossier.user) {
+                targetUserPersona = {
+                    name: randomExistingDossier.user.name || '玩家',
+                    background: randomExistingDossier.user.background || '无详细设定'
+                };
+                console.log(`[名利场] NPC ${npc.name} 本局识别你为: ${targetUserPersona.name}`);
+            }
+        }
+
+        // 构造临时档案给 AI
+        dossier = { 
+            character: { 
+                name: npc.name, 
+                background: npc.personality // NPC 自己的性格
+            },
+            user: targetUserPersona // 随机抽取到的你的身份
+        };
+        
+    } else {
+        // === 情况 B: 对手是你创建的角色 ===
+        // 角色必须读取属于他自己的那个特定档案（因为你们的关系是固定的）
+        dossier = appState.dossiers.find(d => d.id === aiPlayer.id);
+    }
+
+    if (!dossier) return;
+
+    try {
+        // 调用 Prompt
+        const prompt = promptManager.createMonopolyReactionPrompt(dossier, gameState, eventType, eventDetail, userMessage);
+        const reply = await apiHelper.getChatCompletion(prompt);
+        
+        // 显示 AI 的话 (打字机效果)
+        typewriterEffect(DOM.gameMessage, `${aiPlayer.name}: ${reply}`);
+        
+    } catch (e) {
+        console.error("AI发言失败", e);
+    }
+}
+
+// 辅助：打字机效果 (让 AI 说话像打字一样)
+function typewriterEffect(element, text) {
+    // 如果元素不存在，直接退出
+    if (!element) return;
+    
+    element.textContent = ""; // 清空原有文字
+    let i = 0;
+    const speed = 50; // 打字速度 (毫秒)
+
+    function type() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+        }
+    }
+    type();
+}
+
+// --- 💾 存档系统核心函数 ---
+
+// 1. 保存当前游戏进度
+async function saveGameState() {
+    const opponentId = gamePlayers[1].id;
+    if (!opponentId) return;
+
+    // 只保存关键数据，不保存 DOM 元素
+    const saveData = {
+        timestamp: Date.now(),
+        // 玩家状态 (位置、钱、是否暂停)
+        players: gamePlayers.map(p => ({
+            id: p.id,
+            pos: p.pos,
+            money: p.money,
+            isStopped: p.isStopped || false
+        })),
+        // 地图状态 (只保存谁买了哪块地)
+        mapOwners: monopolyMap.map(t => ({ id: t.id, owner: t.owner || null }))
+    };
+
+    // 存入 USER_SETTINGS 表，键名为 monopoly_save_角色ID
+    await dbHelper.set(CONSTANTS.STORE_NAMES.USER_SETTINGS, saveData, `monopoly_save_${opponentId}`);
+    console.log(`[名利场] 游戏进度已保存 (对手: ${opponentId})`);
+}
+
+// 2. 读取游戏进度
+async function loadGameState(opponentId) {
+    const save = await dbHelper.get(CONSTANTS.STORE_NAMES.USER_SETTINGS, `monopoly_save_${opponentId}`);
+    if (!save) return false; // 没存档
+
+    console.log(`[名利场] 发现存档，正在恢复...`);
+
+    // 恢复玩家数据 (注意：只恢复钱和位置，保留最新的名字和头像)
+    save.players.forEach((savedP, index) => {
+        if (gamePlayers[index]) {
+            gamePlayers[index].pos = savedP.pos;
+            gamePlayers[index].money = savedP.money;
+            gamePlayers[index].isStopped = savedP.isStopped;
+        }
+    });
+
+    // 恢复地图归属
+    save.mapOwners.forEach(savedTile => {
+        if (savedTile.owner) {
+            monopolyMap[savedTile.id].owner = savedTile.owner;
+        } else {
+            delete monopolyMap[savedTile.id].owner;
+        }
+    });
+
+    return true; // 读档成功
 }
 // ===============================================
 // ===   数据管理核心逻辑 (导入/导出/清空)     ===
@@ -20618,13 +23486,16 @@ libraryBookIds: [] // <-- 【新增】为新档案初始化一个空数组
         sendBufferedMessage(); 
     });
             DOM.sendFinalBtn.addEventListener('click', handleSendMessage);
-            // vvv 【修正】监听输入框的回车键 (回车 = 羽毛笔) vvv
+
+// vvv 【修正】监听输入框的回车键 (回车 = 羽毛笔) vvv
             DOM.chatInput.addEventListener('keydown', (e) => {
                 // 防中文输入法误触
                 if (e.isComposing) return;
 
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault(); // 阻止换行
+                    
+                    
                     sendBufferedMessage(); 
                 }
             });
@@ -22768,12 +25639,16 @@ DOM.movieSettingsBtn.addEventListener('click', () => {
 });
 
 // 在“放映室”点击发送按钮
-DOM.movieSendBtn.addEventListener('click', handleMovieSend);
+// 监听电影输入框按键
 DOM.movieInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    // 只有电脑上按 Ctrl+Enter 才会发送
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         handleMovieSend();
+        return;
     }
+    
+    // 手机按“回车”，或者电脑单按“Enter”，都会自动走默认行为：换行
 });
 
 DOM.movieWrapUpIcon.addEventListener('click', handleMovieWrapUp);
@@ -24142,7 +27017,7 @@ renderTraceList();
         navigateToPage(DOM.cloudSyncApp, 'cloud-device-list-page');
     });
 
-   // 2. APP 内部返回按钮 (统一处理 + 清缓存)
+    // 2. APP 内部返回按钮 (统一处理 + 清缓存)
     DOM.cloudBackBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             const target = e.target.closest('.back-button').dataset.target;
@@ -24166,7 +27041,7 @@ renderTraceList();
     });
 
     // 3. 仪表盘卡片点击 (AI生成内容) - 使用事件委托
-    // 必须确保 DOM 中存在 .cloud-grid-container
+   
     document.querySelector('.cloud-grid-container').addEventListener('click', (e) => {
         const card = e.target.closest('.cloud-card');
         if (card) {
@@ -24269,6 +27144,237 @@ DOM.pawnHaggleBtn.addEventListener('click', () => {
 });
 
 DOM.confirmHaggleBtn.addEventListener('click', handleHaggleSubmit);
+
+// 扔骰子
+DOM.rollDiceBtn.addEventListener('click', handleRollDice);
+
+// 返回
+const monopolyBackBtn = document.querySelector('#monopoly-app .back-button');
+monopolyBackBtn.addEventListener('click', () => closeNavigator(DOM.monopolyApp));
+
+// 大富翁 - 打开设置浮窗
+DOM.monopolySettingsBtn.addEventListener('click', openMonopolySettings);
+
+// 大富翁 - 关闭设置浮窗
+DOM.closeMonopolyCharBtn.addEventListener('click', () => DOM.monopolyCharModal.classList.remove('visible'));
+
+// 大富翁 - 点击浮窗背景关闭
+DOM.monopolyCharModal.addEventListener('click', (e) => {
+    if (e.target === DOM.monopolyCharModal) DOM.monopolyCharModal.classList.remove('visible');
+});
+
+// 大富翁 - 进入应用时初始化
+DOM.iconMonopoly.addEventListener('click', () => {
+    navigateToPage(DOM.monopolyApp, 'monopoly-main-page');
+    // 稍微延迟一下确保容器渲染完毕
+    setTimeout(initMonopolyGame, 100);
+});
+
+// 大富翁 - 切换聊天框显示
+document.getElementById('monopoly-toggle-chat-btn').addEventListener('click', () => {
+    const inputArea = document.getElementById('monopoly-chat-input-area');
+    inputArea.style.display = inputArea.style.display === 'none' ? 'flex' : 'none';
+});
+
+// 大富翁 - 发送聊天
+document.getElementById('monopoly-send-btn').addEventListener('click', async () => {
+    const input = document.getElementById('monopoly-input');
+    const text = input.value.trim();
+    if (!text) return;
+    
+    // 清空输入框
+    input.value = '';
+    
+    // 立即显示你的话
+    DOM.gameMessage.textContent = `我: ${text}`;
+    
+    // 触发 AI 回复
+    const aiGameState = { aiMoney: gamePlayers[1].money, userMoney: gamePlayers[0].money };
+    await triggerAISpeech('user_chat', {}, aiGameState, text);
+});
+
+// --- 心声面板 (Inner Voice) 事件监听 ---
+
+    // 1. 关闭逻辑
+    const closeInnerVoice = () => DOM.innerVoiceModal.classList.remove('visible');
+    
+    if (DOM.closeInnerVoiceBtn) {
+        DOM.closeInnerVoiceBtn.addEventListener('click', closeInnerVoice);
+    }
+    
+    if (DOM.innerVoiceModal) {
+        DOM.innerVoiceModal.addEventListener('click', (e) => {
+            // 点击背景部分关闭，点击内容区不关闭
+            // iv-content-scroll 是滚动层，iv-data-wrapper 是内容，点击滚动层的空白处（非wrapper）通常算背景
+            if (e.target.classList.contains('iv-content-scroll') || e.target === DOM.innerVoiceModal) {
+                // 可选：启用点击背景关闭
+                // closeInnerVoice(); 
+            }
+        });
+    }
+
+    // 2. 触发逻辑：点击聊天气泡旁的头像
+    DOM.messagesContainer.addEventListener('click', async (e) => {
+        // 仅监听 .chat-message.character .avatar
+        const targetAvatar = e.target.closest('.chat-message.character .avatar');
+        
+        if (targetAvatar) {
+            e.stopPropagation();
+
+            const dossierId = appState.currentChattingDossierId;
+            const dossier = appState.dossiers.find(d => d.id === dossierId);
+            
+            if (!dossier) return;
+
+            // A. 初始化 UI
+            utils.generateIVParticles(); // 生成粒子
+            DOM.innerVoiceData.style.display = 'none'; // 隐藏旧数据
+            DOM.innerVoiceLoading.style.display = 'block'; // 显示 Loading
+            DOM.innerVoiceModal.classList.add('visible'); // 显示面板
+
+            // 填充静态信息
+            DOM.ivCharName.textContent = dossier.character.name;
+            // 伪造 ID: SUB-00X
+            DOM.ivCharId.textContent = (dossier.id * 7).toString().padStart(2, '0');
+            
+            try {
+                const history = appState.currentChatHistory;
+                const prompt = promptManager.createInnerVoicePrompt(dossier, history);
+                const response = await apiHelper.getChatCompletion(prompt);
+
+                // B. 解析 JSON
+                const jsonMatch = response.match(/\{[\s\S]*\}/);
+                let data = {};
+                if (jsonMatch) {
+                    data = JSON.parse(jsonMatch[0]);
+                } else {
+                    throw new Error("格式解析失败");
+                }
+
+                // C. 填充数据
+                DOM.ivCharTitle.textContent = data.title || "UNKNOWN ENTITY";
+                
+                // 处理 Markdown 斜体 *text* -> HTML <i>text</i>
+                let formattedVoice = data.inner_voice || "...";
+                formattedVoice = formattedVoice.replace(/\*(.*?)\*/g, '<i style="font-style:italic; margin:0 5px; color:#ffe4e6;">$1</i>');
+                DOM.ivQuoteText.innerHTML = formattedVoice;
+
+                DOM.ivProfileAttire.textContent = data.attire || "N/A";
+                DOM.ivProfilePose.textContent = data.pose || "N/A";
+                DOM.ivProfileDynamic.textContent = data.dynamic || "N/A";
+
+                // D. 切换显示
+                DOM.innerVoiceLoading.style.display = 'none';
+                DOM.innerVoiceData.style.display = 'flex'; // flex 布局
+
+            } catch (error) {
+                console.error("心声生成失败:", error);
+                DOM.innerVoiceLoading.style.display = 'none';
+                DOM.innerVoiceData.style.display = 'flex';
+                DOM.ivQuoteText.textContent = "（信号连接中断，无法读取潜意识流...）";
+            }
+        }
+    });
+
+// --- 【V3.1 纯净版】提取记忆结晶按钮 (只生成书，不自动挂载) ---
+DOM.extractMemoryBookBtn.addEventListener('click', async () => {
+    const dossierId = appState.currentChattingDossierId;
+    if (!dossierId) return;
+
+    const dossier = appState.dossiers.find(d => d.id === dossierId);
+    const btn = DOM.extractMemoryBookBtn;
+    const originalContent = btn.innerHTML;
+
+    // 1. 获取限制与总数
+    const settingRounds = dossier.memoryRounds || 20;
+    const maxAllowedMessages = settingRounds * 2;
+
+    let allHistory = [];
+    try {
+        allHistory = await dbHelper.getHistoryForDossier(dossierId);
+    } catch (e) {
+        return utils.showToast("读取历史记录失败");
+    }
+
+    const totalAvailable = allHistory.length;
+    if (totalAvailable < 10) {
+        return utils.showToast("聊天记录太少，没必要总结。");
+    }
+
+    const effectiveLimit = Math.min(totalAvailable, maxAllowedMessages);
+
+    // 2. 弹窗询问
+    const userInput = prompt(
+        `【记忆限制检查】\n` +
+        `- 设定记忆轮数：${settingRounds} 轮 (上限约 ${maxAllowedMessages} 条)\n` +
+        `- 实际拥有记录：${totalAvailable} 条\n\n` +
+        `根据限制，你本次最多可总结最近 ${effectiveLimit} 条。\n` +
+        `请输入要总结的数量：`, 
+        effectiveLimit
+    );
+
+    if (userInput === null) return;
+
+    let countToSummarize = parseInt(userInput, 10);
+    
+    if (isNaN(countToSummarize) || countToSummarize <= 0) {
+        return utils.showToast("请输入有效的数字");
+    }
+    if (countToSummarize > maxAllowedMessages) {
+        alert(`输入的数量 (${countToSummarize}) 超过了你设定的记忆轮数限制 (${maxAllowedMessages}条)！\n\n系统将自动调整为最大允许值。`);
+        countToSummarize = maxAllowedMessages;
+    }
+    if (countToSummarize > totalAvailable) {
+        countToSummarize = totalAvailable;
+    }
+
+    // UI Loading
+    btn.style.pointerEvents = 'none';
+    btn.style.opacity = '0.7';
+    btn.innerHTML = `<i class="ri-loader-4-line spin"></i> <span>正在阅读 ${countToSummarize} 条记录...</span>`;
+
+    try {
+        // 3. 截取记录
+        const recentHistory = allHistory.slice(-countToSummarize);
+        
+        const historyText = recentHistory.map(msg => {
+            const speaker = msg.sender === 'user' ? (dossier.user.name || '我') : dossier.character.name;
+            let content = msg.content;
+            if (Array.isArray(content)) content = '[图片/多模态消息]';
+            else if (typeof content !== 'string') content = `[特殊消息: ${msg.type}]`;
+            return `${speaker}: ${content}`;
+        }).join('\n');
+
+        // 4. 调用 AI (生成白皮书)
+        const prompt = promptManager.createLongTermMemoryBookPrompt(dossier, historyText);
+        const summary = await apiHelper.getChatCompletion(prompt);
+
+        // 5. 创建新书对象
+        const bookTitle = `记忆结晶：${dossier.character.name} (近${countToSummarize}条)`;
+        
+        const newBook = {
+            title: bookTitle,
+            isGlobal: false,
+            category: 'worldview', 
+            content: summary
+        };
+
+        // 6. 【核心修改】只存入图书馆，不修改角色档案
+        await dbHelper.add(CONSTANTS.STORE_NAMES.LIBRARY_BOOKS, newBook);
+
+        // 提示文案也改了
+        utils.showToast(`成功！《${bookTitle}》已存入图书馆。`);
+
+    } catch (error) {
+        console.error("记忆提炼失败:", error);
+        utils.showToast(`提炼失败: ${error.message}`);
+    } finally {
+        // 恢复按钮
+        btn.style.pointerEvents = 'auto';
+        btn.style.opacity = '1';
+        btn.innerHTML = originalContent;
+    }
+});
            
 }
         async function initializeApp() {
