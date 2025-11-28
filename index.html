@@ -25639,6 +25639,9 @@ DOM.movieSettingsBtn.addEventListener('click', () => {
 });
 
 // 在“放映室”点击发送按钮
+
+DOM.movieSendBtn.addEventListener('click', handleMovieSend);
+
 // 监听电影输入框按键
 DOM.movieInput.addEventListener('keydown', (e) => {
     // 只有电脑上按 Ctrl+Enter 才会发送
