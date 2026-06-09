@@ -101,6 +101,18 @@ const CloudModule = (() => {
                 <div class="toggle-thumb"></div>
               </label>
             </div>
+
+            <div class="toggle-row" style="margin-top: 16px; border-top: 1px dashed rgba(18,18,18,0.1); padding-top: 16px;">
+              <div class="toggle-row-info">
+                <div class="toggle-row-label" style="font-size:0.85rem; font-weight:600; color:var(--s-text-primary);">云端代答 (Cloud Reply)</div>
+                <div class="toggle-row-desc" style="font-size:0.6rem; color:var(--s-text-secondary); margin-top:4px;">等回复时切到后台，改由云端跑完并推送（需已部署 cloud-reply 函数）</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="cloud-reply-enabled" onchange="CloudModule.toggleCloudReply(this.checked)">
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
             
             <!-- 🌟 新增：冷却时间选择器 -->
             <div class="input-wrapper" id="auto-backup-interval-wrapper" style="margin-top:12px; display:none;">
@@ -267,6 +279,12 @@ const CloudModule = (() => {
       const intervalSelect = document.getElementById('cloud-backup-interval');
       if (intervalSelect) intervalSelect.value = backupInterval;
 
+      const cloudReplyToggle = document.getElementById('cloud-reply-enabled');
+      if (cloudReplyToggle) {
+        const cr = await DB.settings.get('cloud-reply-enabled');
+        cloudReplyToggle.checked = !!cr;
+      }
+
     } catch(e) {}
     document.getElementById('cloud-screen').classList.add('active');
   }
@@ -282,6 +300,19 @@ const CloudModule = (() => {
       if (enabled) {
          _log('info', '用户开启了自动备份功能');
          Toast.show('自动备份已开启');
+      }
+    } catch (e) {}
+  }
+
+  async function toggleCloudReply(enabled) {
+    try {
+      await DB.settings.set('cloud-reply-enabled', enabled);
+      if (enabled) {
+        _log('info', '用户开启了云端代答');
+        Toast.show('云端代答已开启 ✦ 切后台等回复将由云端处理');
+      } else {
+        _log('info', '用户关闭了云端代答');
+        Toast.show('云端代答已关闭，回复改回本地处理');
       }
     } catch (e) {}
   }
@@ -314,6 +345,87 @@ const CloudModule = (() => {
     _supabaseInstance = null; // 重置实例
     _log('info', '用户清空了云端节点配置');
     if (typeof Toast !== 'undefined') Toast.show('配置已清空');
+  }
+
+  // ============================================================
+  // ☁️ 云端代答（Cloud Reply）——把"等回复"交给杀不死的云端
+  // ============================================================
+
+  // 提交一条待云端处理的回复任务。
+  // 成功返回该行的 id（字符串）；任何原因失败都返回 null（前端据此回退到本地 fetch）。
+  async function submitCloudReply(charId, apiProfile, messages) {
+    _log('info', '☁️ [云端代答] 进入 submitCloudReply', `charId: ${charId}`);
+    try {
+      const supabase = await _getSupabaseSilent();
+      if (!supabase) {
+        _log('warn', '☁️ [云端代答] 未连接云端 → 回退本地', '没有 cloud-url / cloud-key，或 SDK 未加载');
+        return null; // 第一道：没连云端 → 回退本地
+      }
+      _log('info', '☁️ [云端代答] 已拿到 Supabase 实例，准备写入 pending_replies');
+
+      const payloadInfo = `model: ${apiProfile?.model || '?'}, 消息数: ${Array.isArray(messages) ? messages.length : '?'}`;
+      _log('info', '☁️ [云端代答] 任务内容', payloadInfo);
+
+      const { data, error } = await supabase
+        .from('pending_replies')
+        .insert({
+          char_id:     String(charId),
+          api_profile: apiProfile,
+          messages:    messages,
+          status:      'pending'
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        _log('error', '☁️ [云端代答] 写入 pending_replies 失败 → 回退本地', error.message || JSON.stringify(error));
+        return null;
+      }
+      _log('info', '✅ [云端代答] 任务已提交成功！等待云端处理', `行 id: ${data.id}`);
+      return data.id;
+    } catch (e) {
+      _log('error', '☁️ [云端代答] 提交异常 → 回退本地', e.message || String(e));
+      return null; // 第三道兜底：表不存在/网络炸 → 回退本地
+    }
+  }
+
+  // 拉取一条已完成的云端回复结果。
+  // 返回 { status, result, error_msg } 或 null。读到后由调用方决定是否删除该行。
+  async function fetchCloudReply(rowId) {
+    try {
+      const supabase = await _getSupabaseSilent();
+      if (!supabase) return null;
+      const { data, error } = await supabase
+        .from('pending_replies')
+        .select('status, result, error_msg')
+        .eq('id', rowId)
+        .single();
+      if (error) return null;
+      return data;
+    } catch (e) { return null; }
+  }
+
+  // 删除一条已处理完的云端回复（拿到结果后清理，避免堆积 + 减少 key 留存）
+  async function deleteCloudReply(rowId) {
+    try {
+      const supabase = await _getSupabaseSilent();
+      if (!supabase) return;
+      await supabase.from('pending_replies').delete().eq('id', rowId);
+    } catch (e) { /* 静默 */ }
+  }
+
+  // 拉取所有 done 状态的回复（切回前台时批量收取，类似离线信箱）
+  async function pollDoneReplies() {
+    try {
+      const supabase = await _getSupabaseSilent();
+      if (!supabase) return [];
+      const { data, error } = await supabase
+        .from('pending_replies')
+        .select('id, char_id, result, status, error_msg')
+        .eq('status', 'done');
+      if (error || !data) return [];
+      return data;
+    } catch (e) { return []; }
   }
 
   // 辅助报错拦截，用于排查朋友遇到的奇怪问题
@@ -684,7 +796,7 @@ const CloudModule = (() => {
     });
   }
 
-  return { init, open, close, syncUp, syncDown, requestPushPermission, toggleAutoBackup, changeBackupInterval, openLogs, saveConnection, clearConnection };
+  return { init, open, close, syncUp, syncDown, requestPushPermission, toggleAutoBackup, toggleCloudReply, changeBackupInterval, openLogs, saveConnection, clearConnection, submitCloudReply, fetchCloudReply, deleteCloudReply, pollDoneReplies };
 })();
 
 window.CloudModule = CloudModule;

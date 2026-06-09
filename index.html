@@ -8877,12 +8877,13 @@ const ApiHelper = (() => {
     return models;
   }
 
-  async function chatCompletion(apiProfile, messages) {
+  async function chatCompletion(apiProfile, messages, signal) {
     const url = buildUrl(apiProfile.url, 'chat');
     const res = await fetch(url, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiProfile.key}` },
       body: JSON.stringify({ model: apiProfile.model, messages, temperature: parseFloat(apiProfile.temp) }),
+      signal,
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -16743,6 +16744,29 @@ const ConvModule = (() => {
   function addEmoteToPreview(keyword, url) {
     _pendingImgs.push({ isEmote: true, keyword, url });
     _renderImgPreviewBar();
+
+    // 🌟 点联想表情后，自动擦掉触发联想的「最后一个词」，避免文字跟着表情一起发出去
+    // 切分规则需与上方 input 监听器里的联想逻辑保持完全一致
+    const input = document.getElementById('cv-input');
+    if (input) {
+      const raw = input.value;
+      const trimmedRight = raw.replace(/\s+$/, ''); // 去掉尾部空白，便于定位最后一个词
+      // 找到最后一个分隔符（空白或中英文标点）的位置，词 = 它之后到结尾的部分
+      const lastSepMatch = trimmedRight.match(/[\s，。！？、,!?]+(?=[^\s，。！？、,!?]*$)/);
+      if (lastSepMatch) {
+        // 有分隔符：保留分隔符及之前的内容，擦掉最后一个词
+        const cutIdx = lastSepMatch.index + lastSepMatch[0].length;
+        input.value = trimmedRight.slice(0, cutIdx);
+      } else {
+        // 整段就是一个词：直接清空
+        input.value = '';
+      }
+      // 同步收起高度 & 隐藏联想条
+      input.style.height = '44px';
+      input.style.overflowY = 'hidden';
+      const suggestBar = document.getElementById('cv-emote-suggest-bar');
+      if (suggestBar) suggestBar.style.display = 'none';
+    }
   }
 
   // ── 用户语音逻辑 ──
@@ -18603,10 +18627,57 @@ function _renderImgPreviewBar() {
       // ⚠️ 网络请求挂起！此时你可以切去任何地方并发起请求！
       // ===========================
       if (typeof KeepAliveModule !== 'undefined') KeepAliveModule.start(); // 开启保活
-      const response = await ApiHelper.chatCompletion(activeApi,[
-       { role: 'system', content: systemPrompt },
+
+      // ☁️ 云端代答（正式版 · 赛跑模式）：
+      //   前台聊天 → 照常走前端 fetch，完整渲染、不碰云端（付费体验零影响）。
+      //   只有「开关开 + fetch 还没回 + 用户中途切到后台」时 → 中断前端，转交云端跑+推送。
+      let cloudReplyEnabled = false;
+      try { cloudReplyEnabled = (await DB.settings.get('cloud-reply-enabled')) === true; } catch(e) {}
+
+      const fullMessages = [
+        { role: 'system', content: systemPrompt },
         ...apiMessages
-      ]);
+      ];
+
+      let response;
+      if (cloudReplyEnabled && window.CloudModule && CloudModule.submitCloudReply) {
+        // —— 赛跑：前端 fetch vs 切后台信号 ——
+        const _ac = new AbortController();
+        let _bgResolve;
+        const _bgPromise = new Promise(res => { _bgResolve = res; });
+        const _onHide = () => { if (document.hidden) _bgResolve('__BG__'); };
+        document.addEventListener('visibilitychange', _onHide);
+        // 若发起时就已经在后台（极少见），立即触发
+        if (document.hidden) _bgResolve('__BG__');
+
+        const _fetchPromise = ApiHelper.chatCompletion(activeApi, fullMessages, _ac.signal)
+          .then(r => ({ ok: true, r }))
+          .catch(e => ({ ok: false, e }));
+
+        const _winner = await Promise.race([_fetchPromise, _bgPromise]);
+        document.removeEventListener('visibilitychange', _onHide);
+
+        if (_winner === '__BG__') {
+          // 用户切后台了，且前端还没回 → 中断前端，转交云端
+          try { _ac.abort(); } catch(_) {}
+          const rowId = await CloudModule.submitCloudReply(sessionCharId, activeApi, fullMessages);
+          if (rowId) {
+            if (typeof KeepAliveModule !== 'undefined') KeepAliveModule.stop();
+            if (_charId === sessionCharId) _removeTyping();
+            _typingChars.delete(sessionCharId);
+            return; // 回复将以离线消息形式到账 + 推送
+          }
+          // 云端提交失败 → 兜底：重新用前端跑一次
+          response = await ApiHelper.chatCompletion(activeApi, fullMessages);
+        } else {
+          // 前端先跑完（用户还在前台）→ 走原来的完整渲染，格式全保留
+          if (!_winner.ok) throw _winner.e;
+          response = _winner.r;
+        }
+      } else {
+        // 没开开关 / 云端不可用 → 完全是原来的前端流程
+        response = await ApiHelper.chatCompletion(activeApi, fullMessages);
+      }
       if (typeof KeepAliveModule !== 'undefined') KeepAliveModule.stop(); // 关闭保活
       // ===========================
       // ⚠️ 请求回来了！
