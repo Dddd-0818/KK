@@ -144,7 +144,8 @@ const ApiLogModule = (() => {
       const u = json && json.usage; if (!u) return null;
       return { in:  u.prompt_tokens ?? u.input_tokens ?? null,
                out: u.completion_tokens ?? u.output_tokens ?? null,
-               tot: u.total_tokens ?? null };
+               tot: u.total_tokens ?? null,
+               cached: u.prompt_tokens_details?.cached_tokens ?? u.cache_read_input_tokens ?? null };
     } catch (_) { return null; }
   }
 
@@ -190,6 +191,7 @@ const ApiLogModule = (() => {
         }
         _put({ ts:t0, kind, host, model, ok:res.ok, status:res.status, retry,
                ms:Date.now()-t0, in:usage?.in??null, out:usage?.out??null, tot:usage?.tot??null,
+               cached:usage?.cached??null,
                err: res.ok ? '' : errType });
         return res;
       } catch (e) {
@@ -391,11 +393,14 @@ const ApiLogModule = (() => {
     const retries = view.filter(r => r.retry).length;
     const tIn = view.reduce((s,r)=>s+(r.in||0),0);
     const tOut = view.reduce((s,r)=>s+(r.out||0),0);
+    const tCached = view.reduce((s,r)=>s+(r.cached||0),0);
+    const hitRate = tIn > 0 ? Math.round(tCached / tIn * 100) : null;
     sbox.innerHTML =
       `<span>调用 <b>${view.length}</b></span>` +
       `<span>重试 <b style="color:#b04a4a">${retries}</b></span>` +
       `<span>失败 <b>${fails}</b></span>` +
-      (tIn||tOut ? `<span>token <b>${tIn}</b>↑ <b>${tOut}</b>↓</span>` : '');
+      (tIn||tOut ? `<span>token <b>${tIn}</b>↑ <b>${tOut}</b>↓</span>` : '') +
+      (hitRate !== null ? `<span>缓存命中 <b style="color:#5a9a5a">${hitRate}%</b> (${tCached}tok)</span>` : '');
 
     if (!view.length) {
       list.innerHTML = `<div id="apilog-empty">暂无记录<br><span style="font-size:11px">发一条消息或生成一张图后回来看看</span></div>`;
@@ -404,7 +409,8 @@ const ApiLogModule = (() => {
     list.innerHTML = view.slice(0, 800).map(r => {
       const color = KIND_COLOR[r.kind] || '#888';
       const tok = r.tot ? `${r.tot}tok` : (r.out ? `${r.out}tok` : '');
-      const meta = [tok, `${r.ms}ms`].filter(Boolean).join(' · ');
+      const cacheStr = (r.cached && r.in) ? `⚡${Math.round(r.cached/r.in*100)}%` : '';
+      const meta = [tok, cacheStr, `${r.ms}ms`].filter(Boolean).join(' · ');
       return `<div class="apilog-row ${r.ok?'':'fail'}">
         <span class="tm">${_fmtTime(r.ts)}</span>
         <span class="tag" style="background:${color}">${KIND_LABEL[r.kind]||r.kind}</span>
@@ -418,13 +424,14 @@ const ApiLogModule = (() => {
 
   async function exportCSV() {
     const rows = await _getAll();
-    const head = ['时间','类型','域名','模型','结果','状态码','重试','耗时ms','in','out','total','错误'];
+    const head = ['时间','类型','域名','模型','结果','状态码','重试','耗时ms','in','out','total','cached','命中率%','错误'];
     const lines = [head.join(',')];
     for (const r of rows) {
+      const hitPct = (r.cached && r.in) ? Math.round(r.cached/r.in*100) : '';
       lines.push([
         new Date(r.ts).toLocaleString('zh-CN'),
         r.kind, r.host, r.model, r.ok?'OK':'FAIL', r.status, r.retry?'是':'',
-        r.ms, r.in??'', r.out??'', r.tot??'', (r.err||'').replace(/,/g,';'),
+        r.ms, r.in??'', r.out??'', r.tot??'', r.cached??'', hitPct, (r.err||'').replace(/,/g,';'),
       ].join(','));
     }
     const blob = new Blob(['\ufeff'+lines.join('\n')], { type:'text/csv;charset=utf-8' });
