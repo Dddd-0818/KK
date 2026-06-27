@@ -145,7 +145,7 @@ const ApiLogModule = (() => {
       return { in:  u.prompt_tokens ?? u.input_tokens ?? null,
                out: u.completion_tokens ?? u.output_tokens ?? null,
                tot: u.total_tokens ?? null,
-               cached: u.prompt_tokens_details?.cached_tokens ?? u.cache_read_input_tokens ?? null };
+               cached: u.prompt_tokens_details?.cached_tokens ?? u.cache_read_input_tokens ?? u.prompt_cache_hit_tokens ?? null };
     } catch (_) { return null; }
   }
 
