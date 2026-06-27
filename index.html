@@ -13413,14 +13413,34 @@ const NotificationModule = (() => {
   let _timer;
   let _currentData = null;
 
+  // Capacitor 原生本地通知（Android APK 专用）
+  function _getCapNotif() {
+    return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications)
+      ? window.Capacitor.Plugins.LocalNotifications : null;
+  }
+
   // 1. 请求手机系统通知权限，并在成功时弹出测试横幅
   function requestPermission() {
+    const cn = _getCapNotif();
+    if (cn) {
+      cn.checkPermissions().then(r => {
+        if (r.display === 'granted') return; // 已授权，不重复弹
+        cn.requestPermissions().then(r2 => {
+          if (r2.display === 'granted') _showTestBanner();
+        }).catch(() => {});
+      }).catch(() => {
+        cn.requestPermissions().then(r => {
+          if (r.display === 'granted') _showTestBanner();
+        }).catch(() => {});
+      });
+      return;
+    }
     if ('Notification' in window) {
       if (Notification.permission === 'default') {
         Notification.requestPermission().then(perm => {
           if (perm === 'granted') _showTestBanner();
         }).catch(() => {});
-      } 
+      }
       // 如果你希望以后每次点输入框都弹测试，可以解除下面这行的注释
       // else if (Notification.permission === 'granted') { _showTestBanner(); }
     }
@@ -13428,6 +13448,11 @@ const NotificationModule = (() => {
 
   function _showTestBanner() {
     const msg = '本地通知授权成功，已开启后台驻留提醒 ✦';
+    const cn = _getCapNotif();
+    if (cn) {
+      cn.schedule({ notifications: [{ id: 1, title: 'Chill OS', body: msg, schedule: { at: new Date(Date.now() + 300) } }] }).catch(() => {});
+      return;
+    }
     try {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.ready.then(reg => {
@@ -13471,25 +13496,38 @@ const NotificationModule = (() => {
     }, 5500);
 
     // 2. 核心：如果网页在后台，触发真实的手机系统通知横幅！
-    if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-      if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'SHOW_NOTIFICATION',
+    if (document.hidden) {
+      const cn = _getCapNotif();
+      if (cn) {
+        // Capacitor APK：走原生 Android 通知
+        cn.schedule({ notifications: [{
+          id: Date.now() % 2147483647,
           title: data.name || 'Chill OS',
           body: cleanMsg,
-          icon: 'apple-touch-icon.png',
-          tag: 'msg-' + Date.now()
-        });
-      } else {
-        navigator.serviceWorker.ready.then(reg => {
-          reg.showNotification(data.name || 'Chill OS', {
+          largeIcon: 'notif_icon',
+          schedule: { at: new Date(Date.now() + 300) },
+          extra: { charId: data.charId }
+        }]}).catch(e => console.warn('[Notif] Capacitor schedule failed:', e));
+      } else if ('Notification' in window && Notification.permission === 'granted') {
+        if (navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'SHOW_NOTIFICATION',
+            title: data.name || 'Chill OS',
             body: cleanMsg,
             icon: 'apple-touch-icon.png',
-            vibrate: [200, 100, 200],
-            tag: 'msg-' + Date.now(),
-            renotify: true
+            tag: 'msg-' + Date.now()
           });
-        });
+        } else {
+          navigator.serviceWorker.ready.then(reg => {
+            reg.showNotification(data.name || 'Chill OS', {
+              body: cleanMsg,
+              icon: 'apple-touch-icon.png',
+              vibrate: [200, 100, 200],
+              tag: 'msg-' + Date.now(),
+              renotify: true
+            });
+          });
+        }
       }
     }
   }
@@ -20020,7 +20058,19 @@ function _renderImgPreviewBar() {
           content: '（继续我们刚才的对话。）'
         });
       }
-      
+
+      // 📅 把精确时间+时间感知附加到末尾 user 消息，避免污染 system prompt 缓存
+      if (timePerceptionOn) {
+        const _tnow = new Date();
+        const _timeNote = `\n[${_tnow.getFullYear()}年${_tnow.getMonth()+1}月${_tnow.getDate()}日 ${_weekDay(_tnow)} ${_fmtTime(_tnow)}${timeGapPrompt ? timeGapPrompt : ''}]`;
+        for (let _i = apiMessages.length - 1; _i >= 0; _i--) {
+          if (apiMessages[_i].role === 'user') {
+            apiMessages[_i] = { ...apiMessages[_i], content: apiMessages[_i].content + _timeNote };
+            break;
+          }
+        }
+      }
+
       // 🖨️ [DEBUG] 华丽折叠版：打印完整上下文与系统提示词
       console.groupCollapsed(`[AI Payload] ✦ 发送给【${sessionCharName}】的完整上下文 ↴`);
       console.log("%c【System Prompt 系统指令】", "color:#9c2b2b; font-weight:bold;", "\n" + systemPrompt);
@@ -21139,7 +21189,7 @@ function _buildSystemPrompt(histMsgs, novelImgOn = false, worldBookBlock = '', t
     let timeCtx = '';
     if (timePerceptionOn) {
        const now = new Date();
-       timeCtx = `# 时区与时间感知 (Time & Timezone)\n用户当前的本地时间是 ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${_weekDay(now)} ${_fmtTime(now)}。${timeGapPrompt}\n【时差判定】：如果你的档案设定中身处其他国家或地区，请务必根据用户的这个时间，自动推算出你所在地的真实时间，并在对话中自然遵循你当地的昼夜作息与环境光线。\n`;
+       timeCtx = `# 时区与时间感知 (Time & Timezone)\n用户当前的本地时间是 ${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${_weekDay(now)}。\n【时差判定】：如果你的档案设定中身处其他国家或地区，请务必根据用户的这个时间，自动推算出你所在地的真实时间，并在对话中自然遵循你当地的昼夜作息与环境光线。\n`;
     }
 
    const languageCtx = `# 语言习惯与设定铁律 (Language Iron Rule)
