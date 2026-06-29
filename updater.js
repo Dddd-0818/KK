@@ -3,7 +3,7 @@
 
 const UpdateModule = (() => {
   // 🌟 每次更新时，只需要修改这个版本号和下面的更新内容即可！
-  const CURRENT_VERSION = 'v4.2.0'; 
+  const CURRENT_VERSION = 'v4.3.0'; 
   const VERSION_KEY = 'chillos-last-version';
   const READ_SECONDS = 20; // ⏳ 强制阅读秒数：按钮锁定，倒计时结束才能点
   
